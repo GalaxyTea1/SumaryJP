@@ -6,6 +6,36 @@
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-track {
+  border-radius: 5px;
+  background-color: #2980b9;
+}
+
+*::-webkit-scrollbar-track:hover {
+  background-color: #2980b9;
+}
+
+*::-webkit-scrollbar-track:active {
+  background-color: #2980b9;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: #979797;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #A3A3A3;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: #A3A3A3;
+}
+
 body {
   display: flex;
   min-height: 100vh;
@@ -16,19 +46,16 @@ body {
 
 .sidebar {
   width: 280px;
-  background: linear-gradient(45deg, #3498db, #2980b9);
+  background: #2980b9;
   color: white;
-  box-shadow: 6px 0 15px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
   z-index: 1;
 }
 
 .sidebar h2 {
   text-align: center;
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.1);
   font-weight: 600;
   letter-spacing: 1px;
 }
@@ -36,7 +63,7 @@ body {
 .sidebar div {
   padding: 8px 20px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  user-select: none;
 }
 
 .main-content {
@@ -153,7 +180,7 @@ button:hover {
 }
 
 .status-not-learned {
-  background-color: #ef5350;
+  background-color: #ff615e;
   color: white;
 }
 
@@ -197,9 +224,10 @@ button:hover {
 .lesson-list {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   margin: 0 10px;
+  overflow: hidden auto;
+  max-height: 800px;
 }
 
 .lesson-item {
@@ -209,8 +237,8 @@ button:hover {
   padding: 10px 15px;
   background-color: #f5f5f5;
   color: black;
-  width: 100%;
-  border-radius: 10px;
+  width: 90%;
+  border-radius: 20px;
   margin: 4px 0;
 }
 
@@ -264,7 +292,6 @@ button:hover {
   height: 400px;
   position: relative;
   cursor: pointer;
-  margin-bottom: 40px;
 }
 
 .flashcard-inner {
@@ -289,7 +316,6 @@ button:hover {
   background: white;
   border-radius: 15px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  padding: 30px;
 }
 
 .flashcard-front {
@@ -320,9 +346,10 @@ button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
   position: relative;
   z-index: 1001;
+  margin-top: 30px;
 }
 
 .exit-flashcard {
