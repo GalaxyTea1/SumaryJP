@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Học Tiếng Nhật N5-N4</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="sidebar" id="lesson-sidebar">
+      <h2>Bài Học</h2>
+    </div>
+
+    <div class="main-content">
+      <div class="vocabulary-section">
+        <div class="review-section">
+          <button id="start-review">Bắt đầu ôn tập</button>
+          <button id="start-flashcard">Học Flashcard</button>
+          <button id="show-stats">Thống kê</button>
+          <button id="show-difficult">Từ khó</button>
+          <button id="start-test">Kiểm tra</button>
+        </div>
+
+        <h2 id="current-lesson-title">Chọn bài học</h2>
+
+        <form id="vocab-form" class="vocab-form">
+          <select id="level-select">
+            <option value="N5">N5</option>
+            <option value="N4">N4</option>
+          </select>
+          <input type="text" id="japanese-input" placeholder="Từ tiếng Nhật" required>
+          <input type="text" id="hiragana-input" placeholder="Hiragana" required>
+          <input type="text" id="meaning-input" placeholder="Nghĩa tiếng Việt" required>
+          <select id="type-select">
+            <option value="Danh từ">Danh từ</option>
+            <option value="Động từ">Động từ</option>
+            <option value="Tính từ">Tính từ</option>
+          </select>
+          <button type="submit">Thêm Từ</button>
+        </form>
+
+        <div id="review-container">
+          <h3 id="review-word"></h3>
+          <p id="review-hint"></p>
+          <input type="text" id="review-answer" placeholder="Nhập nghĩa">
+          <p id="review-result" class="review-result"></p>
+        </div>
+
+        <table class="vocab-table" id="vocab-table">
+          <thead>
+            <tr>
+              <th>Từ</th>
+              <th>Hiragana</th>
+              <th>Nghĩa</th>
+              <th>Loại</th>
+              <th>Trạng Thái</th>
+              <th>Độ khó</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="vocab-list"></tbody>
+        </table>
+
+        <div id="flashcard-container" style="display: none;">
+          <div class="flashcard">
+            <div class="flashcard-inner">
+              <div class="flashcard-front">
+                <h3 id="flashcard-japanese"></h3>
+              </div>
+              <div class="flashcard-back">
+                <p id="flashcard-hiragana"></p>
+                <p id="flashcard-meaning"></p>
+                <p id="flashcard-type"></p>
+              </div>
+            </div>
+          </div>
+          <div class="flashcard-controls">
+            <button id="prev-card">← Trước</button>
+            <span id="card-progress">0/0</span>
+            <button id="next-card">Tiếp →</button>
+            <button id="exit-flashcard" class="exit-flashcard">Thoát</button>
+          </div>
+        </div>
+
+        <div class="stats-overlay" style="display: none;"></div>
+        <div id="statistics-container" style="display: none;">
+          <div class="statistics-header">
+            <h2>Thống kê học tập</h2>
+            <button id="close-stats" class="close-stats">✕</button>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Tổng số từ vựng</h3>
+              <p id="total-words">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Đã thuộc</h3>
+              <p id="mastered-words">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Đang học</h3>
+              <p id="learning-words">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Chưa học</h3>
+              <p id="not-learned-words">0</p>
+            </div>
+          </div>
+          <div class="stats-chart">
+            <h3>Tiến độ học tập</h3>
+            <canvas id="learning-progress"></canvas>
+          </div>
+          <div class="stats-review">
+            <h3>Kết quả ôn tập</h3>
+            <canvas id="review-results"></canvas>
+          </div>
+        </div>
+
+        <div id="test-container" style="display: none;">
+          <div class="test-header">
+            <h2>Kiểm tra từ vựng</h2>
+            <div class="test-info">
+              <span id="test-timer">00:00</span>
+              <span id="test-progress">0/0</span>
+            </div>
+          </div>
+          <div class="question-container">
+            <h3 id="test-word"></h3>
+            <p id="test-hint"></p>
+            <input type="text" id="test-answer" placeholder="Nhập nghĩa">
+            <button id="submit-answer">Trả lời</button>
+          </div>
+        </div>
+
+        <div id="test-results" style="display: none;">
+          <h2>Kết quả kiểm tra</h2>
+          <div class="test-score">
+            <h3>Điểm số: <span id="final-score">0</span></h3>
+            <p>Đúng: <span id="correct-count">0</span></p>
+            <p>Sai: <span id="wrong-count">0</span></p>
+            <p>Thời gian: <span id="time-taken">00:00</span></p>
+          </div>
+          <div class="test-review">
+            <h3>Chi tiết bài làm</h3>
+            <div id="answers-review"></div>
+          </div>
+          <button id="close-test">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
