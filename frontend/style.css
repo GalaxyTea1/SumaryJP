@@ -775,13 +775,15 @@ tr[data-vocab-id] {
 }
 
 .level-item {
-  background: #c3c3c3;
+  background: white;
   border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 .level-name,
 .level-count {
   font-weight: bold;
+  color: black;
 }
 
 @media (max-width: 768px) {

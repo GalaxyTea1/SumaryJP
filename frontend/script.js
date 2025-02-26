@@ -1,5 +1,4 @@
 import apiManager from "./api.js";
-import { API_KEY_GEMINI } from "./env.js";
 
 const vocabularyManager = {
     currentLesson: null,
