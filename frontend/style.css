@@ -29,11 +29,11 @@
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: #A3A3A3;
+  background-color: #a3a3a3;
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background-color: #A3A3A3;
+  background-color: #a3a3a3;
 }
 
 body {
@@ -204,21 +204,6 @@ button:hover {
   border-radius: 10px;
   text-align: center;
   margin-top: 20px;
-}
-
-@media (max-width: 768px) {
-  body {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    height: auto;
-  }
-
-  .vocab-form {
-    grid-template-columns: 1fr;
-  }
 }
 
 .lesson-list {
@@ -785,6 +770,31 @@ tr[data-vocab-id] {
 }
 
 .edit-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   margin-right: 5px;
+}
+
+.level-item {
+  background: #c3c3c3;
+  border-radius: 10px;
+}
+
+.level-name,
+.level-count {
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .vocab-form {
+    grid-template-columns: 1fr;
+  }
 }
