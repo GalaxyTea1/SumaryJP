@@ -42,8 +42,8 @@ const vocabularyManager = {
         - level: trình độ (string, "N5")
         - lesson: số bài học (string, "1")
         - status: trạng thái học (string, "not-learned")
-        - lastReviewed: ngày ôn tập cuối (null)
-        - reviewCount: số lần ôn tập (number, 0)
+        - last_reviewed: ngày ôn tập cuối (null)
+        - review_count: số lần ôn tập (number, 0)
 
         Lưu ý: 
         - Đảm bảo "hiragana" là cách đọc đúng của "japanese", không trùng lặp.
@@ -118,8 +118,8 @@ const vocabularyManager = {
             vocab.lesson = lesson;
             vocab.level = level;
             vocab.status = "not-learned";
-            vocab.lastReviewed = null;
-            vocab.reviewCount = 0;
+            vocab.last_reviewed = null;
+            vocab.review_count = 0;
             await apiManager.saveVocabulary(vocab);
             await this.loadFromServer();
         } catch (error) {
@@ -132,8 +132,8 @@ const vocabularyManager = {
             const vocab = await apiManager.getVocabularyById(id);
             if (vocab) {
                 vocab.status = newStatus;
-                vocab.lastReviewed = new Date().toISOString();
-                vocab.reviewCount = (vocab.reviewCount || 0) + 1;
+                vocab.last_reviewed = new Date().toISOString();
+                vocab.review_count = (vocab.review_count || 0) + 1;
                 await apiManager.updateVocabulary(vocab);
                 const row = document.querySelector(`tr[data-vocab-id="${id}"]`);
                 if (row) row.className = `status-${newStatus}`;
@@ -243,7 +243,7 @@ const vocabularyManager = {
                 });
             });
         });
-        this.reviewQueue.sort((a, b) => new Date(a.lastReviewed || 0) - new Date(b.lastReviewed || 0));
+        this.reviewQueue.sort((a, b) => new Date(a.last_reviewed || 0) - new Date(b.last_reviewed || 0));
         if (this.reviewQueue.length === 0) {
             alert("Không có từ vựng để ôn tập");
             return;
@@ -263,12 +263,12 @@ const vocabularyManager = {
 
     checkReviewAnswer(correct) {
         if (correct) {
-            this.currentReviewVocab.reviewCount++;
-            if (this.currentReviewVocab.reviewCount >= 3) {
+            this.currentReviewVocab.review_count++;
+            if (this.currentReviewVocab.review_count >= 3) {
                 this.currentReviewVocab.status = "mastered";
             }
         }
-        this.currentReviewVocab.lastReviewed = new Date().toISOString();
+        this.currentReviewVocab.last_reviewed = new Date().toISOString();
         apiManager
             .updateVocabulary(this.currentReviewVocab)
             .then(() => {
@@ -288,23 +288,98 @@ const vocabularyManager = {
     },
 
     startFlashcardMode() {
+        if (document.querySelector(".flashcard-config-modal")) return;
+
+        // Collect available levels and lessons
+        const levelOptions = [`<option value="all">Tất cả</option>`];
+        Object.keys(this.lessons).forEach(level => {
+            levelOptions.push(`<option value="${level}">${level}</option>`);
+        });
+
+        const modal = document.createElement("div");
+        modal.className = "test-config-modal flashcard-config-modal";
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>Cấu hình Flashcard</h3>
+                <div class="test-config">
+                    <label>
+                        Trình độ:
+                        <select id="fc-level-select" style="width: 100px; padding: 5px;">
+                            ${levelOptions.join('')}
+                        </select>
+                    </label>
+                    <label>
+                        Bài học:
+                        <select id="fc-lesson-select" style="width: 100px; padding: 5px;">
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="modal-buttons">
+                    <button id="start-fc-btn">Bắt đầu</button>
+                    <button id="cancel-fc-btn">Hủy</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const levelSelect = modal.querySelector("#fc-level-select");
+        const lessonSelect = modal.querySelector("#fc-lesson-select");
+
+        levelSelect.addEventListener("change", () => {
+            const level = levelSelect.value;
+            lessonSelect.innerHTML = `<option value="all">Tất cả</option>`;
+            if (level !== "all" && this.lessons[level]) {
+                Object.keys(this.lessons[level]).forEach(lesson => {
+                    const opt = document.createElement("option");
+                    opt.value = lesson;
+                    opt.textContent = `Bài ${lesson}`;
+                    lessonSelect.appendChild(opt);
+                });
+            }
+        });
+
+        modal.querySelector("#start-fc-btn").addEventListener("click", () => {
+            const selectedLevel = levelSelect.value;
+            const selectedLesson = lessonSelect.value;
+            this.initFlashcards(selectedLevel, selectedLesson);
+        });
+
+        modal.querySelector("#cancel-fc-btn").addEventListener("click", () => modal.remove());
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.remove();
+        });
+    },
+
+    initFlashcards(selectedLevel, selectedLesson) {
+        const modal = document.querySelector(".flashcard-config-modal");
+        if (modal) modal.remove();
         document.getElementById("review-container").style.display = "none";
         document.getElementById("vocab-form").style.display = "none";
         document.getElementById("vocab-table").style.display = "none";
         document.getElementById("flashcard-container").style.display = "flex";
-        this.prepareFlashcards();
-        this.showCurrentCard();
+        this.prepareFlashcards(selectedLevel, selectedLesson);
     },
 
-    prepareFlashcards() {
+    prepareFlashcards(selectedLevel = "all", selectedLesson = "all") {
         this.flashcardDeck = [];
         this.currentFlashcardIndex = 0;
         Object.entries(this.lessons).forEach(([level, lessons]) => {
-            Object.values(lessons).forEach((vocabularies) => {
+            if (selectedLevel !== "all" && level !== selectedLevel) return;
+            Object.entries(lessons).forEach(([lesson, vocabularies]) => {
+                if (selectedLesson !== "all" && lesson !== selectedLesson) return;
                 this.flashcardDeck.push(...vocabularies);
             });
         });
+
+        if (this.flashcardDeck.length === 0) {
+            alert("Không có từ vựng nào trong bài tập này!");
+            this.exitFlashcardMode();
+            return;
+        }
+
         this.shuffleArray(this.flashcardDeck);
+        this.showCurrentCard();
     },
 
     shuffleArray(array) {
@@ -416,13 +491,14 @@ const vocabularyManager = {
         try {
             const vocab = await apiManager.getVocabularyById(id);
             if (vocab) {
-                vocab.isDifficult = !vocab.isDifficult;
+                vocab.is_difficult = !vocab.is_difficult;
                 await apiManager.updateVocabulary(vocab);
+                await this.loadFromServer(); // Update local cache
                 const row = document.querySelector(`tr[data-vocab-id="${id}"]`);
                 if (row) {
                     const starButton = row.querySelector("button");
-                    starButton.textContent = vocab.isDifficult ? "★" : "☆";
-                    starButton.classList.toggle("difficult", vocab.isDifficult);
+                    starButton.textContent = vocab.is_difficult ? "★" : "☆";
+                    starButton.classList.toggle("difficult", vocab.is_difficult);
                 }
             }
         } catch (error) {
@@ -431,12 +507,13 @@ const vocabularyManager = {
         }
     },
 
-    showDifficultWords() {
+    async showDifficultWords() {
+        await this.loadFromServer(); // Ensure we have latest data
         const difficultWords = [];
         Object.entries(this.lessons).forEach(([level, lessons]) => {
             Object.entries(lessons).forEach(([lesson, words]) => {
                 words.forEach((word) => {
-                    if (word.isDifficult) difficultWords.push({ ...word, level, lesson });
+                    if (word.is_difficult) difficultWords.push({ ...word, level, lesson });
                 });
             });
         });
@@ -461,8 +538,8 @@ const vocabularyManager = {
                         </thead>
                         <tbody>
                             ${difficultWords
-                                .map(
-                                    (word) => `
+                .map(
+                    (word) => `
                                 <tr>
                                     <td>${word.japanese}</td>
                                     <td>${word.hiragana}</td>
@@ -470,8 +547,8 @@ const vocabularyManager = {
                                     <td>Bài ${word.lesson} - ${word.level}</td>
                                 </tr>
                             `
-                                )
-                                .join("")}
+                )
+                .join("")}
                         </tbody>
                     </table>
                     <div class="modal-footer">
@@ -493,7 +570,7 @@ const vocabularyManager = {
         Object.entries(this.lessons).forEach(([level, lessons]) => {
             Object.entries(lessons).forEach(([lesson, words]) => {
                 words.forEach((word) => {
-                    if (word.isDifficult) this.reviewQueue.push({ ...word, lesson, level });
+                    if (word.is_difficult) this.reviewQueue.push({ ...word, lesson, level });
                 });
             });
         });
@@ -578,17 +655,42 @@ const vocabularyManager = {
         document.getElementById("test-word").textContent = currentWord.japanese;
         document.getElementById("test-hint").textContent = `Hiragana: ${currentWord.hiragana}`;
         document.getElementById("test-progress").textContent = `${this.currentTestIndex + 1}/${this.testWords.length}`;
-        document.getElementById("test-answer").value = "";
-        document.getElementById("test-answer").focus();
+
+        const optionsContainer = document.getElementById("test-options");
+        optionsContainer.innerHTML = "";
+
+        // Generate options: 1 correct, up to 3 wrong
+        let allMeanings = [];
+        Object.values(this.lessons).forEach((level) => {
+            Object.values(level).forEach((lesson) => {
+                lesson.forEach((word) => allMeanings.push(word.meaning));
+            });
+        });
+
+        // Filter out correct meaning and duplicates
+        allMeanings = [...new Set(allMeanings.filter(m => m.toLowerCase() !== currentWord.meaning.toLowerCase()))];
+        this.shuffleArray(allMeanings);
+
+        const wrongOptionsCount = Math.min(3, allMeanings.length);
+        const options = [currentWord.meaning, ...allMeanings.slice(0, wrongOptionsCount)];
+        this.shuffleArray(options);
+
+        const labels = ["A", "B", "C", "D"];
+        options.forEach((option, index) => {
+            const button = document.createElement("button");
+            button.className = "test-option-btn";
+            button.innerHTML = `<strong>${labels[index]}.</strong> ${option}`;
+            button.onclick = () => this.submitAnswer(option);
+            optionsContainer.appendChild(button);
+        });
     },
 
-    submitAnswer() {
-        const answer = document.getElementById("test-answer").value.trim().toLowerCase();
+    submitAnswer(selectedAnswer) {
         const currentWord = this.testWords[this.currentTestIndex];
-        const isCorrect = answer === currentWord.meaning.toLowerCase();
+        const isCorrect = selectedAnswer.toLowerCase() === currentWord.meaning.toLowerCase();
         this.testAnswers.push({
             word: currentWord,
-            userAnswer: answer,
+            userAnswer: selectedAnswer,
             correct: isCorrect,
         });
         this.currentTestIndex++;
@@ -631,8 +733,11 @@ const vocabularyManager = {
             .map(
                 (a) => `
             <div class="answer-item ${a.correct ? "correct" : "wrong"}">
-                <span>${a.word.japanese}</span>
-                <span>${a.userAnswer}</span>
+                <span class="answer-word">${a.word.japanese}</span>
+                <div class="answer-details">
+                    <span class="user-answer">${a.userAnswer}</span>
+                    ${!a.correct ? `<span class="correct-answer">✔️ ${a.word.meaning}</span>` : ""}
+                </div>
             </div>
         `
             )
@@ -667,7 +772,7 @@ const vocabularyManager = {
                           </select>
                       </td>
                       <td>
-                          <button class="difficulty-btn ${vocab.isDifficult ? "difficult" : ""}">${vocab.isDifficult ? "★" : "☆"}</button>
+                          <button class="difficulty-btn ${vocab.is_difficult ? "difficult" : ""}">${vocab.is_difficult ? "★" : "☆"}</button>
                       </td>
                       <td>
                           <button class="edit-btn">Sửa</button>
@@ -697,8 +802,8 @@ const vocabularyManager = {
                     meaning: vocab.meaning,
                     type: vocab.type,
                     status: "not-learned",
-                    lastReviewed: null,
-                    reviewCount: 0,
+                    last_reviewed: null,
+                    review_count: 0,
                 });
             }
         } catch (error) {
@@ -777,7 +882,6 @@ window.onload = async function () {
         document.getElementById("close-stats").addEventListener("click", () => vocabularyManager.closeStatistics());
 
         // Add event listeners for test
-        document.getElementById("submit-answer").addEventListener("click", () => vocabularyManager.submitAnswer());
         document.getElementById("close-test").addEventListener("click", () => vocabularyManager.closeTest());
 
         // Add event listeners for form submit
