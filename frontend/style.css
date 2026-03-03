@@ -1,9 +1,57 @@
+:root {
+  --bg-color-main: #f6f8f9;
+  --bg-color-alt: #e5ebee;
+  --text-color: #2c3e50;
+  --sidebar-bg: #2980b9;
+  --sidebar-text: white;
+  --card-bg: white;
+  --border-color: #e9ecef;
+  --input-border: #e0e0e0;
+  --primary-btn: #3498db;
+  --primary-btn-text: white;
+  --table-border: #e0e0e0;
+  --table-header-bg: #3498db;
+  --table-header-text: white;
+  --ctx-menu-bg: white;
+  --ctx-menu-hover: #f5f5f5;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+body.dark-mode {
+  --bg-color-main: #1a1a2e;
+  --bg-color-alt: #16213e;
+  --text-color: #e0e0e0;
+  --sidebar-bg: #0f3460;
+  --sidebar-text: #e0e0e0;
+  --card-bg: #1f2a40;
+  --border-color: #2c3e50;
+  --input-border: #3a4b66;
+  --primary-btn: #0f3460;
+  --primary-btn-text: #e0e0e0;
+  --table-border: #2c3e50;
+  --table-header-bg: #0f3460;
+  --table-header-text: #e0e0e0;
+  --ctx-menu-bg: #1f2a40;
+  --ctx-menu-hover: #293855;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-border-box;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
 }
 
 *::-webkit-scrollbar {
@@ -40,18 +88,20 @@
 body {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f6f8f9 0%, #e5ebee 100%);
-  color: #2c3e50;
+  background: linear-gradient(135deg, var(--bg-color-main) 0%, var(--bg-color-alt) 100%);
+  color: var(--text-color);
   line-height: 1.6;
+  transition: background 0.3s, color 0.3s;
 }
 
 .sidebar {
   width: 280px;
-  background: #2980b9;
-  color: white;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
   z-index: 1;
+  transition: background 0.3s, color 0.3s;
 }
 
 .sidebar h2 {
@@ -77,11 +127,12 @@ body {
 }
 
 .vocabulary-section {
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 12px;
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
+  box-shadow: 0 10px 30px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .vocab-form {
@@ -92,12 +143,14 @@ body {
 }
 
 input[type="text"],
-select {
+select, input[type="number"] {
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--input-border);
   border-radius: 8px;
   font-size: 0.95em;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+  background-color: var(--card-bg);
+  color: var(--text-color);
 }
 
 input[type="text"]:focus,
@@ -108,14 +161,16 @@ select:focus {
 
 button {
   padding: 12px 20px;
-  background-color: #3498db;
+  background-color: var(--primary-btn);
   border: none;
   border-radius: 8px;
-  color: white;
+  color: var(--primary-btn-text);
   font-weight: 600;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
+  transition:
+    background-color 0.3s,
+    transform 0.1s;
 }
 
 button:hover {
@@ -132,19 +187,22 @@ button:hover {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
-  background: white;
+  background: var(--card-bg);
+  transition: background 0.3s;
 }
 
 .vocab-table th {
-  background-color: #3498db;
-  color: white;
+  background-color: var(--table-header-bg);
+  color: var(--table-header-text);
   padding: 12px;
   text-align: left;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .vocab-table td {
   padding: 12px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--table-border);
+  transition: border-color 0.3s;
 }
 
 .vocab-table tr {
@@ -154,8 +212,9 @@ button:hover {
 .vocab-table select {
   padding: 6px 12px;
   border-radius: 4px;
-  border: 1px solid #ddd;
-  background-color: white;
+  border: 1px solid var(--input-border);
+  background-color: var(--card-bg);
+  color: var(--text-color);
   width: 100%;
 }
 
@@ -199,12 +258,13 @@ button:hover {
 
 #review-container {
   display: none;
-  background-color: #f9f9f9;
-  border: 1px solid #e0e0e0;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
   padding: 20px;
   border-radius: 10px;
   text-align: center;
   margin-top: 20px;
+  color: var(--text-color);
 }
 
 .lesson-list {
@@ -221,8 +281,9 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  background-color: #f5f5f5;
-  color: black;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
   width: 90%;
   border-radius: 20px;
   margin: 4px 0;
@@ -268,7 +329,7 @@ button:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: var(--bg-color-main);
   z-index: 1000;
   padding: 20px;
 }
@@ -299,9 +360,10 @@ button:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: white;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 15px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 16px var(--shadow-color);
 }
 
 .flashcard-front {
@@ -315,13 +377,13 @@ button:hover {
 .flashcard-front h3 {
   font-size: 4em;
   margin: 0;
-  color: #333;
+  color: var(--text-color);
 }
 
 .flashcard-back p {
   font-size: 2em;
   margin: 15px 0;
-  color: #333;
+  color: var(--text-color);
 }
 
 .flashcard.flipped .flashcard-inner {
@@ -398,10 +460,11 @@ button:hover {
   transform: translate(-50%, -50%);
   width: 80%;
   max-width: 1000px;
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-color);
   padding: 30px;
   border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--shadow-color);
   z-index: 1000;
 }
 
@@ -432,7 +495,8 @@ button:hover {
 }
 
 .stat-card {
-  background: #f5f5f5;
+  background: var(--bg-color-alt);
+  border: 1px solid var(--border-color);
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -446,7 +510,7 @@ button:hover {
 .stat-card p {
   font-size: 2em;
   margin: 0;
-  color: #333;
+  color: var(--text-color);
 }
 
 .stats-chart,
@@ -491,13 +555,14 @@ button:hover {
 }
 
 .modal-content {
-  background: white;
+  background: var(--card-bg);
   border-radius: 15px;
   padding: 20px;
   width: 80%;
   max-width: 1000px;
   max-height: 80vh;
   overflow-y: auto;
+  color: var(--text-color);
 }
 
 .modal-header {
@@ -516,7 +581,7 @@ button:hover {
 .difficult-words-table th,
 .difficult-words-table td {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   text-align: left;
 }
 
@@ -531,7 +596,8 @@ button:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background: white;
+  background: var(--bg-color-main);
+  color: var(--text-color);
   z-index: 1000;
   padding: 20px;
   display: flex;
@@ -579,9 +645,9 @@ button:hover {
   padding: 15px 20px;
   font-size: 1.2em;
   text-align: left;
-  background-color: #f8f9fa;
-  color: #2c3e50;
-  border: 2px solid #e9ecef;
+  background-color: var(--bg-color-main);
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -611,10 +677,11 @@ button:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-color);
   padding: 30px;
   border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--shadow-color);
   z-index: 1001;
   max-width: 800px;
   width: 90%;
@@ -626,7 +693,7 @@ button:hover {
   text-align: center;
   margin-bottom: 30px;
   padding: 20px;
-  background: #f5f5f5;
+  background: var(--bg-color-alt);
   border-radius: 10px;
 }
 
@@ -638,7 +705,7 @@ button:hover {
   display: flex;
   justify-content: space-between;
   padding: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   align-items: center;
 }
 
@@ -691,10 +758,11 @@ button:hover {
 }
 
 .test-config-modal .modal-content {
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-color);
   padding: 30px;
   border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--shadow-color);
   width: 400px;
 }
 
@@ -714,8 +782,10 @@ button:hover {
 .test-config input {
   width: 100px;
   padding: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
+  background-color: var(--card-bg);
+  color: var(--text-color);
 }
 
 .modal-buttons {
@@ -785,7 +855,7 @@ button:hover {
 }
 
 tr[data-vocab-id] {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
 }
 
 .edit-form-modal {
@@ -802,10 +872,11 @@ tr[data-vocab-id] {
 }
 
 .edit-form-modal .modal-content {
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-color);
   padding: 30px;
   border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--shadow-color);
   width: 400px;
 }
 
@@ -818,7 +889,9 @@ tr[data-vocab-id] {
 .edit-form-modal input,
 .edit-form-modal select {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
+  background-color: var(--card-bg);
+  color: var(--text-color);
   border-radius: 4px;
   font-size: 1em;
 }
@@ -836,7 +909,7 @@ tr[data-vocab-id] {
 }
 
 .level-item {
-  background: white;
+  background: var(--card-bg);
   border-radius: 10px;
   margin-bottom: 10px;
 }
@@ -844,7 +917,23 @@ tr[data-vocab-id] {
 .level-name,
 .level-count {
   font-weight: bold;
-  color: black;
+  color: var(--text-color);
+}
+
+.dark-mode-toggle {
+  background: transparent;
+  color: var(--sidebar-text);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin: 10px 20px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dark-mode-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(0);
 }
 
 @media (max-width: 768px) {
@@ -855,9 +944,80 @@ tr[data-vocab-id] {
   .sidebar {
     width: 100%;
     height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  
+  .sidebar h2 {
+    padding: 0 20px;
+    margin: 0;
+  }
+  
+  .level-list {
+    display: none; /* Can be toggled open if needed, keeping simple for now */
+  }
+
+  .main-content {
+    padding: 15px;
   }
 
   .vocab-form {
     grid-template-columns: 1fr;
   }
+  
+  .vocab-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .review-section {
+    flex-wrap: wrap;
+  }
+  
+  .review-section button {
+    flex: 1 1 calc(50% - 15px);
+  }
+}
+
+/* Custom Context Menu */
+.context-menu {
+  position: absolute;
+  background: var(--ctx-menu-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  padding: 8px 0;
+  min-width: 150px;
+  z-index: 10000;
+  border: 1px solid var(--border-color);
+}
+
+.context-menu .menu-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.2s;
+  font-weight: 500;
+}
+
+.context-menu .menu-item:hover {
+  background-color: var(--ctx-menu-hover);
+  color: var(--primary-btn);
+}
+
+/* Toggle Hiragana Blur */
+.hide-hiragana .hiragana-text {
+  filter: blur(5px);
+  transition: filter 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hide-hiragana .hiragana-text:hover {
+  filter: blur(0);
 }
