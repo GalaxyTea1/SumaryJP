@@ -5,6 +5,7 @@ import { stats } from "./components/stats.js";
 import { testObj } from "./components/test.js";
 import { review } from "./components/review.js";
 import { tts } from "./components/tts.js";
+import { search } from "./components/search.js";
 
 window.onload = async function () {
     try {
@@ -20,6 +21,9 @@ window.onload = async function () {
         
         // Init TTS context menu
         tts.initContextMenu();
+        
+        // Init Global Search
+        search.init();
 
         // Init Dark Mode
         const darkModeToggle = document.getElementById("dark-mode-toggle");

@@ -11,19 +11,45 @@
   <body>
     <div class="sidebar" id="lesson-sidebar">
       <h2>Bài Học</h2>
-      <button id="dark-mode-toggle" class="dark-mode-toggle">
-        Thích sáng/tối 🌓
-      </button>
+      <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
     </div>
 
     <div class="main-content">
       <div class="vocabulary-section">
         <div class="review-section">
-          <button id="start-review">Bắt đầu ôn tập</button>
-          <button id="start-flashcard">Học Flashcard</button>
-          <button id="show-stats">Thống kê</button>
-          <button id="show-difficult">Từ khó</button>
-          <button id="start-test">Kiểm tra</button>
+          <div class="review-buttons">
+            <button id="start-review">Bắt đầu ôn tập</button>
+            <button id="start-flashcard">Học Flashcard</button>
+            <button id="show-stats">Thống kê</button>
+            <button id="show-difficult">Từ khó</button>
+            <button id="start-test">Kiểm tra</button>
+          </div>
+          <div
+            class="search-container"
+            style="position: relative; width: 250px"
+          >
+            <input
+              type="text"
+              id="global-search-input"
+              placeholder="Tìm kiếm từ vựng..."
+              style="
+                width: 100%;
+                border-radius: 20px;
+                font-size: 0.9em;
+                padding: 10px 15px;
+                border: 1px solid var(--input-border);
+                background-color: var(--card-bg);
+                color: var(--text-color);
+                box-sizing: border-box;
+              "
+              autocomplete="off"
+            />
+            <ul
+              id="search-results-dropdown"
+              class="search-dropdown"
+              style="display: none"
+            ></ul>
+          </div>
         </div>
 
         <div
@@ -196,6 +222,42 @@
     <div id="custom-context-menu" class="context-menu" style="display: none">
       <div class="menu-item" id="menu-read-text">
         <span class="icon">🔊</span> Đọc từ vựng
+      </div>
+      <!-- Word Detail Modal -->
+      <div id="word-detail-modal" class="modal" style="display: none">
+        <div class="modal-content" style="max-width: 500px">
+          <div class="modal-header">
+            <h3
+              id="detail-japanese"
+              style="font-size: 2em; margin: 0; color: var(--primary-btn)"
+            ></h3>
+            <button
+              id="close-detail-modal"
+              class="close-detail"
+              style="
+                font-size: 1.5em;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                color: var(--text-color);
+              "
+            >
+              &times;
+            </button>
+          </div>
+          <div
+            class="modal-body"
+            style="padding-top: 20px; font-size: 1.1em; line-height: 1.8"
+          >
+            <p><strong>Hiragana:</strong> <span id="detail-hiragana"></span></p>
+            <p><strong>Nghĩa:</strong> <span id="detail-meaning"></span></p>
+            <p>
+              <strong>Ngữ pháp (Loại từ):</strong>
+              <span id="detail-type"></span>
+            </p>
+            <p><strong>Bài học:</strong> <span id="detail-lesson"></span></p>
+          </div>
+        </div>
       </div>
     </div>
   </body>
