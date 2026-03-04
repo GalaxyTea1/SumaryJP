@@ -1,38 +1,32 @@
 <!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Học Tiếng Nhật</title>
-    <link rel="stylesheet" href="style.css" />
-    <script type="module" src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
 
-  <body>
-    <div class="sidebar" id="lesson-sidebar">
-      <h2>Bài Học</h2>
-      <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Học Tiếng Nhật</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
-    <div class="main-content">
-      <div class="vocabulary-section">
-        <div class="review-section">
-          <div class="review-buttons">
-            <button id="start-review">Bắt đầu ôn tập</button>
-            <button id="start-flashcard">Học Flashcard</button>
-            <button id="show-stats">Thống kê</button>
-            <button id="show-difficult">Từ khó</button>
-            <button id="start-test">Kiểm tra</button>
-          </div>
-          <div
-            class="search-container"
-            style="position: relative; width: 250px"
-          >
-            <input
-              type="text"
-              id="global-search-input"
-              placeholder="Tìm kiếm từ vựng..."
-              style="
+<body>
+  <div class="sidebar" id="lesson-sidebar">
+    <h2>Bài Học</h2>
+    <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
+  </div>
+
+  <div class="main-content">
+    <div class="vocabulary-section">
+      <div class="review-section">
+        <div class="review-buttons">
+          <button id="start-review">Bắt đầu ôn tập</button>
+          <button id="start-flashcard">Học Flashcard</button>
+          <button id="show-stats">Thống kê</button>
+          <button id="show-difficult">Từ khó</button>
+          <button id="start-test">Kiểm tra</button>
+        </div>
+        <div class="search-container" style="position: relative; width: 250px">
+          <input type="text" id="global-search-input" placeholder="Tìm kiếm từ vựng..." style="
                 width: 100%;
                 border-radius: 20px;
                 font-size: 0.9em;
@@ -41,224 +35,170 @@
                 background-color: var(--card-bg);
                 color: var(--text-color);
                 box-sizing: border-box;
-              "
-              autocomplete="off"
-            />
-            <ul
-              id="search-results-dropdown"
-              class="search-dropdown"
-              style="display: none"
-            ></ul>
-          </div>
+              " autocomplete="off" />
+          <ul id="search-results-dropdown" class="search-dropdown" style="display: none"></ul>
         </div>
+      </div>
 
-        <div
-          style="
+      <div style="
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-          "
-        >
-          <h2 id="current-lesson-title" style="margin: 0">Chọn bài học</h2>
-          <label
-            style="
+          ">
+        <h2 id="current-lesson-title" style="margin: 0">Chọn bài học</h2>
+        <label style="
               display: flex;
               align-items: center;
               cursor: pointer;
               font-weight: 500;
-            "
-          >
-            <input
-              type="checkbox"
-              id="toggle-hiragana"
-              checked
-              style="margin-right: 8px; width: 18px; height: 18px"
-            />
-            Hiển thị Hiragana
-          </label>
-        </div>
+            ">
+          <input type="checkbox" id="toggle-hiragana" checked style="margin-right: 8px; width: 18px; height: 18px" />
+          Hiển thị Hiragana
+        </label>
+      </div>
 
-        <form id="vocab-form" class="vocab-form">
-          <select id="level-select">
-            <option value="N5">N5</option>
-            <option value="N4">N4</option>
-          </select>
-          <input
-            type="text"
-            id="japanese-input"
-            placeholder="Từ tiếng Nhật"
-            required
-          />
-          <input
-            type="text"
-            id="hiragana-input"
-            placeholder="Hiragana"
-            required
-          />
-          <input
-            type="text"
-            id="meaning-input"
-            placeholder="Nghĩa tiếng Việt"
-            required
-          />
-          <select id="type-select">
-            <option value="Danh từ">Danh từ</option>
-            <option value="Động từ">Động từ</option>
-            <option value="Tính từ">Tính từ</option>
-          </select>
-          <button type="submit">Thêm Từ</button>
-        </form>
 
-        <div id="review-container">
-          <h3 id="review-word"></h3>
-          <p id="review-hint"></p>
-          <input type="text" id="review-answer" placeholder="Nhập nghĩa" />
-          <p id="review-result" class="review-result"></p>
-        </div>
 
-        <table class="vocab-table" id="vocab-table">
-          <thead>
-            <tr>
-              <th>Từ</th>
-              <th>Hiragana</th>
-              <th>Nghĩa</th>
-              <th>Loại</th>
-              <th>Trạng Thái</th>
-              <th>Độ khó</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="vocab-list"></tbody>
-        </table>
+      <div id="review-container">
+        <h3 id="review-word"></h3>
+        <p id="review-hint"></p>
+        <input type="text" id="review-answer" placeholder="Nhập nghĩa" />
+        <p id="review-result" class="review-result"></p>
+      </div>
 
-        <div id="flashcard-container" style="display: none">
-          <div class="flashcard">
-            <div class="flashcard-inner">
-              <div class="flashcard-front">
-                <h3 id="flashcard-japanese"></h3>
-              </div>
-              <div class="flashcard-back">
-                <p id="flashcard-hiragana"></p>
-                <p id="flashcard-meaning"></p>
-                <p id="flashcard-type"></p>
-              </div>
+      <table class="vocab-table" id="vocab-table">
+        <thead>
+          <tr>
+            <th>Từ</th>
+            <th>Hiragana</th>
+            <th>Nghĩa</th>
+            <th>Loại</th>
+            <th>Trạng Thái</th>
+            <th>Độ khó</th>
+          </tr>
+        </thead>
+        <tbody id="vocab-list"></tbody>
+      </table>
+
+      <div id="flashcard-container" style="display: none">
+        <div class="flashcard">
+          <div class="flashcard-inner">
+            <div class="flashcard-front">
+              <h3 id="flashcard-japanese"></h3>
+            </div>
+            <div class="flashcard-back">
+              <p id="flashcard-hiragana"></p>
+              <p id="flashcard-meaning"></p>
+              <p id="flashcard-type"></p>
             </div>
           </div>
-          <div class="flashcard-controls">
-            <button id="prev-card">← Trước</button>
-            <span id="card-progress">0/0</span>
-            <button id="next-card">Tiếp →</button>
-            <button id="exit-flashcard" class="exit-flashcard">Thoát</button>
-          </div>
         </div>
+        <div class="flashcard-controls">
+          <button id="prev-card">← Trước</button>
+          <span id="card-progress">0/0</span>
+          <button id="next-card">Tiếp →</button>
+          <button id="exit-flashcard" class="exit-flashcard">Thoát</button>
+        </div>
+      </div>
 
-        <div class="stats-overlay" style="display: none"></div>
-        <div id="statistics-container" style="display: none">
-          <div class="statistics-header">
-            <h2>Thống kê học tập</h2>
-            <button id="close-stats" class="close-stats">✕</button>
+      <div class="stats-overlay" style="display: none"></div>
+      <div id="statistics-container" style="display: none">
+        <div class="statistics-header">
+          <h2>Thống kê học tập</h2>
+          <button id="close-stats" class="close-stats">✕</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Tổng số từ vựng</h3>
+            <p id="total-words">0</p>
           </div>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <h3>Tổng số từ vựng</h3>
-              <p id="total-words">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Đã thuộc</h3>
-              <p id="mastered-words">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Đang học</h3>
-              <p id="learning-words">0</p>
-            </div>
-            <div class="stat-card">
-              <h3>Chưa học</h3>
-              <p id="not-learned-words">0</p>
-            </div>
+          <div class="stat-card">
+            <h3>Đã thuộc</h3>
+            <p id="mastered-words">0</p>
           </div>
-          <div class="stats-chart">
-            <h3>Tiến độ học tập</h3>
-            <canvas id="learning-progress"></canvas>
+          <div class="stat-card">
+            <h3>Đang học</h3>
+            <p id="learning-words">0</p>
           </div>
-          <div class="stats-review">
-            <h3>Kết quả ôn tập</h3>
-            <canvas id="review-results"></canvas>
+          <div class="stat-card">
+            <h3>Chưa học</h3>
+            <p id="not-learned-words">0</p>
           </div>
         </div>
+        <div class="stats-chart">
+          <h3>Tiến độ học tập</h3>
+          <canvas id="learning-progress"></canvas>
+        </div>
+        <div class="stats-review">
+          <h3>Kết quả ôn tập</h3>
+          <canvas id="review-results"></canvas>
+        </div>
+      </div>
 
-        <div id="test-container" style="display: none">
-          <div class="test-header">
-            <h2>Kiểm tra từ vựng</h2>
-            <div class="test-info">
-              <span id="test-timer">00:00</span>
-              <span id="test-progress">0/0</span>
-            </div>
-          </div>
-          <div class="question-container">
-            <h3 id="test-word"></h3>
-            <p id="test-hint"></p>
-            <div id="test-options" class="test-options"></div>
+      <div id="test-container" style="display: none">
+        <div class="test-header">
+          <h2>Kiểm tra từ vựng</h2>
+          <div class="test-info">
+            <span id="test-timer">00:00</span>
+            <span id="test-progress">0/0</span>
           </div>
         </div>
+        <div class="question-container">
+          <h3 id="test-word"></h3>
+          <p id="test-hint"></p>
+          <div id="test-options" class="test-options"></div>
+        </div>
+      </div>
 
-        <div id="test-results" style="display: none">
-          <h2>Kết quả kiểm tra</h2>
-          <div class="test-score">
-            <h3>Điểm số: <span id="final-score">0</span></h3>
-            <p>Đúng: <span id="correct-count">0</span></p>
-            <p>Sai: <span id="wrong-count">0</span></p>
-            <p>Thời gian: <span id="time-taken">00:00</span></p>
-          </div>
-          <div class="test-review">
-            <h3>Chi tiết bài làm</h3>
-            <div id="answers-review"></div>
-          </div>
-          <button id="close-test">Đóng</button>
+      <div id="test-results" style="display: none">
+        <h2>Kết quả kiểm tra</h2>
+        <div class="test-score">
+          <h3>Điểm số: <span id="final-score">0</span></h3>
+          <p>Đúng: <span id="correct-count">0</span></p>
+          <p>Sai: <span id="wrong-count">0</span></p>
+          <p>Thời gian: <span id="time-taken">00:00</span></p>
         </div>
+        <div class="test-review">
+          <h3>Chi tiết bài làm</h3>
+          <div id="answers-review"></div>
+        </div>
+        <button id="close-test">Đóng</button>
       </div>
     </div>
+  </div>
 
-    <div id="custom-context-menu" class="context-menu" style="display: none">
-      <div class="menu-item" id="menu-read-text">
-        <span class="icon">🔊</span> Đọc từ vựng
-      </div>
-      <!-- Word Detail Modal -->
-      <div id="word-detail-modal" class="modal" style="display: none">
-        <div class="modal-content" style="max-width: 500px">
-          <div class="modal-header">
-            <h3
-              id="detail-japanese"
-              style="font-size: 2em; margin: 0; color: var(--primary-btn)"
-            ></h3>
-            <button
-              id="close-detail-modal"
-              class="close-detail"
-              style="
+  <div id="custom-context-menu" class="context-menu" style="display: none">
+    <div class="menu-item" id="menu-read-text">
+      <span class="icon">🔊</span> Đọc từ vựng
+    </div>
+    <!-- Word Detail Modal -->
+    <div id="word-detail-modal" class="modal" style="display: none">
+      <div class="modal-content" style="max-width: 500px">
+        <div class="modal-header">
+          <h3 id="detail-japanese" style="font-size: 2em; margin: 0; color: var(--primary-btn)"></h3>
+          <button id="close-detail-modal" class="close-detail" style="
                 font-size: 1.5em;
                 border: none;
                 background: transparent;
                 cursor: pointer;
                 color: var(--text-color);
-              "
-            >
-              &times;
-            </button>
-          </div>
-          <div
-            class="modal-body"
-            style="padding-top: 20px; font-size: 1.1em; line-height: 1.8"
-          >
-            <p><strong>Hiragana:</strong> <span id="detail-hiragana"></span></p>
-            <p><strong>Nghĩa:</strong> <span id="detail-meaning"></span></p>
-            <p>
-              <strong>Ngữ pháp (Loại từ):</strong>
-              <span id="detail-type"></span>
-            </p>
-            <p><strong>Bài học:</strong> <span id="detail-lesson"></span></p>
-          </div>
+              ">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body" style="padding-top: 20px; font-size: 1.1em; line-height: 1.8">
+          <p><strong>Hiragana:</strong> <span id="detail-hiragana"></span></p>
+          <p><strong>Nghĩa:</strong> <span id="detail-meaning"></span></p>
+          <p>
+            <strong>Ngữ pháp (Loại từ):</strong>
+            <span id="detail-type"></span>
+          </p>
+          <p><strong>Bài học:</strong> <span id="detail-lesson"></span></p>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

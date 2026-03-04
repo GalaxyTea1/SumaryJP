@@ -11,9 +11,9 @@
   --primary-btn: #3b82f6;
   --primary-btn-hover: #2563eb;
   --primary-btn-text: #ffffff;
-  --table-border: #f1f5f9;
-  --table-header-bg: #eff6ff;
-  --table-header-text: #1e293b;
+  --table-border: #e2e8f0;
+  --table-header-bg: var(--primary-btn);
+  --table-header-text: #ffffff;
   --ctx-menu-bg: #ffffff;
   --ctx-menu-hover: #f1f5f9;
   --shadow-color: rgba(15, 23, 42, 0.05);
@@ -34,8 +34,8 @@ body.dark-mode {
   --primary-btn-hover: #60a5fa;
   --primary-btn-text: #ffffff;
   --table-border: #334155;
-  --table-header-bg: #0f172a;
-  --table-header-text: #e2e8f0;
+  --table-header-bg: #1e3a8a;
+  --table-header-text: #ffffff;
   --ctx-menu-bg: #1e293b;
   --ctx-menu-hover: #334155;
   --shadow-color: rgba(0, 0, 0, 0.3);
@@ -154,7 +154,9 @@ body {
 }
 
 input[type="text"],
-select, input[type="number"] {
+input[type="password"],
+select,
+input[type="number"] {
   padding: 12px;
   border: 2px solid var(--input-border);
   border-radius: 8px;
@@ -165,6 +167,7 @@ select, input[type="number"] {
 }
 
 input[type="text"]:focus,
+input[type="password"]:focus,
 select:focus {
   border-color: #3498db;
   outline: none;
@@ -290,38 +293,116 @@ button:hover {
   color: var(--text-color);
 }
 
-.lesson-list {
+/* Sidebar level list styling */
+.level-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin: 0 10px;
-  overflow: hidden auto;
-  max-height: 800px;
+  gap: 10px;
+  padding: 10px !important;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
-.lesson-item {
+.level-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.level-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 !important;
+}
+
+body.dark-mode .level-item {
+  background-color: var(--bg-color-alt);
+}
+
+.level-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  color: var(--text-color);
-  width: 90%;
-  border-radius: 20px;
-  margin: 4px 0;
-}
-
-.lesson-name {
+  padding: 12px 15px !important;
+  background-color: rgba(255, 255, 255, 0.15);
+  /* Light translucent for a cleaner, modern feel */
+  color: var(--sidebar-text);
   font-weight: 500;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  user-select: none;
 }
 
-.lesson-count {
+.level-header:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.level-header-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 !important;
+}
+
+.level-name {
+  font-size: 1.25em;
+  font-weight: bold;
+}
+
+.level-count-total {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.level-toggle {
+  font-size: 0.8em;
+  transition: transform 0.2s;
+}
+
+/* Lesson grid layout inside Level */
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px !important;
+  background-color: var(--sidebar-bg);
+}
+
+.lesson-grid-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--sidebar-text);
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.lesson-grid-item:hover,
+.lesson-grid-item.active {
+  background-color: var(--primary-btn);
+  border-color: var(--primary-btn-hover);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.lesson-grid-name {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.lesson-grid-count {
+  font-size: 0.75em;
   background-color: #4caf50;
   color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.9em;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 4px;
 }
 
 .review-result {
@@ -972,14 +1053,15 @@ tr[data-vocab-id] {
     justify-content: space-between;
     padding: 10px 0;
   }
-  
+
   .sidebar h2 {
     padding: 0 20px;
     margin: 0;
   }
-  
+
   .level-list {
-    display: none; /* Can be toggled open if needed, keeping simple for now */
+    display: none;
+    /* Can be toggled open if needed, keeping simple for now */
   }
 
   .main-content {
@@ -989,26 +1071,26 @@ tr[data-vocab-id] {
   .vocab-form {
     grid-template-columns: 1fr;
   }
-  
+
   .vocab-table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
   }
-  
+
   .review-section {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .review-buttons {
     width: 100%;
   }
-  
+
   .review-buttons button {
     flex: 1 1 calc(50% - 15px);
   }
-  
+
   .search-container {
     width: 100% !important;
   }
@@ -1114,4 +1196,29 @@ tr[data-vocab-id] {
   justify-content: center;
   align-items: center;
   z-index: 10000;
+}
+
+/* Admin Login */
+.login-section {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-color-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.login-box {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px var(--shadow-color);
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+  border: 1px solid var(--border-color);
 }

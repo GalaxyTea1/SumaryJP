@@ -18,10 +18,10 @@ window.onload = async function () {
         document.getElementById("show-stats").addEventListener("click", () => stats.show());
         document.getElementById("show-difficult").addEventListener("click", () => review.showDifficultWords());
         document.getElementById("start-test").addEventListener("click", () => testObj.start());
-        
+
         // Init TTS context menu
         tts.initContextMenu();
-        
+
         // Init Global Search
         search.init();
 
@@ -32,7 +32,7 @@ window.onload = async function () {
             if (localStorage.getItem("theme") === "dark") {
                 document.body.classList.add("dark-mode");
             }
-            
+
             darkModeToggle.addEventListener("click", () => {
                 document.body.classList.toggle("dark-mode");
                 if (document.body.classList.contains("dark-mode")) {
@@ -67,25 +67,7 @@ window.onload = async function () {
         // Add event listeners for test
         document.getElementById("close-test").addEventListener("click", () => testObj.close());
 
-        // Add event listeners for form submit
-        document.getElementById("vocab-form").addEventListener("submit", function (e) {
-            e.preventDefault();
-            const lesson = prompt("Nhập số bài học:");
-            if (!lesson) return;
-            const vocab = {
-                japanese: document.getElementById("japanese-input").value,
-                hiragana: document.getElementById("hiragana-input").value,
-                meaning: document.getElementById("meaning-input").value,
-                type: document.getElementById("type-select").value,
-            };
-            const level = document.getElementById("level-select").value;
-            
-            state.addVocabulary(lesson, level, vocab).then(() => {
-                ui.updateLessonSidebar();
-            });
-            
-            this.reset();
-        });
+
 
         // Add event listeners for review
         document.getElementById("review-answer").addEventListener("keypress", function (e) {

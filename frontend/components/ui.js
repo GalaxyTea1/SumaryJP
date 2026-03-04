@@ -3,13 +3,15 @@ import { state } from "../state.js";
 export const ui = {
     updateLessonSidebar() {
         const sidebar = document.getElementById("lesson-sidebar");
-        const existingContent = sidebar.querySelector("h2").nextElementSibling;
-        if (existingContent) existingContent.remove();
+        const existingList = sidebar.querySelector(".level-list");
+        if (existingList) existingList.remove();
 
         const levelList = document.createElement("div");
         levelList.className = "level-list";
 
-        Object.entries(state.lessons).forEach(([level, lessons]) => {
+        const sortedLevels = Object.entries(state.lessons).sort(([levelA], [levelB]) => levelB.localeCompare(levelA));
+
+        sortedLevels.forEach(([level, lessons]) => {
             const levelItem = document.createElement("div");
             levelItem.className = "level-item";
 
@@ -17,29 +19,46 @@ export const ui = {
 
             levelItem.innerHTML = `
                 <div class="level-header">
-                    <span class="level-name">${level} -</span>
-                    <span class="level-count">${totalWords}</span>
+                    <div class="level-header-title">
+                        <span class="level-name">${level}</span>
+                        <span class="level-count-total">(${totalWords} từ)</span>
+                    </div>
+                    <span class="level-toggle">▼</span>
                 </div>
             `;
 
             const lessonContainer = document.createElement("div");
-            lessonContainer.className = "lesson-container";
+            lessonContainer.className = "lesson-grid";
             lessonContainer.style.display = "none";
 
-            Object.keys(lessons).forEach((lesson) => {
+            Object.keys(lessons).sort((a, b) => Number(a) - Number(b)).forEach((lesson) => {
                 const lessonItem = document.createElement("div");
-                lessonItem.className = "lesson-item";
+                lessonItem.className = "lesson-grid-item";
                 lessonItem.innerHTML = `
-                    <span class="lesson-name">Bài ${lesson}</span>
-                    <span class="lesson-count">${lessons[lesson].length}</span>
+                    <span class="lesson-grid-name">${lesson}</span>
+                    <span class="lesson-grid-count">${lessons[lesson].length}</span>
                 `;
-                lessonItem.addEventListener("click", () => this.displayVocabulary(lesson, level));
+                lessonItem.title = `Bài ${lesson}`; // Tooltip that says "Bài X"
+                lessonItem.addEventListener("click", () => {
+                    this.displayVocabulary(lesson, level);
+                    document.querySelectorAll('.lesson-grid-item').forEach(el => el.classList.remove('active'));
+                    lessonItem.classList.add('active');
+                });
                 lessonContainer.appendChild(lessonItem);
             });
 
-            levelItem.querySelector(".level-header").addEventListener("click", () => {
+            const header = levelItem.querySelector(".level-header");
+            header.addEventListener("click", () => {
+                document.querySelectorAll('.lesson-grid').forEach(container => {
+                    if (container !== lessonContainer) {
+                        container.style.display = "none";
+                        container.previousElementSibling.querySelector('.level-toggle').textContent = "▼";
+                    }
+                });
+
                 const isHidden = lessonContainer.style.display === "none";
-                lessonContainer.style.display = isHidden ? "block" : "none";
+                lessonContainer.style.display = isHidden ? "grid" : "none";
+                header.querySelector(".level-toggle").textContent = isHidden ? "▲" : "▼";
             });
 
             levelItem.appendChild(lessonContainer);
@@ -56,11 +75,23 @@ export const ui = {
             const vocabularies = state.getVocabularyByLesson(level, lesson);
             const tbody = document.getElementById("vocab-list");
             tbody.innerHTML = "";
-            
+
             vocabularies.forEach((vocab) => {
+                const isAdmin = document.body.dataset.isAdmin === "true";
                 const row = document.createElement("tr");
                 row.setAttribute("data-vocab-id", vocab.id);
                 row.className = `status-${vocab.status}`;
+
+                let actionColumn = "";
+                if (isAdmin) {
+                    actionColumn = `
+                      <td>
+                          <button class="edit-btn">Sửa</button>
+                          <button class="delete-btn">Xóa</button>
+                      </td>
+                    `;
+                }
+
                 row.innerHTML = `
                       <td>${vocab.japanese}</td>
                       <td class="hiragana-text">${vocab.hiragana}</td>
@@ -76,17 +107,14 @@ export const ui = {
                       <td>
                           <button class="difficulty-btn ${vocab.is_difficult ? "difficult" : ""}">${vocab.is_difficult ? "★" : "☆"}</button>
                       </td>
-                      <td>
-                          <button class="edit-btn">Sửa</button>
-                          <button class="delete-btn">Xóa</button>
-                      </td>
+                      ${actionColumn}
                   `;
-                  
+
                 row.querySelector(".status-select").addEventListener("change", async (e) => {
                     await state.updateVocabularyStatus(vocab.id, e.target.value);
                     row.className = `status-${e.target.value}`;
                 });
-                
+
                 row.querySelector(".difficulty-btn").addEventListener("click", async () => {
                     const isDifficult = await state.toggleDifficulty(vocab.id);
                     if (isDifficult !== null) {
@@ -95,19 +123,21 @@ export const ui = {
                         starButton.classList.toggle("difficult", isDifficult);
                     }
                 });
-                
-                row.querySelector(".edit-btn").addEventListener("click", () => this.editVocabulary(vocab.id));
-                
-                row.querySelector(".delete-btn").addEventListener("click", async () => {
-                    if (confirm("Bạn có chắc muốn xóa từ này?")) {
-                        const info = await state.removeVocabulary(vocab.id);
-                        if (info) {
-                            this.displayVocabulary(info.lesson, info.level);
-                            this.updateLessonSidebar();
+
+                if (isAdmin) {
+                    row.querySelector(".edit-btn").addEventListener("click", () => this.editVocabulary(vocab.id));
+
+                    row.querySelector(".delete-btn").addEventListener("click", async () => {
+                        if (confirm("Bạn có chắc muốn xóa từ này?")) {
+                            const info = await state.removeVocabulary(vocab.id);
+                            if (info) {
+                                this.displayVocabulary(info.lesson, info.level);
+                                this.updateLessonSidebar();
+                            }
                         }
-                    }
-                });
-                
+                    });
+                }
+
                 tbody.appendChild(row);
             });
         } catch (error) {

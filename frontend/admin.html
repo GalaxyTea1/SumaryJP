@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin - Quản lý Học Tiếng Nhật</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="admin.js"></script>
+</head>
+
+<body data-is-admin="true">
+    <div id="login-section" class="login-section">
+        <div class="login-box">
+            <h2 style="margin-bottom: 20px; color: var(--text-color);">Đăng nhập</h2>
+            <input type="text" id="admin-username" placeholder="Tên đăng nhập"
+                style="width: 100%; margin-bottom: 15px;" />
+            <input type="password" id="admin-password" placeholder="Mật khẩu"
+                style="width: 100%; margin-bottom: 20px;" />
+            <button id="admin-login-btn" style="width: 100%;">Đăng nhập</button>
+            <p id="login-error" style="color: #f44336; margin-top: 15px; display: none;">Sai tên đăng nhập hoặc mật khẩu
+            </p>
+        </div>
+    </div>
+
+    <div id="admin-content" style="display: none;">
+        <div class="sidebar" id="lesson-sidebar">
+            <h2>Quản lý Bài Học</h2>
+            <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
+            <button id="admin-logout-btn" style="margin: 10px 20px; background-color: #f44336;">Đăng xuất</button>
+        </div>
+
+        <div class="main-content">
+            <div class="vocabulary-section">
+                <h2 style="margin-bottom: 20px;">Thêm từ vựng mới</h2>
+                <form id="vocab-form" class="vocab-form">
+                    <select id="level-select">
+                        <option value="N5">N5</option>
+                        <option value="N4">N4</option>
+                    </select>
+                    <input type="text" id="japanese-input" placeholder="Từ tiếng Nhật" required />
+                    <input type="text" id="hiragana-input" placeholder="Hiragana" required />
+                    <input type="text" id="meaning-input" placeholder="Nghĩa tiếng Việt" required />
+                    <select id="type-select">
+                        <option value="Danh từ">Danh từ</option>
+                        <option value="Động từ">Động từ</option>
+                        <option value="Tính từ">Tính từ</option>
+                    </select>
+                    <button type="submit">Thêm Từ</button>
+                </form>
+
+                <h2 id="current-lesson-title" style="margin: 30px 0 20px 0;">Chọn bài học ở sidebar</h2>
+                <table class="vocab-table" id="vocab-table">
+                    <thead>
+                        <tr>
+                            <th>Từ</th>
+                            <th>Hiragana</th>
+                            <th>Nghĩa</th>
+                            <th>Loại</th>
+                            <th>Trạng Thái</th>
+                            <th>Độ khó</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocab-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal components from index.html if necessary -->
+</body>
+
+</html>
