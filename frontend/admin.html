@@ -30,34 +30,91 @@
         </div>
 
         <div class="main-content">
-            <div class="vocabulary-section">
-                <h2 style="margin-bottom: 20px;">Thêm từ vựng mới</h2>
-                <form id="vocab-form" class="vocab-form">
+            <div class="stats-grid" id="admin-dashboard">
+                <div class="stat-card">
+                    <h3 style="margin: 0 0 10px 0;">Tổng số từ</h3>
+                    <p id="dash-total" style="font-size: 2em; font-weight: bold; margin: 0; color: #3b82f6;">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="margin: 0 0 10px 0;">Số Bài học</h3>
+                    <p id="dash-lessons" style="font-size: 2em; font-weight: bold; margin: 0; color: #4caf50;">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="margin: 0 0 10px 0;">Từ vựng N5</h3>
+                    <p id="dash-n5" style="font-size: 2em; font-weight: bold; margin: 0; color: #f59e0b;">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="margin: 0 0 10px 0;">Từ vựng N4</h3>
+                    <p id="dash-n4" style="font-size: 2em; font-weight: bold; margin: 0; color: #8b5cf6;">0</p>
+                </div>
+            </div>
+
+            <div class="vocabulary-section" style="margin-bottom: 30px;">
+                <h2 style="margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+                    Thêm từ vựng</h2>
+                <form id="vocab-form"
+                    style="display: grid; grid-template-columns: 80px 100px 2fr 1.5fr 2fr 120px 120px; gap: 10px; align-items: center; margin-bottom: 0;">
                     <select id="level-select">
                         <option value="N5">N5</option>
                         <option value="N4">N4</option>
                     </select>
-                    <input type="text" id="japanese-input" placeholder="Từ tiếng Nhật" required />
-                    <input type="text" id="hiragana-input" placeholder="Hiragana" required />
-                    <input type="text" id="meaning-input" placeholder="Nghĩa tiếng Việt" required />
-                    <select id="type-select">
+                    <input type="number" id="lesson-input" placeholder="Bài học" min="1" required
+                        style="width: 100%; box-sizing: border-box;" />
+                    <input type="text" id="japanese-input" placeholder="Từ tiếng Nhật" required
+                        style="width: 100%; box-sizing: border-box;" />
+                    <input type="text" id="hiragana-input" placeholder="Hiragana" required
+                        style="width: 100%; box-sizing: border-box;" />
+                    <input type="text" id="meaning-input" placeholder="Nghĩa TV" required
+                        style="width: 100%; box-sizing: border-box;" />
+                    <select id="type-select" style="width: 100%; box-sizing: border-box;">
                         <option value="Danh từ">Danh từ</option>
                         <option value="Động từ">Động từ</option>
                         <option value="Tính từ">Tính từ</option>
                     </select>
-                    <button type="submit">Thêm Từ</button>
+                    <button type="submit" style="width: 100%; box-sizing: border-box; padding: 12px 10px;">Thêm
+                        Từ</button>
                 </form>
 
-                <h2 id="current-lesson-title" style="margin: 30px 0 20px 0;">Chọn bài học ở sidebar</h2>
+                <div
+                    style="margin-top: 25px; border-top: 1px dashed var(--border-color); padding-top: 25px; display: flex; gap: 20px; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <h3 style="margin-bottom: 10px;">Nhập nhiều từ (Import CSV)</h3>
+                        <p style="font-size: 0.9em; opacity: 0.8;">Kanji, Hiragana, Nghĩa tiếng Việt, Loại từ.<br>Nhập
+                            nhiều từ sẽ lưu vào <b>Cấp độ / Bài học</b> ở trên.</p>
+                    </div>
+                    <div style="flex: 2; display: flex; gap: 10px; align-items: stretch;">
+                        <textarea id="csv-input" rows="3" placeholder="猫,ねこ,Con mèo,Danh từ&#10;食べる,たべる,Ăn,Động từ"
+                            style="flex-grow: 1; border-radius: 8px; padding: 10px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text-color); font-family: monospace; resize: vertical; box-sizing: border-box;"></textarea>
+                        <button id="import-csv-btn" style="background-color: #4caf50; white-space: nowrap;">Thêm
+                            CSV</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vocabulary-section">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;">
+                    <h2 id="current-lesson-title" style="margin: 0;">Chọn bài học ở sidebar</h2>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="admin-search-input" placeholder="Tìm kiếm từ..."
+                            style="padding: 10px; border-radius: 8px; width: 250px;">
+                        <button id="bulk-delete-btn"
+                            style="background-color: #f44336; padding: 10px 15px; display: none;">Xóa (<span
+                                id="selected-count">0</span>)</button>
+                        <span
+                            style="font-size: 0.9em; padding: 8px 15px; background: var(--primary-btn); color: white; border-radius: 20px;">Danh
+                            sách từ</span>
+                    </div>
+                </div>
                 <table class="vocab-table" id="vocab-table">
                     <thead>
                         <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all-cb"
+                                    style="transform: scale(1.2); cursor: pointer;"></th>
                             <th>Từ</th>
                             <th>Hiragana</th>
                             <th>Nghĩa</th>
                             <th>Loại</th>
-                            <th>Trạng Thái</th>
-                            <th>Độ khó</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>

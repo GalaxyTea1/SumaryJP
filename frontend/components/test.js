@@ -12,6 +12,17 @@ export const testObj = {
     start() {
         if (document.querySelector(".test-config-modal-test")) return;
 
+        // Auto-generate level options from state.lessons
+        const levels = Object.keys(state.lessons || {});
+        const levelOptions = levels.map(l => `<option value="${l}">${l}</option>`).join("");
+
+        // Populate specific lessons to form a master list of lessons
+        let allLessons = new Set();
+        Object.values(state.lessons || {}).forEach(lessonsObj => {
+            Object.keys(lessonsObj).forEach(lesson => allLessons.add(lesson));
+        });
+        const lessonItems = Array.from(allLessons).sort((a, b) => a - b).map(l => `<li data-value="${l}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Bài ${l}</li>`).join("");
+
         const modal = document.createElement("div");
         modal.className = "test-config-modal test-config-modal-test";
         modal.innerHTML = `
@@ -19,8 +30,28 @@ export const testObj = {
                 <h3>Cấu hình bài kiểm tra</h3>
                 <div class="test-config">
                     <label>
+                        Mức độ:
+                        <select id="test-level">
+                            <option value="all">Tất cả</option>
+                            ${levelOptions}
+                        </select>
+                    </label>
+                    <label style="position: relative; overflow: visible;">
+                        Bài học:
+                        <div style="position: relative;">
+                            <input type="hidden" id="test-lesson" value="all">
+                            <input type="text" id="test-lesson-display" value="Tất cả bài học" readonly 
+                                style="cursor: pointer; width: 120px; text-align: left; padding-right: 25px; user-select: none;">
+                            <span style="position: absolute; right: 10px; top: 12px; pointer-events: none; opacity: 0.5;">▼</span>
+                            <ul id="test-lesson-list" class="search-dropdown" style="display: none; width: 100%; max-height: 180px; box-sizing: border-box; text-align: left; top: 100%; margin-top: 5px;">
+                                <li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả bài học</li>
+                                ${lessonItems}
+                            </ul>
+                        </div>
+                    </label>
+                    <label>
                         Số lượng từ:
-                        <input type="number" id="word-count" min="5" max="50" value="10">
+                        <input type="number" id="word-count" min="5" max="100" value="10">
                     </label>
                     <label>
                         Thời gian (phút):
@@ -35,11 +66,35 @@ export const testObj = {
         `;
         document.body.appendChild(modal);
 
-        modal.querySelector("#start-test-btn").addEventListener("click", () => this.initialize());
-        modal.querySelector("#cancel-test-btn").addEventListener("click", () => this.closeConfig());
+        // Custom Dropdown Logic
+        const displayInput = modal.querySelector("#test-lesson-display");
+        const realInput = modal.querySelector("#test-lesson");
+        const listMenu = modal.querySelector("#test-lesson-list");
+
+        displayInput.addEventListener("click", (e) => {
+            e.stopPropagation();
+            listMenu.style.display = listMenu.style.display === "none" ? "block" : "none";
+        });
+
+        listMenu.querySelectorAll("li").forEach(item => {
+            item.addEventListener("click", () => {
+                realInput.value = item.getAttribute("data-value");
+                displayInput.value = item.textContent;
+                listMenu.style.display = "none";
+            });
+            item.addEventListener("mouseover", () => item.style.backgroundColor = "var(--ctx-menu-hover)");
+            item.addEventListener("mouseout", () => item.style.backgroundColor = "transparent");
+        });
+
         modal.addEventListener("click", (e) => {
             if (e.target === modal) this.closeConfig();
+            else if (!listMenu.contains(e.target) && e.target !== displayInput) {
+                listMenu.style.display = "none";
+            }
         });
+
+        modal.querySelector("#start-test-btn").addEventListener("click", () => this.initialize());
+        modal.querySelector("#cancel-test-btn").addEventListener("click", () => this.closeConfig());
     },
 
     closeConfig() {
@@ -50,20 +105,33 @@ export const testObj = {
     initialize() {
         const wordCount = parseInt(document.getElementById("word-count").value);
         const testTime = parseInt(document.getElementById("test-time").value);
+        const selectedLevel = document.getElementById("test-level").value;
+        const selectedLesson = document.getElementById("test-lesson").value;
+
         if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
             alert("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)");
             return;
         }
+
         let allWords = [];
         Object.entries(state.lessons).forEach(([level, lessons]) => {
+            if (selectedLevel !== "all" && level !== selectedLevel) return;
             Object.entries(lessons).forEach(([lesson, words]) => {
+                if (selectedLesson !== "all" && lesson !== selectedLesson) return;
                 allWords = allWords.concat(words.map((word) => ({ ...word, level, lesson })));
             });
         });
-        if (allWords.length < wordCount) {
-            alert(`Bạn chỉ có ${allWords.length} từ. Vui lòng chọn số lượng từ ít hơn.`);
+
+        if (allWords.length === 0) {
+            alert("Không tìm thấy từ vựng nào phù hợp với bộ lọc Mức độ / Bài học này!");
             return;
         }
+
+        if (allWords.length < wordCount) {
+            alert(`Khóa học này hiện chỉ có ${allWords.length} từ. Vui lòng chọn số lượng câu hỏi ít hơn.`);
+            return;
+        }
+
         utils.shuffleArray(allWords);
         this.testWords = allWords.slice(0, wordCount);
         this.currentTestIndex = 0;
