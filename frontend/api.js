@@ -1,5 +1,7 @@
-// frontend/api.js
-const API_URL = 'http://localhost:3000/api/vocab';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocalhost
+    ? 'http://localhost:3000/api/vocab'
+    : 'https://jp-backend-api.onrender.com/api/vocab';
 
 const apiManager = {
     async getAllVocabulary() {
