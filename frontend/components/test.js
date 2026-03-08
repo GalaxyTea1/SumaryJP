@@ -8,13 +8,14 @@ export const testObj = {
     testStartTime: null,
     testTimeLimit: 0,
     testTimer: null,
+    showHiragana: true,
 
     start() {
         if (document.querySelector(".test-config-modal-test")) return;
 
         // Auto-generate level options from state.lessons
         const levels = Object.keys(state.lessons || {});
-        const levelOptions = levels.map(l => `<option value="${l}">${l}</option>`).join("");
+        const levelItems = levels.map(l => `<li data-value="${l}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">${l}</li>`).join("");
 
         // Populate specific lessons to form a master list of lessons
         let allLessons = new Set();
@@ -29,12 +30,18 @@ export const testObj = {
             <div class="modal-content">
                 <h3>Cấu hình bài kiểm tra</h3>
                 <div class="test-config">
-                    <label>
+                    <label style="position: relative; overflow: visible;">
                         Mức độ:
-                        <select id="test-level">
-                            <option value="all">Tất cả</option>
-                            ${levelOptions}
-                        </select>
+                        <div style="position: relative;">
+                            <input type="hidden" id="test-level" value="all">
+                            <input type="text" id="test-level-display" value="Tất cả mức độ" readonly 
+                                style="cursor: pointer; width: 120px; text-align: left; padding-right: 25px; user-select: none;">
+                            <span style="position: absolute; right: 10px; top: 6px; pointer-events: none; opacity: 0.5;">▼</span>
+                            <ul id="test-level-list" class="search-dropdown" style="display: none; width: 100%; max-height: 180px; box-sizing: border-box; text-align: left; top: 100%; margin-top: 5px; z-index: 10;">
+                                <li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả mức độ</li>
+                                ${levelItems}
+                            </ul>
+                        </div>
                     </label>
                     <label style="position: relative; overflow: visible;">
                         Bài học:
@@ -42,8 +49,8 @@ export const testObj = {
                             <input type="hidden" id="test-lesson" value="all">
                             <input type="text" id="test-lesson-display" value="Tất cả bài học" readonly 
                                 style="cursor: pointer; width: 120px; text-align: left; padding-right: 25px; user-select: none;">
-                            <span style="position: absolute; right: 10px; top: 12px; pointer-events: none; opacity: 0.5;">▼</span>
-                            <ul id="test-lesson-list" class="search-dropdown" style="display: none; width: 100%; max-height: 180px; box-sizing: border-box; text-align: left; top: 100%; margin-top: 5px;">
+                            <span style="position: absolute; right: 10px; top: 6px; pointer-events: none; opacity: 0.5;">▼</span>
+                            <ul id="test-lesson-list" class="search-dropdown" style="display: none; width: 100%; max-height: 180px; box-sizing: border-box; text-align: left; top: 100%; margin-top: 5px; z-index: 10;">
                                 <li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả bài học</li>
                                 ${lessonItems}
                             </ul>
@@ -57,6 +64,10 @@ export const testObj = {
                         Thời gian (phút):
                         <input type="number" id="test-time" min="1" max="30" value="5">
                     </label>
+                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: 500; margin-top: 10px;">
+                        <input type="checkbox" id="test-show-hiragana" checked style="margin-right: 8px; width: 18px; height: 18px;">
+                        Hiển thị Hiragana
+                    </label>
                 </div>
                 <div class="modal-buttons">
                     <button id="start-test-btn">Bắt đầu</button>
@@ -67,29 +78,72 @@ export const testObj = {
         document.body.appendChild(modal);
 
         // Custom Dropdown Logic
-        const displayInput = modal.querySelector("#test-lesson-display");
-        const realInput = modal.querySelector("#test-lesson");
-        const listMenu = modal.querySelector("#test-lesson-list");
+        const setupDropdown = (displayId, realId, listId, onChange) => {
+            const displayInput = modal.querySelector(displayId);
+            const realInput = modal.querySelector(realId);
+            const listMenu = modal.querySelector(listId);
 
-        displayInput.addEventListener("click", (e) => {
-            e.stopPropagation();
-            listMenu.style.display = listMenu.style.display === "none" ? "block" : "none";
-        });
-
-        listMenu.querySelectorAll("li").forEach(item => {
-            item.addEventListener("click", () => {
-                realInput.value = item.getAttribute("data-value");
-                displayInput.value = item.textContent;
-                listMenu.style.display = "none";
+            displayInput.addEventListener("click", (e) => {
+                e.stopPropagation();
+                // Close other dropdowns
+                modal.querySelectorAll(".search-dropdown").forEach(dropdown => {
+                    if (dropdown !== listMenu) dropdown.style.display = "none";
+                });
+                listMenu.style.display = listMenu.style.display === "none" ? "block" : "none";
             });
-            item.addEventListener("mouseover", () => item.style.backgroundColor = "var(--ctx-menu-hover)");
-            item.addEventListener("mouseout", () => item.style.backgroundColor = "transparent");
+
+            const bindListItems = () => {
+                listMenu.querySelectorAll("li").forEach(item => {
+                    item.addEventListener("click", () => {
+                        const val = item.getAttribute("data-value");
+                        realInput.value = val;
+                        displayInput.value = item.textContent;
+                        listMenu.style.display = "none";
+                        if (onChange) onChange(val);
+                    });
+                    item.addEventListener("mouseover", () => item.style.backgroundColor = "var(--ctx-menu-hover)");
+                    item.addEventListener("mouseout", () => item.style.backgroundColor = "transparent");
+                });
+            };
+
+            bindListItems();
+
+            return { displayInput, realInput, listMenu, bindListItems };
+        };
+
+        const updateLessonList = (level) => {
+            let filteredLessons = new Set();
+            if (level === "all") {
+                Object.values(state.lessons || {}).forEach(lessonsObj => {
+                    Object.keys(lessonsObj).forEach(lesson => filteredLessons.add(lesson));
+                });
+            } else {
+                Object.keys(state.lessons[level] || {}).forEach(lesson => filteredLessons.add(lesson));
+            }
+            const items = Array.from(filteredLessons).sort((a, b) => a - b).map(l => `<li data-value="${l}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Bài ${l}</li>`).join("");
+            const lessonListMenu = modal.querySelector("#test-lesson-list");
+            lessonListMenu.innerHTML = `<li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả bài học</li>` + items;
+
+            modal.querySelector("#test-lesson").value = "all";
+            modal.querySelector("#test-lesson-display").value = "Tất cả bài học";
+        };
+
+        const levelDropdown = setupDropdown("#test-level-display", "#test-level", "#test-level-list", (val) => {
+            updateLessonList(val);
+            lessonDropdown.bindListItems();
         });
+
+        const lessonDropdown = setupDropdown("#test-lesson-display", "#test-lesson", "#test-lesson-list");
 
         modal.addEventListener("click", (e) => {
             if (e.target === modal) this.closeConfig();
-            else if (!listMenu.contains(e.target) && e.target !== displayInput) {
-                listMenu.style.display = "none";
+            else {
+                if (!levelDropdown.listMenu.contains(e.target) && e.target !== levelDropdown.displayInput) {
+                    levelDropdown.listMenu.style.display = "none";
+                }
+                if (!lessonDropdown.listMenu.contains(e.target) && e.target !== lessonDropdown.displayInput) {
+                    lessonDropdown.listMenu.style.display = "none";
+                }
             }
         });
 
@@ -107,11 +161,14 @@ export const testObj = {
         const testTime = parseInt(document.getElementById("test-time").value);
         const selectedLevel = document.getElementById("test-level").value;
         const selectedLesson = document.getElementById("test-lesson").value;
+        const showHiraganaCheckbox = document.getElementById("test-show-hiragana");
 
         if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
             alert("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)");
             return;
         }
+
+        this.showHiragana = showHiraganaCheckbox ? showHiraganaCheckbox.checked : true;
 
         let allWords = [];
         Object.entries(state.lessons).forEach(([level, lessons]) => {
@@ -147,7 +204,7 @@ export const testObj = {
     showQuestion() {
         const currentWord = this.testWords[this.currentTestIndex];
         document.getElementById("test-word").textContent = currentWord.japanese;
-        document.getElementById("test-hint").textContent = `Hiragana: ${currentWord.hiragana}`;
+        document.getElementById("test-hint").textContent = this.showHiragana ? `Hiragana: ${currentWord.hiragana}` : "";
         document.getElementById("test-progress").textContent = `${this.currentTestIndex + 1}/${this.testWords.length}`;
 
         const optionsContainer = document.getElementById("test-options");
