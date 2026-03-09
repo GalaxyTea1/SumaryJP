@@ -3,42 +3,52 @@ const API_URL = isLocalhost
     ? 'http://localhost:3000/api/vocab'
     : 'https://jp-backend-api.onrender.com/api/vocab';
 
+const request = async (url, options = {}) => {
+    const overlay = document.getElementById('api-loading-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    try {
+        const response = await fetch(url, options);
+        if (options.method === 'DELETE') return;
+        return await response.json();
+    } catch (error) {
+        console.error("API Error:", error);
+        throw error;
+    } finally {
+        if (overlay) overlay.style.display = 'none';
+    }
+};
+
 const apiManager = {
     async getAllVocabulary() {
-        const response = await fetch(API_URL);
-        return response.json();
+        return request(API_URL);
     },
 
     async getVocabularyByLesson(level, lesson) {
-        const response = await fetch(`${API_URL}/${level}/${lesson}`);
-        return response.json();
+        return request(`${API_URL}/${level}/${lesson}`);
     },
 
     async getVocabularyById(id) {
-        const response = await fetch(`${API_URL}/${id}`);
-        return response.json();
+        return request(`${API_URL}/${id}`);
     },
 
     async saveVocabulary(vocab) {
-        const response = await fetch(API_URL, {
+        return request(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(vocab),
         });
-        return response.json();
     },
 
     async updateVocabulary(vocab) {
-        const response = await fetch(`${API_URL}/${vocab.id}`, {
+        return request(`${API_URL}/${vocab.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(vocab),
         });
-        return response.json();
     },
 
     async deleteVocabulary(id) {
-        await fetch(`${API_URL}/${id}`, {
+        return request(`${API_URL}/${id}`, {
             method: 'DELETE',
         });
     },
