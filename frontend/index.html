@@ -13,6 +13,7 @@
 
   <script type="module" src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <script id="tailwind-config">
     tailwind.config = {
@@ -121,11 +122,17 @@
       <div
         class="sticky top-0 z-40 bg-off-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-4 md:px-6 md:py-6 relative transition-colors duration-300">
         <div class="relative max-w-2xl mx-auto search-container">
-          <span
-            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
           <input id="global-search-input"
-            class="w-full h-14 pl-12 pr-6 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+            class="w-full h-14 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
             placeholder="Tìm kiếm từ vựng (Kanji, Kana, Tiếng Việt...)" type="text" autocomplete="off" />
+          
+          <button id="ocr-upload-btn" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 z-10" title="Tải ảnh lên để quét chữ">
+            <span id="ocr-icon" class="material-symbols-outlined">image</span>
+            <div id="ocr-spinner" class="hidden w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          </button>
+          <input type="file" id="ocr-file-input" class="hidden" accept="image/*" />
+
           <ul id="search-results-dropdown"
             class="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-slate-100 hidden z-50 max-h-60 overflow-y-auto">
           </ul>

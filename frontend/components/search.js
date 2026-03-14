@@ -5,8 +5,66 @@ export const search = {
     init() {
         const searchInput = document.getElementById("global-search-input");
         const resultsDropdown = document.getElementById("search-results-dropdown");
+        const ocrUploadBtn = document.getElementById("ocr-upload-btn");
+        const ocrFileInput = document.getElementById("ocr-file-input");
+        const ocrIcon = document.getElementById("ocr-icon");
+        const ocrSpinner = document.getElementById("ocr-spinner");
 
         if (!searchInput || !resultsDropdown) return;
+
+        if (ocrUploadBtn && ocrFileInput) {
+            ocrUploadBtn.addEventListener("click", () => {
+                ocrFileInput.click();
+            });
+
+            ocrFileInput.addEventListener("change", async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // Show loading state
+                ocrIcon.classList.add("hidden");
+                ocrSpinner.classList.remove("hidden");
+                searchInput.placeholder = "Đang phân tích hình ảnh...";
+                searchInput.disabled = true;
+
+                try {
+                    // Create object url for the image
+                    const imageUrl = URL.createObjectURL(file);
+                    
+                    // Run Tesseract
+                    const result = await Tesseract.recognize(
+                        imageUrl,
+                        'jpn+eng', // Japanese and English language
+                        { logger: m => console.log("OCR Progress:", m) }
+                    );
+
+                    // Clean up text (remove new lines, keeping it readable)
+                    let extText = result.data.text.replace(/[\r\n]+/g, ' ').trim();
+
+                    // Put into search logic
+                    searchInput.value = extText;
+                    
+                    // Trigger input event to search immediately
+                    const inputEvent = new Event('input', { bubbles: true });
+                    searchInput.dispatchEvent(inputEvent);
+
+                    // Revoke object url
+                    URL.revokeObjectURL(imageUrl);
+
+                } catch (error) {
+                    console.error("OCR Error:", error);
+                    alert("Có lỗi xảy ra khi quét ảnh. Vui lòng thử lại.");
+                } finally {
+                    // Restore state
+                    ocrIcon.classList.remove("hidden");
+                    ocrSpinner.classList.add("hidden");
+                    searchInput.placeholder = "Tìm kiếm từ vựng (Kanji, Kana, Tiếng Việt...)";
+                    searchInput.disabled = false;
+                    searchInput.focus();
+                    ocrFileInput.value = ""; // Reset file input
+                }
+            });
+        }
 
         searchInput.addEventListener("input", (e) => {
             const query = e.target.value.toLowerCase().trim();
