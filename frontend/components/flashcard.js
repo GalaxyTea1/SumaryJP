@@ -1,139 +1,140 @@
 import { state } from "../state.js";
-import { utils } from "./utils.js";
+import { tts } from "./tts.js";
 
-export const flashcard = {
-    currentFlashcardIndex: 0,
-    flashcardDeck: [],
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Parse URL to get lesson and level
+    const urlParams = new URLSearchParams(window.location.search);
+    const lesson = urlParams.get('lesson');
+    const level = urlParams.get('level');
 
-    start() {
-        if (document.querySelector(".flashcard-config-modal")) return;
+    const emptyState = document.getElementById("empty-state");
+    const container = document.getElementById("flashcard-container");
+    const controls = document.getElementById("flashcard-controls");
+    const progressEl = document.getElementById("card-progress");
+    const headerTitle = document.getElementById("header-lesson-title");
 
-        const levelOptions = [`<option value="all">Tất cả</option>`];
-        Object.keys(state.lessons).forEach(level => {
-            levelOptions.push(`<option value="${level}">${level}</option>`);
-        });
+    if (!lesson || !level) {
+        showEmptyState("Vui lòng chọn bài học từ trang chủ trước.");
+        return;
+    }
 
-        const modal = document.createElement("div");
-        modal.className = "test-config-modal flashcard-config-modal";
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3>Cấu hình Flashcard</h3>
-                <div class="test-config">
-                    <label>
-                        Trình độ:
-                        <select id="fc-level-select" style="width: 100px; padding: 5px;">
-                            ${levelOptions.join('')}
-                        </select>
-                    </label>
-                    <label>
-                        Bài học:
-                        <select id="fc-lesson-select" style="width: 100px; padding: 5px;">
-                            <option value="all">Tất cả</option>
-                        </select>
-                    </label>
-                </div>
-                <div class="modal-buttons">
-                    <button id="start-fc-btn">Bắt đầu</button>
-                    <button id="cancel-fc-btn">Hủy</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
+    headerTitle.textContent = `Bài ${lesson} - ${level}`;
 
-        const levelSelect = modal.querySelector("#fc-level-select");
-        const lessonSelect = modal.querySelector("#fc-lesson-select");
+    // 2. Load data
+    try {
+        await state.loadFromServer();
+    } catch (e) {
+        showEmptyState("Lỗi kết nối máy chủ dữ liệu.");
+        return;
+    }
 
-        levelSelect.addEventListener("change", () => {
-            const level = levelSelect.value;
-            lessonSelect.innerHTML = `<option value="all">Tất cả</option>`;
-            if (level !== "all" && state.lessons[level]) {
-                Object.keys(state.lessons[level]).forEach(lesson => {
-                    const opt = document.createElement("option");
-                    opt.value = lesson;
-                    opt.textContent = `Bài ${lesson}`;
-                    lessonSelect.appendChild(opt);
-                });
-            }
-        });
+    // 3. Setup Flashcards Array
+    const rawVocabularies = state.getVocabularyByLesson(level, lesson);
+    if (!rawVocabularies || rawVocabularies.length === 0) {
+        showEmptyState(`Bài học ${lesson} (${level}) hiện chưa có từ vựng nào.`);
+        return;
+    }
 
-        modal.querySelector("#start-fc-btn").addEventListener("click", () => {
-            const selectedLevel = levelSelect.value;
-            const selectedLesson = lessonSelect.value;
-            this.initFlashcards(selectedLevel, selectedLesson);
-        });
+    // Shuffle array for randomness
+    let flashcards = [...rawVocabularies].sort(() => Math.random() - 0.5);
+    let currentIndex = 0;
+    let isFlipped = false;
 
-        modal.querySelector("#cancel-fc-btn").addEventListener("click", () => modal.remove());
-        modal.addEventListener("click", (e) => {
-            if (e.target === modal) modal.remove();
-        });
-    },
+    // DOM Elements
+    const innerCard = document.getElementById("flashcard-inner");
+    const elJapanese = document.getElementById("flashcard-japanese");
+    const elHiragana = document.getElementById("flashcard-hiragana");
+    const elMeaning = document.getElementById("flashcard-meaning");
+    const elType = document.getElementById("flashcard-type");
 
-    initFlashcards(selectedLevel, selectedLesson) {
-        const modal = document.querySelector(".flashcard-config-modal");
-        if (modal) modal.remove();
-        document.getElementById("review-container").style.display = "none";
-        document.getElementById("vocab-form").style.display = "none";
-        document.getElementById("vocab-table").style.display = "none";
-        document.getElementById("flashcard-container").style.display = "flex";
-        this.prepareFlashcards(selectedLevel, selectedLesson);
-    },
+    function showEmptyState(msg) {
+        emptyState.classList.remove("hidden");
+        container.classList.add("hidden");
+        controls.classList.add("hidden");
+        if (msg) emptyState.querySelector('p').textContent = msg;
+    }
 
-    prepareFlashcards(selectedLevel = "all", selectedLesson = "all") {
-        this.flashcardDeck = [];
-        this.currentFlashcardIndex = 0;
-        Object.entries(state.lessons).forEach(([level, lessons]) => {
-            if (selectedLevel !== "all" && level !== selectedLevel) return;
-            Object.entries(lessons).forEach(([lesson, vocabularies]) => {
-                if (selectedLesson !== "all" && lesson !== selectedLesson) return;
-                this.flashcardDeck.push(...vocabularies);
-            });
-        });
+    function initUI() {
+        emptyState.classList.add("hidden");
+        emptyState.classList.add("hidden");
+        container.classList.remove("hidden");
+        controls.classList.remove("hidden");
+        renderCard();
+        tts.initContextMenu();
+    }
 
-        if (this.flashcardDeck.length === 0) {
-            alert("Không có từ vựng nào trong bài tập này!");
-            this.exit();
-            return;
-        }
+    function renderCard() {
+        if (flashcards.length === 0) return;
 
-        utils.shuffleArray(this.flashcardDeck);
-        this.showCurrentCard();
-    },
+        isFlipped = false;
+        innerCard.classList.remove("rotate-y-180");
 
-    showCurrentCard() {
-        const card = this.flashcardDeck[this.currentFlashcardIndex];
-        if (card) {
-            document.getElementById("flashcard-japanese").textContent = card.japanese;
-            document.getElementById("flashcard-hiragana").textContent = card.hiragana;
-            document.getElementById("flashcard-hiragana").className = "hiragana-text";
-            document.getElementById("flashcard-meaning").textContent = card.meaning;
-            document.getElementById("flashcard-type").textContent = card.type;
-            document.getElementById("card-progress").textContent = `${this.currentFlashcardIndex + 1}/${this.flashcardDeck.length}`;
-        }
-    },
+        const card = flashcards[currentIndex];
+        // Front
+        elJapanese.textContent = card.japanese || card.hiragana;
+        // Back
+        elHiragana.textContent = card.hiragana;
+        elMeaning.textContent = card.meaning;
+        elType.textContent = card.type || "Từ vựng";
 
-    nextCard() {
-        if (this.currentFlashcardIndex < this.flashcardDeck.length - 1) {
-            this.currentFlashcardIndex++;
-            this.showCurrentCard();
-        }
-    },
+        // Progress
+        progressEl.textContent = `${currentIndex + 1} / ${flashcards.length}`;
+    }
 
-    previousCard() {
-        if (this.currentFlashcardIndex > 0) {
-            this.currentFlashcardIndex--;
-            this.showCurrentCard();
-        }
-    },
-
-    exit() {
-        document.getElementById("flashcard-container").style.display = "none";
-        document.getElementById("vocab-form").style.display = "grid";
-        document.getElementById("vocab-table").style.display = "table";
-        this.currentFlashcardIndex = 0;
-        this.flashcardDeck = [];
-        const flashcardElem = document.querySelector(".flashcard");
-        if (flashcardElem && flashcardElem.classList.contains("flipped")) {
-            flashcardElem.classList.remove("flipped");
+    function flipCard() {
+        isFlipped = !isFlipped;
+        if (isFlipped) {
+            innerCard.classList.add("rotate-y-180");
+        } else {
+            innerCard.classList.remove("rotate-y-180");
         }
     }
-};
+
+    function nextCard() {
+        if (currentIndex < flashcards.length - 1) {
+            currentIndex++;
+            innerCard.classList.remove("rotate-y-180");
+            setTimeout(renderCard, 150); // slight delay to let flip animation start
+        } else {
+            // Loop back to start but reshuffle
+            flashcards = [...rawVocabularies].sort(() => Math.random() - 0.5);
+            currentIndex = 0;
+            innerCard.classList.remove("rotate-y-180");
+            setTimeout(renderCard, 150);
+        }
+    }
+
+    function prevCard() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            innerCard.classList.remove("rotate-y-180");
+            setTimeout(renderCard, 150);
+        }
+    }
+
+    // Event Listeners
+    innerCard.addEventListener("click", flipCard);
+    document.getElementById("flip-btn-control").addEventListener("click", flipCard);
+
+    document.getElementById("next-card").addEventListener("click", nextCard);
+    document.getElementById("prev-card").addEventListener("click", prevCard);
+
+    document.getElementById("exit-flashcard").addEventListener("click", () => {
+        window.location.href = "index.html";
+    });
+
+    // Keyboard support
+    document.addEventListener("keydown", (e) => {
+        if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown") {
+            e.preventDefault();
+            flipCard();
+        } else if (e.code === "ArrowRight") {
+            nextCard();
+        } else if (e.code === "ArrowLeft") {
+            prevCard();
+        }
+    });
+
+    // Start
+    initUI();
+});

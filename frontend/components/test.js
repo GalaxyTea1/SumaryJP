@@ -1,174 +1,113 @@
 import { state } from "../state.js";
-import { utils } from "./utils.js";
+import { utils } from "../components/utils.js";
+import { tts } from "./tts.js";
 
-export const testObj = {
-    testWords: [],
-    currentTestIndex: 0,
-    testAnswers: [],
-    testStartTime: null,
-    testTimeLimit: 0,
-    testTimer: null,
-    showHiragana: true,
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Initial State
+    let testWords = [];
+    let currentTestIndex = 0;
+    let testAnswers = [];
+    let testStartTime = null;
+    let testTimeLimit = 0;
+    let testTimer = null;
+    let showHiragana = true;
+    let selectedOptionValue = null;
 
-    start() {
-        if (document.querySelector(".test-config-modal-test")) return;
+    // DOM Elements - Config
+    const overlayConfig = document.getElementById("config-overlay");
+    const selectLevel = document.getElementById("config-level");
+    const selectLesson = document.getElementById("config-lesson");
+    const inputCount = document.getElementById("config-count");
+    const inputTime = document.getElementById("config-time");
+    const checkHiragana = document.getElementById("config-hiragana");
+    const btnStart = document.getElementById("start-test-btn");
+    const btnCloseConfig = document.getElementById("close-config-btn");
 
-        // Auto-generate level options from state.lessons
+    // DOM Elements - Test Area
+    const elHeader = document.getElementById("test-header");
+    const elMain = document.getElementById("test-main");
+    const elWord = document.getElementById("test-word");
+    const elHint = document.getElementById("test-hint");
+    const elOptions = document.getElementById("test-options");
+    const elProgress = document.getElementById("test-progress");
+    const elProgressBar = document.getElementById("test-progress-bar");
+    const elTimer = document.getElementById("test-timer");
+    const btnNext = document.getElementById("next-question-btn");
+    const textLabel = document.getElementById("question-label");
+
+    // DOM Elements - Results
+    const elResults = document.getElementById("test-results");
+
+    // Initialize Data
+    try {
+        await state.loadFromServer();
+        populateConfigDropdowns();
+        tts.initContextMenu();
+    } catch (e) {
+        alert("Có lỗi tải dữ liệu từ máy chủ.");
+    }
+
+    // --- Configuration Logic ---
+    function populateConfigDropdowns() {
+        // Populate Levels
         const levels = Object.keys(state.lessons || {});
-        const levelItems = levels.map(l => `<li data-value="${l}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">${l}</li>`).join("");
-
-        // Populate specific lessons to form a master list of lessons
-        let allLessons = new Set();
-        Object.values(state.lessons || {}).forEach(lessonsObj => {
-            Object.keys(lessonsObj).forEach(lesson => allLessons.add(lesson));
+        levels.forEach(l => {
+            const opt = document.createElement("option");
+            opt.value = opt.textContent = l;
+            selectLevel.appendChild(opt);
         });
-        const lessonItems = Array.from(allLessons).sort((a, b) => a - b).map(l => `<li data-value="${l}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Bài ${l}</li>`).join("");
 
-        const modal = document.createElement("div");
-        modal.className = "test-config-modal test-config-modal-test";
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3>Cấu hình bài kiểm tra</h3>
-                <div class="test-config">
-                    <label style="position: relative; overflow: visible;">
-                        Mức độ:
-                        <div style="position: relative;">
-                            <input type="hidden" id="test-level" value="all">
-                            <input type="text" id="test-level-display" value="Tất cả mức độ" readonly 
-                                style="cursor: pointer; width: 120px; text-align: left; padding-right: 25px; user-select: none;">
-                            <span style="position: absolute; right: 10px; top: 6px; pointer-events: none; opacity: 0.5;">▼</span>
-                            <ul id="test-level-list" class="search-dropdown" style="display: none; width: 100%; max-height: 180px; box-sizing: border-box; text-align: left; top: 100%; margin-top: 5px; z-index: 10;">
-                                <li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả mức độ</li>
-                                ${levelItems}
-                            </ul>
-                        </div>
-                    </label>
-                    <label style="position: relative; overflow: visible;">
-                        Bài học:
-                        <div style="position: relative;">
-                            <input type="hidden" id="test-lesson" value="all">
-                            <input type="text" id="test-lesson-display" value="Tất cả bài học" readonly 
-                                style="cursor: pointer; width: 120px; text-align: left; padding-right: 25px; user-select: none;">
-                            <span style="position: absolute; right: 10px; top: 6px; pointer-events: none; opacity: 0.5;">▼</span>
-                            <ul id="test-lesson-list" class="search-dropdown" style="display: none; width: 100%; max-height: 180px; box-sizing: border-box; text-align: left; top: 100%; margin-top: 5px; z-index: 10;">
-                                <li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả bài học</li>
-                                ${lessonItems}
-                            </ul>
-                        </div>
-                    </label>
-                    <label>
-                        Số lượng từ:
-                        <input type="number" id="word-count" min="5" max="100" value="10">
-                    </label>
-                    <label>
-                        Thời gian (phút):
-                        <input type="number" id="test-time" min="1" max="30" value="5">
-                    </label>
-                    <label style="display: flex; align-items: center; cursor: pointer; font-weight: 500; margin-top: 10px;">
-                        <input type="checkbox" id="test-show-hiragana" checked style="margin-right: 8px; width: 18px; height: 18px;">
-                        Hiển thị Hiragana
-                    </label>
-                </div>
-                <div class="modal-buttons">
-                    <button id="start-test-btn">Bắt đầu</button>
-                    <button id="cancel-test-btn">Hủy</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
+        // Initialize lessons based on 'all'
+        updateLessonDropdown("all");
 
-        // Custom Dropdown Logic
-        const setupDropdown = (displayId, realId, listId, onChange) => {
-            const displayInput = modal.querySelector(displayId);
-            const realInput = modal.querySelector(realId);
-            const listMenu = modal.querySelector(listId);
+        selectLevel.addEventListener("change", (e) => {
+            updateLessonDropdown(e.target.value);
+        });
+    }
 
-            displayInput.addEventListener("click", (e) => {
-                e.stopPropagation();
-                // Close other dropdowns
-                modal.querySelectorAll(".search-dropdown").forEach(dropdown => {
-                    if (dropdown !== listMenu) dropdown.style.display = "none";
-                });
-                listMenu.style.display = listMenu.style.display === "none" ? "block" : "none";
+    function updateLessonDropdown(levelStr) {
+        // clear old
+        while (selectLesson.options.length > 1) {
+            selectLesson.remove(1);
+        }
+
+        let filteredLessons = new Set();
+        if (levelStr === "all") {
+            Object.values(state.lessons || {}).forEach(lessonsObj => {
+                Object.keys(lessonsObj).forEach(lesson => filteredLessons.add(lesson));
             });
+        } else {
+            Object.keys(state.lessons[levelStr] || {}).forEach(lesson => filteredLessons.add(lesson));
+        }
 
-            const bindListItems = () => {
-                listMenu.querySelectorAll("li").forEach(item => {
-                    item.addEventListener("click", () => {
-                        const val = item.getAttribute("data-value");
-                        realInput.value = val;
-                        displayInput.value = item.textContent;
-                        listMenu.style.display = "none";
-                        if (onChange) onChange(val);
-                    });
-                    item.addEventListener("mouseover", () => item.style.backgroundColor = "var(--ctx-menu-hover)");
-                    item.addEventListener("mouseout", () => item.style.backgroundColor = "transparent");
-                });
-            };
-
-            bindListItems();
-
-            return { displayInput, realInput, listMenu, bindListItems };
-        };
-
-        const updateLessonList = (level) => {
-            let filteredLessons = new Set();
-            if (level === "all") {
-                Object.values(state.lessons || {}).forEach(lessonsObj => {
-                    Object.keys(lessonsObj).forEach(lesson => filteredLessons.add(lesson));
-                });
-            } else {
-                Object.keys(state.lessons[level] || {}).forEach(lesson => filteredLessons.add(lesson));
-            }
-            const items = Array.from(filteredLessons).sort((a, b) => a - b).map(l => `<li data-value="${l}" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Bài ${l}</li>`).join("");
-            const lessonListMenu = modal.querySelector("#test-lesson-list");
-            lessonListMenu.innerHTML = `<li data-value="all" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color);">Tất cả bài học</li>` + items;
-
-            modal.querySelector("#test-lesson").value = "all";
-            modal.querySelector("#test-lesson-display").value = "Tất cả bài học";
-        };
-
-        const levelDropdown = setupDropdown("#test-level-display", "#test-level", "#test-level-list", (val) => {
-            updateLessonList(val);
-            lessonDropdown.bindListItems();
+        const sortedLessons = Array.from(filteredLessons).sort((a, b) => a - b);
+        sortedLessons.forEach(l => {
+            const opt = document.createElement("option");
+            opt.value = l;
+            opt.textContent = `Bài ${l}`;
+            selectLesson.appendChild(opt);
         });
+        selectLesson.value = "all";
+    }
 
-        const lessonDropdown = setupDropdown("#test-lesson-display", "#test-lesson", "#test-lesson-list");
+    btnCloseConfig.addEventListener("click", () => window.location.href = "index.html");
+    document.getElementById("quit-test-btn").addEventListener("click", () => {
+        if (confirm("Bạn có chắc chắn muốn thoát khi bài thi chưa kết thúc?")) {
+            window.location.href = "index.html"
+        }
+    });
 
-        modal.addEventListener("click", (e) => {
-            if (e.target === modal) this.closeConfig();
-            else {
-                if (!levelDropdown.listMenu.contains(e.target) && e.target !== levelDropdown.displayInput) {
-                    levelDropdown.listMenu.style.display = "none";
-                }
-                if (!lessonDropdown.listMenu.contains(e.target) && e.target !== lessonDropdown.displayInput) {
-                    lessonDropdown.listMenu.style.display = "none";
-                }
-            }
-        });
-
-        modal.querySelector("#start-test-btn").addEventListener("click", () => this.initialize());
-        modal.querySelector("#cancel-test-btn").addEventListener("click", () => this.closeConfig());
-    },
-
-    closeConfig() {
-        const modal = document.querySelector(".test-config-modal-test");
-        if (modal) modal.remove();
-    },
-
-    initialize() {
-        const wordCount = parseInt(document.getElementById("word-count").value);
-        const testTime = parseInt(document.getElementById("test-time").value);
-        const selectedLevel = document.getElementById("test-level").value;
-        const selectedLesson = document.getElementById("test-lesson").value;
-        const showHiraganaCheckbox = document.getElementById("test-show-hiragana");
+    btnStart.addEventListener("click", () => {
+        const wordCount = parseInt(inputCount.value);
+        const testTime = parseInt(inputTime.value);
+        const selectedLevel = selectLevel.value;
+        const selectedLesson = selectLesson.value;
+        showHiragana = checkHiragana.checked;
 
         if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
             alert("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)");
             return;
         }
-
-        this.showHiragana = showHiraganaCheckbox ? showHiraganaCheckbox.checked : true;
 
         let allWords = [];
         Object.entries(state.lessons).forEach(([level, lessons]) => {
@@ -179,38 +118,85 @@ export const testObj = {
             });
         });
 
-        if (allWords.length === 0) {
-            alert("Không tìm thấy từ vựng nào phù hợp với bộ lọc Mức độ / Bài học này!");
+        if (allWords.length < 5) {
+            alert("Số lượng từ vựng trong phạm vi này quá ít (dưới 5 từ). Vui lòng chọn bài học khác.");
             return;
         }
 
         if (allWords.length < wordCount) {
-            alert(`Khóa học này hiện chỉ có ${allWords.length} từ. Vui lòng chọn số lượng câu hỏi ít hơn.`);
-            return;
+            alert(`Phạm vi này hiện chỉ có ${allWords.length} từ. Bài kiểm tra sẽ lấy tối đa số từ đang có.`);
         }
 
         utils.shuffleArray(allWords);
-        this.testWords = allWords.slice(0, wordCount);
-        this.currentTestIndex = 0;
-        this.testAnswers = [];
-        this.testStartTime = new Date();
-        this.testTimeLimit = testTime * 60; // Convert to seconds
-        this.closeConfig();
-        document.getElementById("test-container").style.display = "flex";
-        this.showQuestion();
-        this.startTimer();
-    },
+        testWords = allWords.slice(0, wordCount);
 
-    showQuestion() {
-        const currentWord = this.testWords[this.currentTestIndex];
-        document.getElementById("test-word").textContent = currentWord.japanese;
-        document.getElementById("test-hint").textContent = this.showHiragana ? `Hiragana: ${currentWord.hiragana}` : "";
-        document.getElementById("test-progress").textContent = `${this.currentTestIndex + 1}/${this.testWords.length}`;
+        startTestEngine(testTime);
+    });
 
-        const optionsContainer = document.getElementById("test-options");
-        optionsContainer.innerHTML = "";
+    // --- Core Test Logic ---
+    function startTestEngine(testTimeMinutes) {
+        // Unmount config
+        overlayConfig.classList.add("opacity-0", "pointer-events-none");
+        setTimeout(() => overlayConfig.classList.add("hidden"), 300);
 
-        // Generate options: 1 correct, up to 3 wrong
+        // Reset state
+        currentTestIndex = 0;
+        testAnswers = [];
+        selectedOptionValue = null;
+        testTimeLimit = testTimeMinutes * 60;
+        testStartTime = new Date();
+
+        // Show UI
+        elHeader.classList.remove("hidden");
+        elMain.classList.remove("hidden");
+
+        renderQuestion();
+
+        // Timer
+        clearInterval(testTimer);
+        testTimer = setInterval(tickTimer, 1000);
+        tickTimer(); // Call immediately once to avoid 1 sec delay
+    }
+
+    function tickTimer() {
+        const elapsed = Math.floor((new Date() - testStartTime) / 1000);
+        const remaining = testTimeLimit - elapsed;
+
+        if (remaining <= 0) {
+            finishTest();
+            return;
+        }
+
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+
+        elTimer.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+
+        if (remaining <= 60) {
+            elTimer.classList.add("text-rose-600");
+            document.querySelector("#test-timer").parentElement.classList.add("animate-pulse", "bg-rose-100");
+        }
+    }
+
+    function renderQuestion() {
+        const currentWord = testWords[currentTestIndex];
+
+        elWord.textContent = currentWord.japanese;
+        elHint.textContent = showHiragana ? currentWord.hiragana : ""; // Reserve space with CSS min-height
+
+        textLabel.textContent = `Câu hỏi số ${currentTestIndex + 1}`;
+        elProgress.textContent = `Câu: ${currentTestIndex + 1}/${testWords.length}`;
+
+        // Progress bar smooth calc
+        const pct = ((currentTestIndex) / testWords.length) * 100;
+        elProgressBar.style.width = `${pct}%`;
+
+        // Clear old options
+        elOptions.innerHTML = "";
+        btnNext.disabled = true;
+        selectedOptionValue = null;
+
+        // Generate options (1 correct, 3 wrong)
         let allMeanings = [];
         Object.values(state.lessons).forEach((level) => {
             Object.values(level).forEach((lesson) => {
@@ -218,7 +204,7 @@ export const testObj = {
             });
         });
 
-        // Filter out correct meaning and duplicates
+        // Unique wrong meanings
         allMeanings = [...new Set(allMeanings.filter(m => m.toLowerCase() !== currentWord.meaning.toLowerCase()))];
         utils.shuffleArray(allMeanings);
 
@@ -226,76 +212,103 @@ export const testObj = {
         const options = [currentWord.meaning, ...allMeanings.slice(0, wrongOptionsCount)];
         utils.shuffleArray(options);
 
+        // Render Buttons
         const labels = ["A", "B", "C", "D"];
-        options.forEach((option, index) => {
-            const button = document.createElement("button");
-            button.className = "test-option-btn";
-            button.innerHTML = `<strong>${labels[index]}.</strong> ${option}`;
-            button.onclick = () => this.submitAnswer(option);
-            optionsContainer.appendChild(button);
-        });
-    },
+        options.forEach((optionTxt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn group text-left w-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 rounded-2xl px-6 py-4 font-semibold text-slate-700 dark:text-slate-200 transition-all active:scale-[0.98] flex items-center gap-4 relative overflow-hidden";
 
-    submitAnswer(selectedAnswer) {
-        const currentWord = this.testWords[this.currentTestIndex];
-        const isCorrect = selectedAnswer.toLowerCase() === currentWord.meaning.toLowerCase();
-        this.testAnswers.push({
+            // Re-creating the pseudo-radio button programatically for better control
+            btn.innerHTML = `
+                <div class="flex-shrink-0 size-6 rounded-full border-2 border-slate-300 dark:border-slate-600 transition-colors flex items-center justify-center radio-circle"></div>
+                <div class="flex-1 font-semibold text-slate-700 dark:text-slate-200 select-text">${optionTxt}</div>
+                <div class="absolute right-0 top-0 h-full w-12 bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400 dark:text-slate-500 opacity-50 text-xl border-l border-slate-200 dark:border-slate-700 transition-all group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 group-hover:text-indigo-500 dark:group-hover:text-indigo-400">${labels[index]}</div>
+            `;
+
+            btn.addEventListener("click", () => {
+                // Select visual
+                document.querySelectorAll(".option-btn").forEach(b => {
+                    b.classList.remove("selected", "border-indigo-500", "dark:border-indigo-400", "bg-indigo-50/80", "dark:bg-indigo-900/40");
+                    b.querySelector('.radio-circle').classList.remove("border-indigo-600", "dark:border-indigo-400", "bg-indigo-600", "dark:bg-indigo-400", "shadow-[inset_0_0_0_4px_#EEF2FF]", "dark:shadow-[inset_0_0_0_4px_#1e1b4b]");
+                });
+
+                btn.classList.add("selected", "border-indigo-500", "dark:border-indigo-400", "bg-indigo-50/80", "dark:bg-indigo-900/40");
+                btn.querySelector('.radio-circle').classList.add("border-indigo-600", "dark:border-indigo-400", "bg-indigo-600", "dark:bg-indigo-400", "shadow-[inset_0_0_0_4px_#EEF2FF]", "dark:shadow-[inset_0_0_0_4px_#1e1b4b]");
+
+                selectedOptionValue = optionTxt;
+                btnNext.disabled = false;
+                btnNext.classList.remove("opacity-50", "cursor-not-allowed");
+            });
+
+            elOptions.appendChild(btn);
+        });
+
+        btnNext.disabled = true;
+        btnNext.classList.add("opacity-50", "cursor-not-allowed");
+    }
+
+    btnNext.addEventListener("click", () => {
+        if (!selectedOptionValue) return;
+
+        const currentWord = testWords[currentTestIndex];
+        const isCorrect = selectedOptionValue.toLowerCase() === currentWord.meaning.toLowerCase();
+
+        testAnswers.push({
             word: currentWord,
-            userAnswer: selectedAnswer,
+            userAnswer: selectedOptionValue,
             correct: isCorrect,
         });
-        this.currentTestIndex++;
-        if (this.currentTestIndex < this.testWords.length) {
-            this.showQuestion();
+
+        currentTestIndex++;
+        if (currentTestIndex < testWords.length) {
+            renderQuestion();
         } else {
-            this.finish();
+            finishTest();
         }
-    },
+    });
 
-    startTimer() {
-        const timerElement = document.getElementById("test-timer");
-        this.testTimer = setInterval(() => {
-            const elapsed = Math.floor((new Date() - this.testStartTime) / 1000);
-            const remaining = this.testTimeLimit - elapsed;
-            if (remaining <= 0) {
-                this.finish();
-                return;
-            }
-            const minutes = Math.floor(remaining / 60);
-            const seconds = remaining % 60;
-            timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-        }, 1000);
-    },
+    // --- Finish & Results ---
+    function finishTest() {
+        clearInterval(testTimer);
 
-    finish() {
-        clearInterval(this.testTimer);
-        const correctCount = this.testAnswers.filter((a) => a.correct).length;
-        const score = Math.round((correctCount / this.testWords.length) * 100);
-        const timeTaken = Math.floor((new Date() - this.testStartTime) / 1000);
-        document.getElementById("test-container").style.display = "none";
-        document.getElementById("test-results").style.display = "block";
+        elHeader.classList.add("hidden");
+        elMain.classList.add("hidden");
+        elResults.classList.remove("hidden");
+
+        const correctCountNum = testAnswers.filter((a) => a.correct).length;
+        const score = Math.round((correctCountNum / testWords.length) * 100);
+        const timeTaken = Math.floor((new Date() - testStartTime) / 1000);
+
         document.getElementById("final-score").textContent = score;
-        document.getElementById("correct-count").textContent = correctCount;
-        document.getElementById("wrong-count").textContent = this.testWords.length - correctCount;
+        document.getElementById("correct-count").textContent = correctCountNum;
+        document.getElementById("wrong-count").textContent = testWords.length - correctCountNum;
+
         document.getElementById("time-taken").textContent = `${Math.floor(timeTaken / 60)
             .toString()
             .padStart(2, "0")}:${(timeTaken % 60).toString().padStart(2, "0")}`;
-        document.getElementById("answers-review").innerHTML = this.testAnswers
-            .map(
-                (a) => `
-            <div class="answer-item ${a.correct ? "correct" : "wrong"}">
-                <span class="answer-word">${a.word.japanese}</span>
-                <div class="answer-details">
-                    <span class="user-answer">${a.userAnswer}</span>
-                    ${!a.correct ? `<span class="correct-answer">✔️ ${a.word.meaning}</span>` : ""}
-                </div>
-            </div>
-        `
-            )
-            .join("");
-    },
 
-    close() {
-        document.getElementById("test-results").style.display = "none";
+        // Populate lists
+        const reviewListContainer = document.getElementById("answers-review-list");
+        reviewListContainer.innerHTML = testAnswers.map(a => {
+            const cls = a.correct ? "correct" : "wrong";
+            const icon = a.correct ? '<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400">check_circle</span>' : '<span class="material-symbols-outlined text-rose-500 dark:text-rose-400">cancel</span>';
+            const userAnsCls = a.correct ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400 line-through';
+
+            return `
+                <div class="review-item ${cls}">
+                    <div class="review-word-box flex items-center gap-3">
+                        ${icon}
+                        <div>
+                            <span class="review-word">${a.word.japanese}</span>
+                            <span class="text-xs font-bold uppercase tracking-widest opacity-60">${a.word.hiragana}</span>
+                        </div>
+                    </div>
+                    <div class="review-ans-box">
+                        <span class="user-ans ${userAnsCls}">${a.userAnswer || "Không trả lời"}</span>
+                        ${!a.correct ? `<span class="correct-ans">${a.word.meaning}</span>` : ""}
+                    </div>
+                </div>
+            `;
+        }).join("");
     }
-};
+});

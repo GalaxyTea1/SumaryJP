@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Test - Japanese Learning</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
+  <script type="module" src="./components/test.js"></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#6366f1",
+            "off-white": "#f8fafc",
+            "sky-blue": "#0ea5e9",
+            "gold": "#eab308",
+            "emerald": "#10b981",
+            "soft-purple": "#8b5cf6",
+            "vibrant-orange": "#f97316"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "3xl": "2.5rem"
+          },
+        },
+      },
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .glass-modal {
+        @apply bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-2xl rounded-3xl p-8 max-w-lg w-full;
+      }
+      .glass-panel {
+        @apply bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white dark:border-slate-700 shadow-xl rounded-3xl p-6 md:p-10;
+      }
+      .btn-primary {
+        @apply bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2;
+      }
+      .btn-secondary {
+        @apply bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold py-3.5 px-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 flex items-center justify-center gap-2;
+      }
+      .option-btn {
+        @apply w-full text-left bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 rounded-2xl px-6 py-4 font-semibold text-slate-700 dark:text-slate-200 transition-all active:scale-[0.98] flex items-center gap-4;
+      }
+      .option-btn.selected {
+        @apply border-indigo-500 dark:border-indigo-400 bg-indigo-50/80 dark:bg-indigo-900/40 text-indigo-900 dark:text-indigo-100;
+      }
+    }
+  </style>
+  <style>
+    body {
+      background-color: #f8fafc;
+      background-image: radial-gradient(circle at top right, #e0e7ff 0%, transparent 40%), radial-gradient(circle at bottom left, #dbeafe 0%, transparent 40%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    html.dark body {
+      background-color: #0f172a;
+      background-image: radial-gradient(circle at top right, #1e1b4b 0%, transparent 40%), radial-gradient(circle at bottom left, #172554 0%, transparent 40%);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    html.dark ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+</head>
+
+<body
+  class="font-display text-slate-900 dark:text-slate-100 antialiased overflow-x-hidden relative transition-colors duration-300">
+
+  <!-- Configuration Modal Overlay (Initial State) -->
+  <div id="config-overlay"
+    class="fixed inset-0 z-50 bg-slate-900/40 dark:bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 transition-opacity duration-300">
+    <div class="glass-modal transform transition-all scale-100 relative overflow-hidden">
+      <!-- Decorative background blur -->
+      <div
+        class="absolute -top-16 -right-16 size-40 bg-indigo-200/50 dark:bg-indigo-900/30 blur-3xl rounded-full pointer-events-none">
+      </div>
+
+      <div class="flex items-center justify-between mb-8 relative z-10">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 dark:text-white">Cấu hình bài test</h2>
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Tùy chỉnh phạm vi trắc nghiệm</p>
+        </div>
+        <button id="close-config-btn"
+          class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-5 relative z-10">
+        <!-- Level Dropdown -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Mức độ (JLPT)</label>
+          <div class="relative">
+            <select id="config-level"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+              <option value="all">Tất cả mức độ</option>
+              <!-- Populated by JS -->
+            </select>
+            <span
+              class="material-symbols-outlined absolute right-3 top-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">keyboard_arrow_down</span>
+          </div>
+        </div>
+
+        <!-- Lesson Dropdown -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Bài học</label>
+          <div class="relative">
+            <select id="config-lesson"
+              class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+              <option value="all">Tất cả bài học</option>
+              <!-- Populated by JS -->
+            </select>
+            <span
+              class="material-symbols-outlined absolute right-3 top-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">keyboard_arrow_down</span>
+          </div>
+        </div>
+
+        <!-- Numbers Row -->
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Số câu hỏi</label>
+            <input type="number" id="config-count" value="10" min="5" max="100"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center" />
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Thời gian
+              (phút)</label>
+            <input type="number" id="config-time" value="5" min="1" max="60"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center" />
+          </div>
+        </div>
+
+        <!-- Show Hiragana Toggle -->
+        <label
+          class="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors mt-2">
+          <input type="checkbox" id="config-hiragana" checked
+            class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800" />
+          <span class="font-semibold text-slate-700 dark:text-slate-200">Hiển thị gợi ý Hiragana</span>
+        </label>
+      </div>
+
+      <button id="start-test-btn" class="btn-primary w-full mt-8">
+        Bắt đầu làm bài <span class="material-symbols-outlined">rocket_launch</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header Navbar (Test Mode) -->
+  <nav id="test-header"
+    class="w-full px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-b border-white/50 dark:border-slate-800/50 sticky top-0 z-40 hidden">
+    <div class="flex items-center gap-3 mb-2 sm:mb-0">
+      <button id="quit-test-btn"
+        class="size-10 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-900/40 transition-all"
+        title="Thoát">
+        <span class="material-symbols-outlined font-bold">close</span>
+      </button>
+      <div class="hidden sm:block">
+        <h1 class="font-black text-xl text-slate-800 dark:text-white">Kiểm tra từ vựng</h1>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 sm:gap-6 w-full sm:w-auto overflow-x-auto justify-end">
+      <!-- Timer -->
+      <div
+        class="flex items-center gap-2 bg-rose-50 dark:bg-rose-900/30 px-4 py-2 rounded-xl border border-rose-100 dark:border-rose-800/50 flex-shrink-0">
+        <span class="material-symbols-outlined text-rose-500 dark:text-rose-400 text-xl animate-pulse">timer</span>
+        <span id="test-timer"
+          class="font-black text-rose-700 dark:text-rose-300 font-mono tracking-wider tabular-nums">00:00</span>
+      </div>
+      <!-- Progress -->
+      <div
+        class="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-xl border border-indigo-100/50 dark:border-indigo-800/50 flex-shrink-0">
+        <span class="material-symbols-outlined text-indigo-500 dark:text-indigo-400 text-xl">assignment</span>
+        <span id="test-progress" class="font-extrabold text-indigo-700 dark:text-indigo-300 text-sm">Câu: 1/10</span>
+      </div>
+    </div>
+    <!-- Progress Bar UI -->
+    <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 absolute bottom-0 left-0">
+      <div id="test-progress-bar" class="bg-indigo-500 h-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+  </nav>
+
+  <!-- Main Test Area -->
+  <main id="test-main"
+    class="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 w-full max-w-3xl mx-auto relative hidden pt-8 sm:pt-12">
+
+    <div class="w-full glass-panel text-center mb-8 relative">
+      <span
+        class="absolute -top-5 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-black uppercase tracking-widest py-1.5 px-4 rounded-full shadow-md z-10"
+        id="question-label">
+        Câu hỏi số 1
+      </span>
+      <h2 id="test-word"
+        class="text-5xl sm:text-7xl font-black text-slate-900 dark:text-white mb-3 tracking-tighter mix-blend-multiply dark:mix-blend-normal mt-4">
+        漢字</h2>
+      <p id="test-hint" class="text-lg font-bold text-slate-400 dark:text-slate-500 min-h-[28px]">hiragana</p>
+    </div>
+
+    <!-- Options List -->
+    <div id="test-options" class="w-full space-y-3">
+      <!-- Populated by JS -->
+    </div>
+
+    <div class="w-full flex justify-end mt-8">
+      <button id="next-question-btn" class="btn-primary" disabled>
+        Câu tiếp theo <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Results Screen -->
+  <main id="test-results"
+    class="flex-1 flex flex-col items-center justify-start p-4 sm:p-6 w-full max-w-4xl mx-auto relative hidden pb-20">
+    <div class="w-full glass-panel text-center mb-10 overflow-hidden relative">
+      <div
+        class="absolute -top-24 -right-24 size-64 bg-emerald-300/20 dark:bg-emerald-900/20 rounded-full blur-3xl pointer-events-none">
+      </div>
+
+      <div
+        class="size-20 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white dark:border-slate-800 shadow-lg relative z-10">
+        <span class="material-symbols-outlined text-4xl text-emerald-500 font-bold">emoji_events</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-black text-slate-800 dark:text-white mb-2 relative z-10">Hoàn thành bài kiểm
+        tra!</h1>
+      <p class="text-slate-500 dark:text-slate-400 font-medium relative z-10">Kết quả của bạn đã được ghi nhận.</p>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 relative z-10">
+        <!-- Score -->
+        <div
+          class="bg-indigo-50/50 dark:bg-indigo-900/20 rounded-2xl p-4 border border-indigo-100 dark:border-indigo-800">
+          <p class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">Điểm số</p>
+          <p class="text-3xl font-black text-indigo-600 dark:text-indigo-400"><span id="final-score">100</span>%</p>
+        </div>
+        <!-- Time -->
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Thời gian</p>
+          <p class="text-2xl mt-1 font-black text-slate-700 dark:text-slate-300 font-mono tracking-tight"
+            id="time-taken">02:30</p>
+        </div>
+        <!-- Correct -->
+        <div
+          class="bg-emerald-50/50 dark:bg-emerald-900/20 rounded-2xl p-4 border border-emerald-100 dark:border-emerald-800">
+          <p class="text-xs font-bold uppercase tracking-widest text-emerald-500 mb-1">Làm đúng</p>
+          <div
+            class="flex items-center justify-center gap-1.5 mt-1 text-emerald-600 dark:text-emerald-400 font-black text-2xl">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span id="correct-count">8</span>
+          </div>
+        </div>
+        <!-- Wrong -->
+        <div class="bg-rose-50/50 dark:bg-rose-900/20 rounded-2xl p-4 border border-rose-100 dark:border-rose-800">
+          <p class="text-xs font-bold uppercase tracking-widest text-rose-500 mb-1">Làm sai</p>
+          <div
+            class="flex items-center justify-center gap-1.5 mt-1 text-rose-600 dark:text-rose-400 font-black text-2xl">
+            <span class="material-symbols-outlined">cancel</span>
+            <span id="wrong-count">2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Answers -->
+    <div class="w-full text-left">
+      <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+        <span class="material-symbols-outlined text-slate-400">format_list_bulleted</span> Chi tiết bài làm
+      </h3>
+      <div id="answers-review-list" class="space-y-4">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <div class="mt-12 flex justify-center">
+      <button onclick="window.location.href='index.html'" class="btn-primary px-10">
+        <span class="material-symbols-outlined">home</span> Quay về màn hình chính
+      </button>
+    </div>
+  </main>
+
+  <style>
+    /* Styling for result review items injected via JS */
+    .review-item {
+      @apply bg-white dark:bg-slate-800 p-5 rounded-2xl border dark:border-slate-700 flex flex-col sm:flex-row gap-4 sm:items-center justify-between shadow-sm;
+    }
+
+    .review-item.correct {
+      @apply border-emerald-200 dark:border-emerald-800/50 bg-emerald-50/30 dark:bg-emerald-900/20;
+    }
+
+    .review-item.wrong {
+      @apply border-rose-200 dark:border-rose-800/50 bg-rose-50/30 dark:bg-rose-900/20;
+    }
+
+    .review-word-box {
+      @apply pt-1;
+    }
+
+    .review-word {
+      @apply text-2xl font-black text-slate-800 dark:text-white block;
+    }
+
+    .review-ans-box {
+      @apply flex-1 text-sm sm:text-right;
+    }
+
+    .user-ans {
+      @apply font-semibold block text-base;
+    }
+
+    .correct-ans {
+      @apply font-bold text-emerald-600 dark:text-emerald-400 mt-1 block px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 inline-block rounded-lg text-xs;
+    }
+  </style>
+
+  <!-- Global API Loading Overlay -->
+  <div id="api-loading-overlay"
+    class="fixed inset-0 z-[100] bg-slate-900/20 dark:bg-slate-900/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300"
+    style="display: none;">
+    <div
+      class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-2xl border border-white/50 dark:border-slate-700/50 flex flex-col items-center gap-4">
+      <div
+        class="size-10 border-4 border-indigo-100 dark:border-indigo-900/50 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin">
+      </div>
+      <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Đang xử lý...</p>
+    </div>
+  </div>
+
+</body>
+
+</html>

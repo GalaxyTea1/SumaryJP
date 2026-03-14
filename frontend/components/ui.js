@@ -1,302 +1,126 @@
 import { state } from "../state.js";
+import { vocabTable } from "./vocabTable.js";
+import { dashboardStats } from "./dashboardStats.js";
 
 export const ui = {
-    updateLessonSidebar() {
+    initSidebar() {
         const sidebar = document.getElementById("lesson-sidebar");
-        const existingList = sidebar.querySelector(".level-list");
-        if (existingList) existingList.remove();
+        if (!sidebar) return;
 
-        const levelList = document.createElement("div");
-        levelList.className = "level-list";
+
+        const navContainer = sidebar.querySelector("#lesson-nav-container");
+        if (navContainer) {
+            navContainer.innerHTML = "";
+        }
 
         const sortedLevels = Object.entries(state.lessons).sort(([levelA], [levelB]) => levelB.localeCompare(levelA));
 
+        const levelListFragment = document.createDocumentFragment();
+
         sortedLevels.forEach(([level, lessons]) => {
-            const levelItem = document.createElement("div");
-            levelItem.className = "level-item";
+            const levelWrapper = document.createElement("div");
+            levelWrapper.className = "flex flex-col gap-2 w-full px-4 mb-2";
 
-            const totalWords = Object.values(lessons).reduce((sum, lesson) => sum + lesson.length, 0);
 
-            levelItem.innerHTML = `
-                <div class="level-header">
-                    <div class="level-header-title">
-                        <span class="level-name">${level}</span>
-                        <span class="level-count-total">(${totalWords} từ)</span>
-                    </div>
-                    <span class="level-toggle">▼</span>
-                </div>
-            `;
-
+            const levelBtn = document.createElement("button");
+            levelBtn.className = "flex items-center justify-between w-full px-4 py-3 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-100 font-bold border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 rounded-xl transition-all shadow-sm focus:outline-none";
+            levelBtn.innerHTML = `<span>${level}</span><span class="text-sm material-symbols-outlined transition-transform duration-300 transform text-slate-400 dark:text-slate-500">expand_more</span>`;
+            
             const lessonContainer = document.createElement("div");
-            lessonContainer.className = "lesson-grid";
-            lessonContainer.style.display = "none";
+            lessonContainer.className = "grid grid-cols-2 gap-2 w-full pt-1 overflow-hidden transition-all duration-300";
+            lessonContainer.style.maxHeight = "0px"; 
+
 
             Object.keys(lessons).sort((a, b) => Number(a) - Number(b)).forEach((lesson) => {
-                const lessonItem = document.createElement("div");
-                lessonItem.className = "lesson-grid-item";
-                lessonItem.innerHTML = `
-                    <span class="lesson-grid-name">${lesson}</span>
-                    <span class="lesson-grid-count">${lessons[lesson].length}</span>
-                `;
-                lessonItem.title = `Bài ${lesson}`; // Tooltip that says "Bài X"
-                lessonItem.addEventListener("click", () => {
-                    this.displayVocabulary(lesson, level);
-                    document.querySelectorAll('.lesson-grid-item').forEach(el => el.classList.remove('active'));
-                    lessonItem.classList.add('active');
+                const lessonBtn = document.createElement("button");
+                lessonBtn.className = "text-center px-2 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 hover:border-indigo-200 dark:hover:border-indigo-700 rounded-lg border border-slate-100 dark:border-slate-700/50 transition-colors w-full focus:outline-none";
+                lessonBtn.textContent = `Bài ${lesson}`;
+                
+                lessonBtn.addEventListener("click", async () => {
+
+                    document.querySelectorAll('.lesson-nav-active').forEach(el => {
+                        el.classList.remove('lesson-nav-active', 'bg-indigo-500', 'text-white', 'border-indigo-600', 'shadow-md', 'dark:bg-indigo-600', 'dark:border-indigo-500');
+                        el.classList.add('text-slate-500', 'border-slate-100', 'dark:text-slate-400', 'dark:border-slate-700/50');
+                    });
+                    lessonBtn.classList.remove('text-slate-500', 'border-slate-100', 'dark:text-slate-400', 'dark:border-slate-700/50', 'hover:text-indigo-600', 'hover:bg-indigo-50', 'dark:hover:text-indigo-400', 'dark:hover:bg-indigo-900/40');
+                    lessonBtn.classList.add('lesson-nav-active', 'bg-indigo-500', 'text-white', 'border-indigo-600', 'shadow-md', 'dark:bg-indigo-600', 'dark:border-indigo-500');
+                    
+
+                    vocabTable.renderSkeleton();
+                    const { dashboardStats } = await import("./dashboardStats.js");
+                    dashboardStats.renderSkeleton();
+
+
+                    await vocabTable.render(lesson, level);
+                    dashboardStats.updateStats();
                 });
-                lessonContainer.appendChild(lessonItem);
+                lessonContainer.appendChild(lessonBtn);
             });
 
-            const header = levelItem.querySelector(".level-header");
-            header.addEventListener("click", () => {
-                document.querySelectorAll('.lesson-grid').forEach(container => {
-                    if (container !== lessonContainer) {
-                        container.style.display = "none";
-                        container.previousElementSibling.querySelector('.level-toggle').textContent = "▼";
-                    }
+            levelBtn.addEventListener("click", () => {
+                const icon = levelBtn.querySelector('.material-symbols-outlined');
+                const isExpanded = lessonContainer.style.maxHeight !== "0px";
+                
+                // Collapse all other levels (accordion behavior)
+                document.querySelectorAll('.lesson-container').forEach(c => {
+                    c.style.maxHeight = "0px";
+                    c.previousElementSibling.querySelector('.material-symbols-outlined').style.transform = "rotate(0deg)";
                 });
 
-                const isHidden = lessonContainer.style.display === "none";
-                lessonContainer.style.display = isHidden ? "grid" : "none";
-                header.querySelector(".level-toggle").textContent = isHidden ? "▲" : "▼";
+                if (!isExpanded) {
+                    lessonContainer.style.maxHeight = lessonContainer.scrollHeight + "px";
+                    icon.style.transform = "rotate(180deg)";
+                }
             });
 
-            levelItem.appendChild(lessonContainer);
-            levelList.appendChild(levelItem);
+            lessonContainer.classList.add('lesson-container');
+            levelWrapper.appendChild(levelBtn);
+            levelWrapper.appendChild(lessonContainer);
+            levelListFragment.appendChild(levelWrapper);
         });
 
-        sidebar.appendChild(levelList);
-    },
-
-    async displayVocabulary(lesson, level) {
-        try {
-            state.currentLesson = { lesson, level };
-            document.getElementById("current-lesson-title").textContent = `Bài ${lesson} - ${level}`;
-            const allVocabularies = state.getVocabularyByLesson(level, lesson);
-            const tbody = document.getElementById("vocab-list");
-            const selectAllCb = document.getElementById("select-all-cb");
-            const bulkDeleteBtn = document.getElementById("bulk-delete-btn");
-            const adminSearchInput = document.getElementById("admin-search-input");
-            const isAdmin = document.body.dataset.isAdmin === "true";
-
-            // Support Search
-            let currentVocabs = [...allVocabularies];
-
-            const renderTable = () => {
-                tbody.innerHTML = "";
-                let selectedIds = new Set();
-
-                const updateBulkDeleteUI = () => {
-                    if (!bulkDeleteBtn) return;
-                    if (selectedIds.size > 0) {
-                        bulkDeleteBtn.style.display = "inline-block";
-                        bulkDeleteBtn.querySelector("#selected-count").textContent = selectedIds.size;
-                    } else {
-                        bulkDeleteBtn.style.display = "none";
-                    }
-                    if (selectAllCb) {
-                        selectAllCb.checked = currentVocabs.length > 0 && selectedIds.size === currentVocabs.length;
-                    }
-                };
-
-                updateBulkDeleteUI();
-
-                if (selectAllCb) {
-                    // Remove old listeners to prevent duplication on re-render
-                    const newCb = selectAllCb.cloneNode(true);
-                    selectAllCb.parentNode.replaceChild(newCb, selectAllCb);
-                    newCb.addEventListener("change", (e) => {
-                        const isChecked = e.target.checked;
-                        document.querySelectorAll('.vocab-checkbox').forEach(cb => {
-                            cb.checked = isChecked;
-                        });
-                        if (isChecked) {
-                            selectedIds = new Set(currentVocabs.map(v => v.id));
-                        } else {
-                            selectedIds.clear();
-                        }
-                        updateBulkDeleteUI();
-                    });
-                }
-
-                if (bulkDeleteBtn) {
-                    const newBtn = bulkDeleteBtn.cloneNode(true);
-                    bulkDeleteBtn.parentNode.replaceChild(newBtn, bulkDeleteBtn);
-                    newBtn.addEventListener("click", async () => {
-                        if (confirm(`Bạn có chắc muốn xóa ${selectedIds.size} từ đã chọn?`)) {
-                            newBtn.disabled = true;
-                            newBtn.textContent = "Đang xóa...";
-                            for (let id of selectedIds) {
-                                await state.removeVocabulary(id); // Wait for deletions
-                            }
-                            if (window.updateAdminStats) window.updateAdminStats();
-                            this.displayVocabulary(lesson, level);
-                            this.updateLessonSidebar();
-                        }
-                    });
-                }
-
-                currentVocabs.forEach((vocab) => {
-                    const row = document.createElement("tr");
-                    row.setAttribute("data-vocab-id", vocab.id);
-                    if (!isAdmin) {
-                        row.className = `status-${vocab.status}`;
-                    }
-
-                    let adminCheckbox = "";
-                    let actionColumn = "";
-                    if (isAdmin) {
-                        adminCheckbox = `<td style="text-align: center;"><input type="checkbox" class="vocab-checkbox" value="${vocab.id}" style="transform: scale(1.2); cursor: pointer;"></td>`;
-                        actionColumn = `
-                        <td>
-                            <button class="edit-btn">Sửa</button>
-                            <button class="delete-btn">Xóa</button>
-                        </td>
-                        `;
-                    }
-
-                    let statusAndDifficultyColumn = "";
-                    if (!isAdmin) {
-                        statusAndDifficultyColumn = `
-                        <td>
-                            <select class="status-select">
-                                <option value="not-learned" ${vocab.status === "not-learned" ? "selected" : ""}>Chưa học</option>
-                                <option value="learning" ${vocab.status === "learning" ? "selected" : ""}>Đang học</option>
-                                <option value="mastered" ${vocab.status === "mastered" ? "selected" : ""}>Đã thuộc</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button class="difficulty-btn ${vocab.is_difficult ? "difficult" : ""}">${vocab.is_difficult ? "★" : "☆"}</button>
-                        </td>
-                        `;
-                    }
-
-                    row.innerHTML = `
-                        ${adminCheckbox}
-                        <td>${vocab.japanese}</td>
-                        <td class="hiragana-text">${vocab.hiragana}</td>
-                        <td>${vocab.meaning}</td>
-                        <td>${vocab.type}</td>
-                        ${statusAndDifficultyColumn}
-                        ${actionColumn}
-                    `;
-
-                    // Checkbox listener logic
-                    const cb = row.querySelector(".vocab-checkbox");
-                    if (cb) {
-                        cb.addEventListener("change", (e) => {
-                            if (e.target.checked) selectedIds.add(vocab.id);
-                            else selectedIds.delete(vocab.id);
-                            updateBulkDeleteUI();
-                        });
-                    }
-
-                    if (!isAdmin) {
-                        row.querySelector(".status-select").addEventListener("change", async (e) => {
-                            await state.updateVocabularyStatus(vocab.id, e.target.value);
-                            row.className = `status-${e.target.value}`;
-                        });
-
-                        row.querySelector(".difficulty-btn").addEventListener("click", async () => {
-                            const isDifficult = await state.toggleDifficulty(vocab.id);
-                            if (isDifficult !== null) {
-                                const starButton = row.querySelector(".difficulty-btn");
-                                starButton.textContent = isDifficult ? "★" : "☆";
-                                starButton.classList.toggle("difficult", isDifficult);
-                            }
-                        });
-                    }
-
-                    if (isAdmin) {
-                        row.querySelector(".edit-btn").addEventListener("click", () => this.editVocabulary(vocab.id));
-
-                        row.querySelector(".delete-btn").addEventListener("click", async () => {
-                            if (confirm("Bạn có chắc muốn xóa từ này?")) {
-                                const info = await state.removeVocabulary(vocab.id);
-                                if (info) {
-                                    if (window.updateAdminStats) window.updateAdminStats();
-                                    this.displayVocabulary(info.lesson, info.level);
-                                    this.updateLessonSidebar();
-                                }
-                            }
-                        });
-                    }
-
-                    tbody.appendChild(row);
-                });
-            };
-
-            // Setup Search Listener
-            if (adminSearchInput) {
-                // Remove old event listener to prevent multiple bindings if clicked multiple times
-                const newSearch = adminSearchInput.cloneNode(true);
-                adminSearchInput.parentNode.replaceChild(newSearch, adminSearchInput);
-
-                newSearch.addEventListener("input", (e) => {
-                    const q = e.target.value.toLowerCase();
-                    currentVocabs = allVocabularies.filter(v =>
-                        v.japanese.toLowerCase().includes(q) ||
-                        v.hiragana.toLowerCase().includes(q) ||
-                        v.meaning.toLowerCase().includes(q)
-                    );
-                    renderTable();
-                });
-
-                // Clear existing search when changing lessons
-                newSearch.value = "";
+        if (navContainer) {
+            navContainer.appendChild(levelListFragment);
+            
+            // Auto-expand the first level
+            const firstLevelWrapper = navContainer.querySelector('.flex-col');
+            if(firstLevelWrapper) {
+                const btn = firstLevelWrapper.querySelector('button');
+                if(btn) btn.click();
+                
+                // Load the first lesson of that level
+                setTimeout(() => {
+                   const firstLesson = firstLevelWrapper.querySelector('.lesson-container button');
+                   if(firstLesson) firstLesson.click(); 
+                }, 100);
             }
-
-            renderTable();
-
-        } catch (error) {
-            console.error("Error displaying vocabulary:", error);
-            alert("Có lỗi khi hiển thị từ vựng.");
         }
+
+
+        this.initDarkMode();
     },
 
-    async editVocabulary(id) {
-        try {
-            const vocab = await state.getVocabularyById(id);
-            if (!vocab) return;
+    initDarkMode() {
+        const darkModeToggle = document.getElementById("dark-mode-toggle");
+        if (!darkModeToggle) return;
 
-            const editForm = document.createElement("div");
-            editForm.className = "edit-form-modal";
-            editForm.innerHTML = `
-    < div class="modal-content" >
-                    <h3>Sửa từ vựng</h3>
-                    <form id="edit-vocab-form">
-                        <input type="text" id="edit-japanese" value="${vocab.japanese}" placeholder="Kanji" required>
-                        <input type="text" id="edit-hiragana" value="${vocab.hiragana}" placeholder="Hiragana" required>
-                        <input type="text" id="edit-meaning" value="${vocab.meaning}" placeholder="Nghĩa tiếng Việt" required>
-                        <select id="edit-type">
-                            <option value="Danh từ" ${vocab.type === "Danh từ" ? "selected" : ""}>Danh từ</option>
-                            <option value="Động từ" ${vocab.type === "Động từ" ? "selected" : ""}>Động từ</option>
-                            <option value="Tính từ" ${vocab.type === "Tính từ" ? "selected" : ""}>Tính từ</option>
-                        </select>
-                        <div class="modal-buttons">
-                            <button type="submit" id="save-edit">Lưu</button>
-                            <button type="button" id="cancel-edit">Hủy</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(editForm);
 
-            editForm.querySelector("#save-edit").addEventListener("click", async (e) => {
-                e.preventDefault();
-                await state.editVocabulary(id, {
-                    japanese: document.getElementById("edit-japanese").value,
-                    hiragana: document.getElementById("edit-hiragana").value,
-                    meaning: document.getElementById("edit-meaning").value,
-                    type: document.getElementById("edit-type").value,
-                });
-                editForm.remove();
-                await this.displayVocabulary(vocab.lesson, vocab.level);
-            });
-            editForm.querySelector("#cancel-edit").addEventListener("click", () => editForm.remove());
-        } catch (error) {
-            console.error("Error editing vocabulary:", error);
-            alert("Có lỗi khi sửa từ vựng.");
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.classList.add("dark");
         }
+
+        darkModeToggle.addEventListener("click", () => {
+            document.documentElement.classList.toggle("dark");
+            
+
+            
+            if (document.documentElement.classList.contains("dark")) {
+                localStorage.setItem("theme", "dark");
+                darkModeToggle.querySelector('span').textContent = "light_mode";
+            } else {
+                localStorage.setItem("theme", "light");
+                darkModeToggle.querySelector('span').textContent = "dark_mode";
+            }
+        });
     }
 };

@@ -1,105 +1,74 @@
 import { state } from "./state.js";
 import { ui } from "./components/ui.js";
-import { flashcard } from "./components/flashcard.js";
-import { stats } from "./components/stats.js";
-import { testObj } from "./components/test.js";
-import { review } from "./components/review.js";
-import { tts } from "./components/tts.js";
+import { vocabTable } from "./components/vocabTable.js";
+import { dashboardStats } from "./components/dashboardStats.js";
 import { search } from "./components/search.js";
+import { actions } from "./components/actions.js";
+import { historyModal } from "./components/historyModal.js";
+import { tts } from "./components/tts.js";
+import { wordDetailsModal } from "./components/wordDetailsModal.js";
 
 window.onload = async function () {
     try {
+        // Render skeletons immediately
+        vocabTable.renderSkeleton(10);
+        dashboardStats.renderSkeleton();
+
+        // Fetch initial data
         await state.loadFromServer();
-        ui.updateLessonSidebar();
 
-        // Add event listeners for review-section
-        document.getElementById("start-review").addEventListener("click", () => review.startSession());
-        document.getElementById("start-flashcard").addEventListener("click", () => flashcard.start());
-        document.getElementById("show-stats").addEventListener("click", () => stats.show());
-        document.getElementById("show-difficult").addEventListener("click", () => review.showDifficultWords());
-        document.getElementById("start-test").addEventListener("click", () => testObj.start());
+        // Initialize UI
+        ui.initSidebar();
 
-        // Init TTS context menu
-        tts.initContextMenu();
+        // Determine the default level & lesson to show initially
+        let defaultLevel = "N5";
+        let defaultLesson = "1";
 
-        // Init Global Search
-        search.init();
-
-        // Init Dark Mode
-        const darkModeToggle = document.getElementById("dark-mode-toggle");
-        if (darkModeToggle) {
-            // Check previous preference
-            if (localStorage.getItem("theme") === "dark") {
-                document.body.classList.add("dark-mode");
+        const sortedLevels = Object.keys(state.lessons).sort((a, b) => b.localeCompare(a));
+        if (sortedLevels.length > 0) {
+            defaultLevel = sortedLevels[sortedLevels.length - 1];
+            const lessonsInLevel = Object.keys(state.lessons[defaultLevel]).sort((a, b) => Number(a) - Number(b));
+            if (lessonsInLevel.length > 0) {
+                defaultLesson = lessonsInLevel[0];
             }
-
-            darkModeToggle.addEventListener("click", () => {
-                document.body.classList.toggle("dark-mode");
-                if (document.body.classList.contains("dark-mode")) {
-                    localStorage.setItem("theme", "dark");
-                } else {
-                    localStorage.setItem("theme", "light");
-                }
-            });
         }
 
-        // Init Hiragana Toggle
+        // Render initial dashboard
+        await vocabTable.render(defaultLesson, defaultLevel);
+        dashboardStats.updateStats();
+        dashboardStats.initGoalSetting();
+
+        // Toggle Hiragana
         const toggleHiragana = document.getElementById("toggle-hiragana");
-        const mainContent = document.querySelector(".main-content");
-        if (toggleHiragana) {
+        const vocabSection = document.querySelector(".vocabulary-section");
+
+        if (toggleHiragana && vocabSection) {
+            // Restore saved preference
+            const savedPref = localStorage.getItem("showHiragana");
+            if (savedPref === "false") {
+                toggleHiragana.checked = false;
+                vocabSection.classList.add("hide-hiragana");
+            }
+
             toggleHiragana.addEventListener("change", (e) => {
                 if (e.target.checked) {
-                    mainContent.classList.remove("hide-hiragana");
+                    vocabSection.classList.remove("hide-hiragana");
+                    localStorage.setItem("showHiragana", "true");
                 } else {
-                    mainContent.classList.add("hide-hiragana");
+                    vocabSection.classList.add("hide-hiragana");
+                    localStorage.setItem("showHiragana", "false");
                 }
             });
         }
 
-        // Add event listeners for flashcard controls
-        document.getElementById("prev-card").addEventListener("click", () => flashcard.previousCard());
-        document.getElementById("next-card").addEventListener("click", () => flashcard.nextCard());
-        document.getElementById("exit-flashcard").addEventListener("click", () => flashcard.exit());
+        search.init();
+        actions.init();
+        historyModal.init();
+        wordDetailsModal.init();
+        tts.initContextMenu();
 
-        // Add event listeners for statistics
-        document.getElementById("close-stats").addEventListener("click", () => stats.close());
-
-        // Add event listeners for test
-        document.getElementById("close-test").addEventListener("click", () => testObj.close());
-
-
-
-        // Add event listeners for review
-        document.getElementById("review-answer").addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                const answer = this.value.trim().toLowerCase();
-                if (!review.currentReviewVocab) return;
-
-                const correctAnswer = review.currentReviewVocab.meaning.toLowerCase();
-                const resultElement = document.getElementById("review-result");
-                if (answer === correctAnswer) {
-                    resultElement.textContent = `✅ Chính xác! "${correctAnswer}"`;
-                    resultElement.className = "review-result correct";
-                    review.checkAnswer(true);
-                } else {
-                    resultElement.textContent = `❌ Sai rồi! Đáp án đúng là: "${correctAnswer}"`;
-                    resultElement.className = "review-result incorrect";
-                    review.checkAnswer(false);
-                }
-                this.value = "";
-                setTimeout(() => {
-                    resultElement.textContent = "";
-                    resultElement.className = "review-result";
-                }, 2000);
-            }
-        });
-
-        // Add event listeners for flashcard
-        document.querySelector(".flashcard").addEventListener("click", function () {
-            this.classList.toggle("flipped");
-        });
     } catch (error) {
-        console.error("Initialization error:", error);
-        alert("Có lỗi khi khởi tạo ứng dụng. Vui lòng tải lại trang.");
+        console.error("Initialization error for index.html:", error);
+        alert("Có lỗi khi khởi tạo giao diện mới. Vui lòng tải lại trang.");
     }
 };

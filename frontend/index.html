@@ -1,208 +1,503 @@
-<!doctype html>
-<html lang="vi">
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <title>Học Tiếng Nhật</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Light Mode Japanese Learning Dashboard</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+
   <script type="module" src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#6366f1",
+            "off-white": "#f8fafc",
+            "sky-blue": "#0ea5e9",
+            "gold": "#eab308",
+            "emerald": "#10b981",
+            "soft-purple": "#8b5cf6",
+            "vibrant-orange": "#f97316"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "2xl": "2rem",
+            "3xl": "2.5rem"
+          },
+        },
+      },
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer components {
+      .glass-table {
+        @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white dark:border-slate-700 shadow-xl;
+      }
+      .action-card-white {
+        @apply flex flex-col items-center justify-center p-4 rounded-3xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 transition-all active:scale-95;
+      }
+      .action-card-white > .font-bold.text-slate-800 {
+        @apply dark:text-slate-100;
+      }
+      .jlpt-nav-item {
+        @apply flex items-center justify-center w-11 h-11 rounded-2xl transition-all font-bold text-sm border;
+      }
+    }
+  </style>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    html.dark ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+
+    html.dark ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
 </head>
 
-<body>
-  <div class="sidebar" id="lesson-sidebar">
-    <h2>Bài Học</h2>
-    <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
-  </div>
+<body
+  class="bg-off-white dark:bg-slate-900 font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden transition-colors duration-300">
+  <div class="flex h-screen w-full relative">
 
-  <div class="main-content">
-    <div class="vocabulary-section">
-      <div class="review-section">
-        <div class="review-buttons">
-          <button id="start-review">Bắt đầu ôn tập</button>
-          <button id="start-flashcard">Học Flashcard</button>
-          <button id="show-stats">Thống kê</button>
-          <button id="show-difficult">Từ khó</button>
-          <button id="start-test">Kiểm tra</button>
+    <aside
+      class="hidden md:flex flex-col w-64 md:w-72 flex-shrink-0 items-center py-8 border-r border-slate-200/60 dark:border-slate-700/60 bg-white dark:bg-slate-800 z-50 overflow-y-auto transition-colors duration-300"
+      id="lesson-sidebar">
+      <div
+        class="size-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center mb-8 mx-auto flex-shrink-0">
+        <span class="text-white font-black text-xl italic">J</span>
+      </div>
+      <div class="flex flex-col gap-2 flex-1 w-full" id="lesson-nav-container">
+        <!-- Will be populated by ui.js -->
+      </div>
+      <div class="flex flex-col gap-6 mt-auto">
+        <!-- Dark mode button moved to top right -->
+      </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto relative main-content">
+
+      <!-- NOTE: Search Bar -->
+      <div
+        class="sticky top-0 z-40 bg-off-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-4 md:px-6 md:py-6 relative transition-colors duration-300">
+        <div class="relative max-w-2xl mx-auto search-container">
+          <span
+            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
+          <input id="global-search-input"
+            class="w-full h-14 pl-12 pr-6 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+            placeholder="Tìm kiếm từ vựng (Kanji, Kana, Tiếng Việt...)" type="text" autocomplete="off" />
+          <ul id="search-results-dropdown"
+            class="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-slate-100 hidden z-50 max-h-60 overflow-y-auto">
+          </ul>
         </div>
-        <div class="search-container" style="position: relative; width: 250px">
-          <input type="text" id="global-search-input" placeholder="Tìm kiếm từ vựng..." style="
-                width: 100%;
-                border-radius: 20px;
-                font-size: 0.9em;
-                padding: 10px 15px;
-                border: 1px solid var(--input-border);
-                background-color: var(--card-bg);
-                color: var(--text-color);
-                box-sizing: border-box;
-              " autocomplete="off" />
-          <ul id="search-results-dropdown" class="search-dropdown" style="display: none"></ul>
-        </div>
-      </div>
 
-      <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-          ">
-        <h2 id="current-lesson-title" style="margin: 0">Chọn bài học</h2>
-        <label style="
-              display: flex;
-              align-items: center;
-              cursor: pointer;
-              font-weight: 500;
-            ">
-          <input type="checkbox" id="toggle-hiragana" checked style="margin-right: 8px; width: 18px; height: 18px" />
-          Hiển thị Hiragana
-        </label>
-      </div>
+        <!-- Toolbar (Top Right) -->
+        <div class="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex items-center gap-3 z-50">
 
-
-
-      <div id="review-container">
-        <h3 id="review-word"></h3>
-        <p id="review-hint"></p>
-        <input type="text" id="review-answer" placeholder="Nhập nghĩa" />
-        <p id="review-result" class="review-result"></p>
-      </div>
-
-      <table class="vocab-table" id="vocab-table">
-        <thead>
-          <tr>
-            <th>Từ</th>
-            <th>Hiragana</th>
-            <th>Nghĩa</th>
-            <th>Loại</th>
-            <th>Trạng Thái</th>
-            <th>Độ khó</th>
-          </tr>
-        </thead>
-        <tbody id="vocab-list"></tbody>
-      </table>
-
-      <div id="flashcard-container" style="display: none">
-        <div class="flashcard">
-          <div class="flashcard-inner">
-            <div class="flashcard-front">
-              <h3 id="flashcard-japanese"></h3>
+          <!-- Toggle Hiragana Switch -->
+          <label
+            class="hidden sm:flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group"
+            title="Ẩn/Hiện cách đọc (Hiragana)">
+            <div class="relative">
+              <input type="checkbox" id="toggle-hiragana" class="sr-only peer" checked>
+              <div
+                class="block bg-slate-200 dark:bg-slate-700 w-10 h-6 rounded-full transition-colors peer-checked:bg-indigo-500">
+              </div>
+              <div
+                class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4">
+              </div>
             </div>
-            <div class="flashcard-back">
-              <p id="flashcard-hiragana"></p>
-              <p id="flashcard-meaning"></p>
-              <p id="flashcard-type"></p>
-            </div>
-          </div>
-        </div>
-        <div class="flashcard-controls">
-          <button id="prev-card">← Trước</button>
-          <span id="card-progress">0/0</span>
-          <button id="next-card">Tiếp →</button>
-          <button id="exit-flashcard" class="exit-flashcard">Thoát</button>
-        </div>
-      </div>
+            <span
+              class="ml-3 text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Hiragana</span>
+          </label>
 
-      <div class="stats-overlay" style="display: none"></div>
-      <div id="statistics-container" style="display: none">
-        <div class="statistics-header">
-          <h2>Thống kê học tập</h2>
-          <button id="close-stats" class="close-stats">✕</button>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Tổng số từ vựng</h3>
-            <p id="total-words">0</p>
-          </div>
-          <div class="stat-card">
-            <h3>Đã thuộc</h3>
-            <p id="mastered-words">0</p>
-          </div>
-          <div class="stat-card">
-            <h3>Đang học</h3>
-            <p id="learning-words">0</p>
-          </div>
-          <div class="stat-card">
-            <h3>Chưa học</h3>
-            <p id="not-learned-words">0</p>
-          </div>
-        </div>
-        <div class="stats-chart">
-          <h3>Tiến độ học tập</h3>
-          <canvas id="learning-progress"></canvas>
-        </div>
-        <div class="stats-review">
-          <h3>Kết quả ôn tập</h3>
-          <canvas id="review-results"></canvas>
-        </div>
-      </div>
-
-      <div id="test-container" style="display: none">
-        <div class="test-header">
-          <h2>Kiểm tra từ vựng</h2>
-          <div class="test-info">
-            <span id="test-timer">00:00</span>
-            <span id="test-progress">0/0</span>
-          </div>
-        </div>
-        <div class="question-container">
-          <h3 id="test-word"></h3>
-          <p id="test-hint"></p>
-          <div id="test-options" class="test-options"></div>
-        </div>
-      </div>
-
-      <div id="test-results" style="display: none">
-        <h2>Kết quả kiểm tra</h2>
-        <div class="test-score">
-          <h3>Điểm số: <span id="final-score">0</span></h3>
-          <p>Đúng: <span id="correct-count">0</span></p>
-          <p>Sai: <span id="wrong-count">0</span></p>
-          <p>Thời gian: <span id="time-taken">00:00</span></p>
-        </div>
-        <div class="test-review">
-          <h3>Chi tiết bài làm</h3>
-          <div id="answers-review"></div>
-        </div>
-        <button id="close-test">Đóng</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="custom-context-menu" class="context-menu" style="display: none">
-    <div class="menu-item" id="menu-read-text">
-      <span class="icon">🔊</span> Đọc từ vựng
-    </div>
-    <!-- Word Detail Modal -->
-    <div id="word-detail-modal" class="modal" style="display: none">
-      <div class="modal-content" style="max-width: 500px">
-        <div class="modal-header">
-          <h3 id="detail-japanese" style="font-size: 2em; margin: 0; color: var(--primary-btn)"></h3>
-          <button id="close-detail-modal" class="close-detail" style="
-                font-size: 1.5em;
-                border: none;
-                background: transparent;
-                cursor: pointer;
-                color: var(--text-color);
-              ">
-            &times;
+          <!-- Dark Mode Toggle Button -->
+          <button id="dark-mode-toggle"
+            class="size-9 md:size-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-md hover:scale-105 active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-base">dark_mode</span>
           </button>
         </div>
-        <div class="modal-body" style="padding-top: 20px; font-size: 1.1em; line-height: 1.8">
-          <p><strong>Hiragana:</strong> <span id="detail-hiragana"></span></p>
-          <p><strong>Nghĩa:</strong> <span id="detail-meaning"></span></p>
-          <p>
-            <strong>Ngữ pháp (Loại từ):</strong>
-            <span id="detail-type"></span>
+      </div>
+
+      <div class="px-4 md:px-6 pb-24 md:pb-20 max-w-7xl mx-auto vocabulary-section">
+
+        <!-- NOTE: Quick Action Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mt-2 review-buttons">
+          <button id="start-review" class="action-card-white group">
+            <div
+              class="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-3 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-2xl font-bold">bolt</span>
+            </div>
+            <span class="font-bold text-slate-800 text-sm">Bắt đầu ôn tập</span>
+            <span class="text-[10px] text-indigo-500 font-bold mt-1 uppercase tracking-wider">42 Đang chờ</span>
+          </button>
+
+          <button id="start-flashcard" class="action-card-white group">
+            <div
+              class="size-12 rounded-2xl bg-gray-200 flex items-center justify-center mb-3 text-gray-600 group-hover:bg-emerald-600 group-hover:bg-gray-900/50 dark:group-hover:bg-white dark:group-hover:text-black transition-colors">
+              <span class="material-symbols-outlined text-2xl font-bold">layers</span>
+            </div>
+            <span class="font-bold text-slate-800 text-sm">Flashcards</span>
+            <span class="text-[10px] text-emerald-500 font-bold mt-1 uppercase tracking-wider">Ngẫu nhiên</span>
+          </button>
+
+          <button id="show-stats" class="action-card-white group">
+            <div
+              class="size-12 rounded-2xl bg-gold/10 flex items-center justify-center mb-3 text-gold group-hover:bg-gold group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-2xl font-bold">trending_up</span>
+            </div>
+            <span class="font-bold text-slate-800 text-sm">Thống kê</span>
+            <span class="text-[10px] text-gold font-bold mt-1 uppercase tracking-wider">Level UP</span>
+          </button>
+
+          <button id="show-difficult" class="action-card-white group">
+            <div
+              class="size-12 rounded-2xl bg-rose-100 flex items-center justify-center mb-3 text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-2xl font-bold">heart_broken</span>
+            </div>
+            <span class="font-bold text-slate-800 text-sm">Từ khó</span>
+            <span class="text-[10px] text-rose-500 font-bold mt-1 uppercase tracking-wider">12 Từ</span>
+          </button>
+
+          <button id="start-test" class="action-card-white group">
+            <div
+              class="size-12 rounded-2xl bg-sky-blue/10 flex items-center justify-center mb-3 text-sky-blue group-hover:bg-sky-blue group-hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-2xl font-bold">assignment</span>
+            </div>
+            <span class="font-bold text-slate-800 text-sm">Kiểm tra</span>
+            <span class="text-[10px] text-sky-blue font-bold mt-1 uppercase tracking-wider">Làm bài</span>
+          </button>
+        </div>
+
+        <!-- NOTE: Data Table -->
+        <div class="mt-12">
+          <div class="flex items-center justify-between mb-6">
+            <h2 id="current-lesson-title" class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              Từ vựng gần đây
+            </h2>
+            <button id="view-history-btn"
+              class="text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/20 px-4 py-2 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/30 transition-colors">Xem
+              lịch sử</button>
+          </div>
+
+          <div class="glass-table rounded-3xl overflow-hidden border border-slate-200/50">
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto relative">
+              <table class="w-full border-collapse vocab-table" id="vocab-table">
+                <thead class="sticky top-0 z-20 shadow-sm relative">
+                  <tr class="bg-slate-50 dark:bg-slate-800/90 text-left transition-colors duration-300">
+                    <th
+                      class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                      Từ vựng (Kanji)
+                    </th>
+                    <th
+                      class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                      Hiragana</th>
+                    <th
+                      class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                      Nghĩa</th>
+                    <th
+                      class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-center">
+                      Trạng thái</th>
+                    <th
+                      class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-right">
+                      Độ
+                      khó</th>
+                  </tr>
+                </thead>
+                <tbody id="vocab-list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                  <!-- Data is dynamically rendered by vocabTable.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTE: Bottom Stats Banner -->
+        <div
+          class="mt-8 md:mt-12 p-6 md:p-8 rounded-3xl bg-slate-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between shadow-2xl relative overflow-hidden group gap-6 md:gap-0">
+          <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-transparent"></div>
+          <div class="relative z-10 w-full md:w-auto">
+            <div class="flex items-center gap-2 mb-2">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-indigo-300">Mục tiêu tuần (Weekly Goal)</p>
+              <button id="edit-weekly-goal-btn"
+                class="size-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                title="Thiết lập mục tiêu">
+                <span class="material-symbols-outlined text-[14px] text-indigo-300">edit</span>
+              </button>
+            </div>
+            <h3 class="text-3xl font-black">120/200 <span class="text-lg font-medium opacity-60">Từ thuộc</span></h3>
+            <div class="w-full md:w-64 h-3 bg-white/10 rounded-full mt-4 overflow-hidden">
+              <div class="h-full bg-indigo-500 w-[60%] rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
+            </div>
+
+            <!-- Inline Goal Editor -->
+            <div id="weekly-goal-editor" class="hidden mt-4 flex items-center gap-2 bg-white/10 rounded-xl p-3">
+              <label class="text-xs text-indigo-200 font-semibold whitespace-nowrap">Mục tiêu:</label>
+              <input id="weekly-goal-input" type="number" min="1" max="9999" value="200"
+                class="w-20 px-2 py-1.5 rounded-lg bg-white/20 text-white text-sm font-bold text-center border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 placeholder:text-white/40"
+                placeholder="200" />
+              <span class="text-xs text-indigo-200/60">từ/tuần</span>
+              <button id="save-weekly-goal-btn"
+                class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-bold transition-colors">
+                Lưu
+              </button>
+              <button id="cancel-weekly-goal-btn"
+                class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 text-xs font-bold transition-colors">
+                Huỷ
+              </button>
+            </div>
+          </div>
+          <div class="text-left md:text-right relative z-10 flex md:block items-center gap-4">
+            <div
+              class="size-12 md:size-16 rounded-2xl bg-white/10 flex items-center justify-center mb-0 md:mb-2 mx-0 md:mx-auto shadow-inner">
+              <span class="material-symbols-outlined text-3xl md:text-4xl text-indigo-300">military_tech</span>
+            </div>
+            <p class="text-xs font-bold uppercase tracking-widest text-indigo-200">Diamond League</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Statistics Modal Overlay -->
+  <div id="stats-overlay"
+    class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 hidden opacity-0">
+    <div
+      class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.1)] dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-6 md:p-8 max-w-4xl w-full transform transition-all duration-300 scale-95 opacity-0 relative overflow-hidden"
+      id="stats-modal-content">
+      <!-- Decorative background blur -->
+      <div
+        class="absolute -top-32 -right-32 size-64 bg-indigo-200/50 dark:bg-indigo-900/40 blur-3xl rounded-full pointer-events-none z-0">
+      </div>
+
+      <div class="flex items-center justify-between mb-8 relative z-10">
+        <div>
+          <h2 class="text-3xl font-black text-slate-800 dark:text-white">Thống kê học tập</h2>
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Theo dõi tiến độ nắm bắt từ vựng toàn
+            cục</p>
+        </div>
+        <button id="close-stats-btn"
+          class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors shadow-sm border border-slate-200 dark:border-slate-600">
+          <span class="material-symbols-outlined font-bold">close</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 relative z-10">
+        <!-- Total -->
+        <div
+          class="bg-slate-50 dark:bg-slate-700/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-600 shadow-sm text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Tổng số từ</p>
+          <p id="stats-total-words" class="text-3xl font-black text-slate-800 dark:text-white">0</p>
+        </div>
+        <!-- Mastered -->
+        <div
+          class="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl p-4 border border-emerald-200 dark:border-emerald-700 shadow-sm text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Đã thuộc
           </p>
-          <p><strong>Bài học:</strong> <span id="detail-lesson"></span></p>
+          <p id="stats-mastered-words" class="text-3xl font-black text-emerald-700 dark:text-emerald-300">0</p>
+        </div>
+        <!-- Learning -->
+        <div
+          class="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-4 border border-amber-200 dark:border-amber-700 shadow-sm text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">Đang học</p>
+          <p id="stats-learning-words" class="text-3xl font-black text-amber-700 dark:text-amber-300">0</p>
+        </div>
+        <!-- Not Learned -->
+        <div
+          class="bg-sky-50 dark:bg-sky-900/20 rounded-2xl p-4 border border-sky-200 dark:border-sky-700 shadow-sm text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400 mb-1">Chưa học</p>
+          <p id="stats-not-learned-words" class="text-3xl font-black text-sky-700 dark:text-sky-300">0</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10 h-72">
+        <div
+          class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-inner p-4 flex flex-col items-center justify-center h-full relative">
+          <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 absolute top-4 left-4 z-10">Tỷ lệ nắm vững
+          </h3>
+          <div class="w-full h-full pb-2 pt-6 flex items-center justify-center relative">
+            <canvas id="learning-progress-chart" class="max-h-full"></canvas>
+          </div>
+        </div>
+        <div
+          class="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-inner p-4 flex flex-col items-center justify-center h-full relative">
+          <h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 absolute top-4 left-4">Dữ liệu đánh giá (Mô
+            phỏng)</h3>
+          <div class="flex-1 flex flex-col items-center justify-center w-full h-full text-center p-6 mt-4">
+            <span class="material-symbols-outlined text-5xl text-slate-200 dark:text-slate-600 mb-2">query_stats</span>
+            <p class="text-slate-400 dark:text-slate-500 font-medium text-sm">Chưa có đủ điểm dữ liệu lịch sử bài kiểm
+              tra để vẽ biểu đồ. Hãy làm bài Test thường xuyên hơn nhé!</p>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <div id="api-loading-overlay" class="api-loading-overlay" style="display: none;">
-    <div class="loader-content">
-      <div class="spinner"></div>
-      <p>Chờ tí nhé...</p>
+
+  <!-- NOTE: Mobile Bottom Navigation -->
+  <nav
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl px-8 py-4 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl z-50 md:hidden gap-8">
+    <a class="text-indigo-600 dark:text-indigo-400 scale-110" href="#"><span
+        class="material-symbols-outlined font-bold">dashboard</span></a>
+    <a class="text-slate-400 dark:text-slate-500" href="#"><span class="material-symbols-outlined">menu_book</span></a>
+    <a class="text-slate-400 dark:text-slate-500" href="#"><span class="material-symbols-outlined">analytics</span></a>
+    <a class="text-slate-400 dark:text-slate-500" href="#"><span class="material-symbols-outlined">person</span></a>
+  </nav>
+
+  <!-- Learning History Modal Overlay -->
+  <div id="history-overlay"
+    class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 hidden opacity-0">
+    <div
+      class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.1)] dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-6 md:p-8 max-w-2xl w-full transform transition-all duration-300 scale-95 opacity-0 relative overflow-hidden flex flex-col h-[600px] max-h-[90vh]"
+      id="history-modal-content">
+
+      <!-- Decorative background blur -->
+      <div
+        class="absolute -top-32 -right-32 size-64 bg-emerald-200/50 dark:bg-emerald-900/40 blur-3xl rounded-full pointer-events-none z-0">
+      </div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6 relative z-10 shrink-0">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-500">history</span>
+            Lịch sử học tập
+          </h2>
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Hoạt động mới nhất của bạn</p>
+        </div>
+        <button id="close-history-btn"
+          class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors shadow-sm border border-slate-200 dark:border-slate-600">
+          <span class="material-symbols-outlined font-bold">close</span>
+        </button>
+      </div>
+
+      <!-- Content Feed -->
+      <div class="flex-1 overflow-y-auto pr-2 relative z-10 custom-scrollbar" id="history-feed-container">
+        <div class="flex flex-col gap-4" id="history-feed-list">
+          <!-- Will be dynamically populated by historyModal.js -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="api-loading-overlay"
+    class="fixed inset-0 z-[100] bg-slate-900/20 dark:bg-slate-900/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300"
+    style="display: none;">
+    <div
+      class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-2xl border border-white/50 dark:border-slate-700/50 flex flex-col items-center gap-4">
+      <div class="relative flex items-center justify-center">
+        <div class="absolute w-12 h-12 rounded-full border-4 border-slate-100 dark:border-slate-700"></div>
+        <div class="absolute w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+        <span class="material-symbols-outlined text-indigo-500 absolute">cloud_sync</span>
+      </div>
+      <p class="text-sm font-bold text-slate-600 dark:text-slate-300">Đang đồng bộ...</p>
+    </div>
+  </div>
+
+  <!-- Custom Context Menu for Text-to-Speech -->
+  <div id="custom-context-menu"
+    class="fixed z-[9999] bg-white dark:bg-slate-800 shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden py-1.5 w-48 text-sm font-medium transition-opacity duration-200"
+    style="display: none; opacity: 0;">
+    <button id="menu-read-text"
+      class="w-full text-left px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 text-slate-700 dark:text-slate-200 flex items-center gap-2.5 transition-colors group">
+      <span
+        class="material-symbols-outlined text-indigo-500 text-[18px] group-hover:scale-110 transition-transform">volume_up</span>
+      Đọc đoạn chọn
+    </button>
+  </div>
+
+  <!-- Word Detail Modal -->
+  <div id="word-detail-modal"
+    class="fixed inset-0 z-[110] bg-slate-900/40 dark:bg-slate-900/80 backdrop-blur-sm flex items-center justify-center transition-all duration-300 pointer-events-none opacity-0">
+    <div
+      class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] rounded-3xl w-full max-w-sm transform transition-all duration-300 scale-95 opacity-0 relative overflow-hidden"
+      id="word-detail-content">
+
+      <!-- Decorative background blur -->
+      <div
+        class="absolute -top-24 -right-24 size-48 bg-indigo-200/50 dark:bg-indigo-900/40 blur-3xl rounded-full pointer-events-none z-0">
+      </div>
+
+      <!-- Header -->
+      <div
+        class="px-6 py-6 border-b border-slate-100 dark:border-slate-700/60 relative z-10 flex justify-between items-start">
+        <div>
+          <h3 id="detail-japanese" class="text-4xl font-black text-slate-900 dark:text-white mb-1 tracking-tight"></h3>
+          <p id="detail-hiragana" class="text-lg font-medium text-indigo-500 dark:text-indigo-400"></p>
+        </div>
+        <button id="close-detail-modal"
+          class="size-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-6 relative z-10 space-y-4 flex flex-col items-center text-center">
+        <div class="w-full">
+          <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Nghĩa
+            tiếng Việt</p>
+          <p id="detail-meaning" class="text-xl font-bold text-slate-800 dark:text-slate-200"></p>
+        </div>
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent my-2">
+        </div>
+        <div class="flex gap-4 w-full">
+          <div class="flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Loại từ
+            </p>
+            <p id="detail-type"
+              class="text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/50 inline-block px-3 py-1 rounded-lg">
+            </p>
+          </div>
+          <div class="flex-1">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Bài học
+            </p>
+            <p id="detail-lesson"
+              class="text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/50 inline-block px-3 py-1 rounded-lg">
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </body>

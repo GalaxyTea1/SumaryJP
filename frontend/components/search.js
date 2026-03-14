@@ -1,116 +1,128 @@
 import { state } from "../state.js";
+import { vocabTable } from "./vocabTable.js";
 
 export const search = {
     init() {
-        this.searchInput = document.getElementById("global-search-input");
-        this.dropdown = document.getElementById("search-results-dropdown");
-        this.detailModal = document.getElementById("word-detail-modal");
-        this.closeDetailBtn = document.getElementById("close-detail-modal");
-        
-        if (!this.searchInput || !this.dropdown || !this.detailModal) return;
+        const searchInput = document.getElementById("global-search-input");
+        const resultsDropdown = document.getElementById("search-results-dropdown");
 
-        // Hide dropdown when clicking outside
-        document.addEventListener("click", (e) => {
-            if (!this.searchInput.contains(e.target) && !this.dropdown.contains(e.target)) {
-                this.dropdown.style.display = "none";
+        if (!searchInput || !resultsDropdown) return;
+
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            resultsDropdown.innerHTML = "";
+
+            if (query.length === 0) {
+                resultsDropdown.classList.add("hidden");
+                // Reset to current lesson view
+                if(state.currentLesson) {
+                    vocabTable.render(state.currentLesson.lesson, state.currentLesson.level);
+                }
+                return;
             }
-        });
 
-        // Search logic on input
-        this.searchInput.addEventListener("input", (e) => this.handleSearch(e.target.value));
 
-        // Enter key logic
-        this.searchInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                this.handleSearch(e.target.value);
-            }
-        });
+            const results = state.vocabulary.filter(v =>
+                v.japanese.toLowerCase().includes(query) ||
+                v.hiragana.toLowerCase().includes(query) ||
+                v.meaning.toLowerCase().includes(query)
+            );
 
-        // Close details modal
-        this.closeDetailBtn.addEventListener("click", () => {
-            this.detailModal.style.display = "none";
-        });
-        this.detailModal.addEventListener("click", (e) => {
-            if (e.target === this.detailModal) {
-                this.detailModal.style.display = "none";
-            }
-        });
-    },
+            if (results.length > 0) {
+                resultsDropdown.classList.remove("hidden");
+                results.slice(0, 5).forEach((vocab) => {
+                    const li = document.createElement("li");
+                    li.className = "px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex justify-between items-center";
+                    li.innerHTML = `
+                        <div>
+                            <span class="font-bold text-slate-800 dark:text-white block">${vocab.japanese}</span>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">${vocab.hiragana} - ${vocab.meaning}</span>
+                        </div>
+                        <span class="text-[10px] text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">Bài ${vocab.lesson}</span>
+                    `;
+                    
+                    li.addEventListener("click", () => {
 
-    handleSearch(query) {
-        query = query.trim().toLowerCase();
-        if (query === "") {
-            this.dropdown.style.display = "none";
-            this.dropdown.innerHTML = "";
-            return;
-        }
+                        searchInput.value = "";
+                        resultsDropdown.classList.add("hidden");
 
-        // Get all vocabularies
-        const allVocabs = [];
-        Object.entries(state.lessons).forEach(([level, lessons]) => {
-            Object.entries(lessons).forEach(([lessonName, vocabList]) => {
-                vocabList.forEach(vocab => {
-                    allVocabs.push({ ...vocab, level_info: level, lesson_info: lessonName });
+                        // Try to activate the correct sidebar button
+                        const sidebarItems = document.querySelectorAll('#lesson-sidebar .lesson-nav-active, #lesson-sidebar button');
+                        let targetLessonBtn = Array.from(sidebarItems).find(btn => btn.textContent === `Bài ${vocab.lesson}` && btn.closest('.flex-col').previousElementSibling.textContent.includes(vocab.level));
+                        
+                        if(targetLessonBtn){
+                            targetLessonBtn.click();
+                        } else {
+                           vocabTable.render(vocab.lesson, vocab.level);
+                        }
+                    });
+                    
+                    resultsDropdown.appendChild(li);
                 });
-            });
+            } else {
+                resultsDropdown.classList.remove("hidden");
+                const noResultLi = document.createElement("li");
+                noResultLi.className = "px-4 py-3 text-sm text-slate-500 dark:text-slate-400";
+                noResultLi.textContent = `Không tìm thấy "${query}"`;
+                resultsDropdown.appendChild(noResultLi);
+            }
+
+            // Live-filter the main table as well
+            this.renderSearchResultsTable(results);
         });
 
-        // Filter occurrences
-        const results = allVocabs.filter(vocab => {
-            return vocab.japanese.toLowerCase().includes(query) ||
-                   vocab.hiragana.toLowerCase().includes(query) ||
-                   vocab.meaning.toLowerCase().includes(query) ||
-                   vocab.type.toLowerCase().includes(query);
-        });
 
-        // Limit results to 15 to keep dropdown manageable
-        const limitedResults = results.slice(0, 15);
-        this.renderDropdown(limitedResults);
+        document.addEventListener("click", (e) => {
+            if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+                resultsDropdown.classList.add("hidden");
+            }
+        });
     },
 
-    renderDropdown(results) {
-        this.dropdown.innerHTML = "";
-
-        if (results.length === 0) {
-            this.dropdown.innerHTML = `<li style="text-align: center; color: var(--text-color); opacity: 0.7;">Không tìm thấy.</li>`;
-            this.dropdown.style.display = "block";
-            return;
+    renderSearchResultsTable(results) {
+        const titleEl = document.getElementById("current-lesson-title");
+        if (titleEl) {
+            titleEl.textContent = `Kết quả tìm kiếm (${results.length})`;
         }
-
-        results.forEach(vocab => {
-            const li = document.createElement("li");
-            li.innerHTML = `
-                <div>
-                    <div class="search-match-jp">${vocab.japanese} ${vocab.hiragana !== vocab.japanese ? `(${vocab.hiragana})` : ''}</div>
-                    <div class="search-match-vi">${vocab.meaning}</div>
-                </div>
-                <div style="font-size: 0.8em; opacity: 0.6;">${vocab.level_info} - Bài ${vocab.lesson_info}</div>
-            `;
-            li.addEventListener("click", () => {
-                this.searchInput.value = "";
-                this.dropdown.style.display = "none";
-                this.showWordDetail(vocab);
-            });
-            this.dropdown.appendChild(li);
-        });
-
-        this.dropdown.style.display = "block";
-    },
-
-    showWordDetail(vocab) {
-        document.getElementById("detail-japanese").textContent = vocab.japanese;
-        document.getElementById("detail-hiragana").textContent = vocab.hiragana;
-        document.getElementById("detail-meaning").textContent = vocab.meaning;
-        document.getElementById("detail-type").textContent = vocab.type;
-        document.getElementById("detail-lesson").textContent = `${vocab.level_info} - Bài ${vocab.lesson_info}`;
         
-        // Since we don't have "example" in current backend, statically show or hide it
-        const exampleText = vocab.example ? vocab.example : "Hiện chưa có ví dụ cho từ này.";
-        let exampleEl = document.getElementById("detail-example");
-        if (exampleEl) {
-            exampleEl.textContent = exampleText;
+        const tbody = document.getElementById("vocab-list");
+        if (!tbody) return;
+        
+        tbody.innerHTML = "";
+        
+        if(results.length === 0) {
+             tbody.innerHTML = `<tr><td colspan="6" class="px-8 py-6 text-center text-slate-400 dark:text-slate-500">Không tìm thấy từ vựng nào.</td></tr>`;
+             return;
         }
 
-        this.detailModal.style.display = "flex";
+        // Simplified read-only row for search results
+        results.forEach((vocab) => {
+            const row = document.createElement("tr");
+            row.className = "hover:bg-indigo-50/30 dark:hover:bg-indigo-900/30 transition-colors group";
+
+            
+            row.innerHTML = `
+                <td class="px-8 py-6">
+                    <div class="flex items-center gap-4">
+                        <div class="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-2xl">${vocab.japanese.charAt(0) || "あ"}</div>
+                        <div class="font-bold text-lg text-slate-900 dark:text-white">${vocab.japanese} <span class="text-xs text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full ml-2">Bài ${vocab.lesson}-${vocab.level}</span></div>
+                    </div>
+                </td>
+                <td class="px-8 py-6 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">${vocab.hiragana}</td>
+                <td class="px-8 py-6">
+                    <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">${vocab.meaning}</div>
+                </td>
+                <td class="px-8 py-6">
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg uppercase tracking-wider">${vocab.type || "Từ vựng"}</span>
+                </td>
+                <td class="px-8 py-6 text-center whitespace-nowrap">
+                   <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50">View Only</span>
+                </td>
+                <td class="px-8 py-6 text-right whitespace-nowrap">
+                   <div class="flex justify-end gap-0.5"><span class="material-symbols-outlined text-[18px] text-slate-200 dark:text-slate-600">star</span></div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
     }
 };
