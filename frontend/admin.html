@@ -1,130 +1,308 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Admin - Quản lý Học Tiếng Nhật</title>
-    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#197fe6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#0b0f14",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
     <script type="module" src="admin.js"></script>
 </head>
 
-<body data-is-admin="true">
-    <div id="login-section" class="login-section">
-        <div class="login-box">
-            <h2 style="margin-bottom: 20px; color: var(--text-color);">Đăng nhập</h2>
-            <input type="text" id="admin-username" placeholder="Tên đăng nhập"
-                style="width: 100%; margin-bottom: 15px;" />
-            <input type="password" id="admin-password" placeholder="Mật khẩu"
-                style="width: 100%; margin-bottom: 20px;" />
-            <button id="admin-login-btn" style="width: 100%;">Đăng nhập</button>
-            <p id="login-error" style="color: #f44336; margin-top: 15px; display: none;">Sai tên đăng nhập hoặc mật khẩu
-            </p>
-        </div>
-    </div>
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 h-screen w-screen flex overflow-hidden"
+    data-is-admin="true">
 
-    <div id="admin-content" style="display: none;">
-        <div class="sidebar" id="lesson-sidebar">
-            <h2>Quản lý Bài Học</h2>
-            <button id="dark-mode-toggle" class="dark-mode-toggle">🌓</button>
-            <button id="admin-logout-btn" style="margin: 10px 20px; background-color: #f44336;">Đăng xuất</button>
-        </div>
-
-        <div class="main-content">
-            <div class="stats-grid" id="admin-dashboard">
-                <div class="stat-card">
-                    <h3 style="margin: 0 0 10px 0;">Tổng số từ</h3>
-                    <p id="dash-total" style="font-size: 2em; font-weight: bold; margin: 0; color: #3b82f6;">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3 style="margin: 0 0 10px 0;">Số Bài học</h3>
-                    <p id="dash-lessons" style="font-size: 2em; font-weight: bold; margin: 0; color: #4caf50;">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3 style="margin: 0 0 10px 0;">Từ vựng N5</h3>
-                    <p id="dash-n5" style="font-size: 2em; font-weight: bold; margin: 0; color: #f59e0b;">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3 style="margin: 0 0 10px 0;">Từ vựng N4</h3>
-                    <p id="dash-n4" style="font-size: 2em; font-weight: bold; margin: 0; color: #8b5cf6;">0</p>
-                </div>
-            </div>
-
-            <div class="vocabulary-section" style="margin-bottom: 30px;">
-                <h2 style="margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
-                    Thêm từ vựng</h2>
-                <form id="vocab-form"
-                    style="display: grid; grid-template-columns: 80px 100px 2fr 1.5fr 2fr 120px 120px; gap: 10px; align-items: center; margin-bottom: 0;">
-                    <select id="level-select">
-                        <option value="N5">N5</option>
-                        <option value="N4">N4</option>
-                    </select>
-                    <input type="number" id="lesson-input" placeholder="Bài học" min="1" required
-                        style="width: 100%; box-sizing: border-box;" />
-                    <input type="text" id="japanese-input" placeholder="Từ tiếng Nhật" required
-                        style="width: 100%; box-sizing: border-box;" />
-                    <input type="text" id="hiragana-input" placeholder="Hiragana" required
-                        style="width: 100%; box-sizing: border-box;" />
-                    <input type="text" id="meaning-input" placeholder="Nghĩa TV" required
-                        style="width: 100%; box-sizing: border-box;" />
-                    <select id="type-select" style="width: 100%; box-sizing: border-box;">
-                        <option value="Danh từ">Danh từ</option>
-                        <option value="Động từ">Động từ</option>
-                        <option value="Tính từ">Tính từ</option>
-                    </select>
-                    <button type="submit" style="width: 100%; box-sizing: border-box; padding: 12px 10px;">Thêm
-                        Từ</button>
-                </form>
-
-                <div
-                    style="margin-top: 25px; border-top: 1px dashed var(--border-color); padding-top: 25px; display: flex; gap: 20px; align-items: flex-start;">
-                    <div style="flex: 1;">
-                        <h3 style="margin-bottom: 10px;">Nhập nhiều từ (Import CSV)</h3>
-                        <p style="font-size: 0.9em; opacity: 0.8;">Kanji, Hiragana, Nghĩa tiếng Việt, Loại từ.<br>Nhập
-                            nhiều từ sẽ lưu vào <b>Cấp độ / Bài học</b> ở trên.</p>
-                    </div>
-                    <div style="flex: 2; display: flex; gap: 10px; align-items: stretch;">
-                        <textarea id="csv-input" rows="3" placeholder="猫,ねこ,Con mèo,Danh từ&#10;食べる,たべる,Ăn,Động từ"
-                            style="flex-grow: 1; border-radius: 8px; padding: 10px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text-color); font-family: monospace; resize: vertical; box-sizing: border-box;"></textarea>
-                        <button id="import-csv-btn" style="background-color: #4caf50; white-space: nowrap;">Thêm
-                            CSV</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="vocabulary-section">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;">
-                    <h2 id="current-lesson-title" style="margin: 0;">Chọn bài học ở sidebar</h2>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" id="admin-search-input" placeholder="Tìm kiếm từ..."
-                            style="padding: 10px; border-radius: 8px; width: 250px;">
-                        <button id="bulk-delete-btn"
-                            style="background-color: #f44336; padding: 10px 15px; display: none;">Xóa (<span
-                                id="selected-count">0</span>)</button>
-                        <span
-                            style="font-size: 0.9em; padding: 8px 15px; background: var(--primary-btn); color: white; border-radius: 20px;">Danh
-                            sách từ</span>
-                    </div>
-                </div>
-                <table class="vocab-table" id="vocab-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all-cb"
-                                    style="transform: scale(1.2); cursor: pointer;"></th>
-                            <th>Từ</th>
-                            <th>Hiragana</th>
-                            <th>Nghĩa</th>
-                            <th>Loại</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vocab-list"></tbody>
-                </table>
+    <!-- Login Section -->
+    <div id="login-section"
+        class="absolute inset-0 z-50 flex items-center justify-center bg-background-light dark:bg-background-dark">
+        <div
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 h-32 w-32 bg-primary/20 rounded-full blur-2xl"></div>
+            <h2 class="text-2xl font-bold mb-6 text-center">Admin Login</h2>
+            <div class="space-y-4">
+                <input type="text" id="admin-username" placeholder="Tên đăng nhập"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-3 px-4 outline-none" />
+                <input type="password" id="admin-password" placeholder="Mật khẩu"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-3 px-4 outline-none" />
+                <button id="admin-login-btn"
+                    class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-primary/20">Đăng
+                    nhập</button>
+                <p id="login-error" class="text-rose-500 text-sm text-center hidden">Sai tên đăng nhập hoặc mật khẩu</p>
             </div>
         </div>
     </div>
 
-    <!-- Modal components from index.html if necessary -->
+    <!-- Admin Content -->
+    <div id="admin-content" class="flex w-full h-full hidden">
+        <!-- Sidebar -->
+        <aside id="lesson-sidebar"
+            class="w-72 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl flex flex-col h-full relative z-20">
+            <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+                <h1 class="text-lg font-bold tracking-tight text-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined text-2xl">dashboard</span> Nihongo
+                </h1>
+                <button id="dark-mode-toggle"
+                    class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <span class="material-symbols-outlined text-[1.2rem]">dark_mode</span>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto pt-4" id="lesson-nav-container">
+                <!-- Level / Lesson List populated by JS -->
+            </div>
+
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <button id="admin-logout-btn"
+                    class="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[1.2rem]">logout</span>
+                    Đăng xuất
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col h-full relative z-10 overflow-y-auto w-full">
+            <div class="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6">
+                <!-- Header -->
+                <header class="flex justify-between items-center mb-2">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight">Dashboard</h2>
+                        <p class="text-slate-500 text-sm">Quản lý từ vựng và bài giảng hệ thống</p>
+                    </div>
+                </header>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="admin-dashboard">
+                    <div
+                        class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-1 relative overflow-hidden">
+                        <div class="absolute -right-2 -top-2 h-16 w-16 bg-purple-500/20 rounded-full blur-xl"></div>
+                        <span class="material-symbols-outlined text-purple-500 mb-2">style</span>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">Tổng
+                            số từ</p>
+                        <p class="text-3xl font-bold mt-1 text-slate-800 dark:text-slate-100" id="dash-total">0</p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-1 relative overflow-hidden">
+                        <div class="absolute -right-2 -top-2 h-16 w-16 bg-blue-500/20 rounded-full blur-xl"></div>
+                        <span class="material-symbols-outlined text-blue-500 mb-2">school</span>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">Số Bài
+                            học</p>
+                        <p class="text-3xl font-bold mt-1 text-slate-800 dark:text-slate-100" id="dash-lessons">0</p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-1 relative overflow-hidden">
+                        <div class="absolute -right-2 -top-2 h-16 w-16 bg-teal-500/20 rounded-full blur-xl"></div>
+                        <span class="material-symbols-outlined text-teal-500 mb-2">verified</span>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">Từ
+                            vựng N5</p>
+                        <p class="text-3xl font-bold mt-1 text-slate-800 dark:text-slate-100" id="dash-n5">0</p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col gap-1 relative overflow-hidden">
+                        <div class="absolute -right-2 -top-2 h-16 w-16 bg-orange-500/20 rounded-full blur-xl"></div>
+                        <span class="material-symbols-outlined text-orange-500 mb-2">trending_up</span>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">Từ
+                            vựng N4</p>
+                        <p class="text-3xl font-bold mt-1 text-slate-800 dark:text-slate-100" id="dash-n4">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Add Vocabulary Form -->
+                    <div
+                        class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                        <h3
+                            class="text-base font-bold mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <span class="material-symbols-outlined text-primary text-xl">add_circle</span>
+                            Thêm từ mới
+                        </h3>
+                        <form id="vocab-form" class="grid grid-cols-6 gap-3 pt-2">
+                            <div class="col-span-3 sm:col-span-1">
+                                <label
+                                    class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Cấp
+                                    độ</label>
+                                <select id="level-select"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-2.5 outline-none">
+                                    <option value="N5">N5</option>
+                                    <option value="N4">N4</option>
+                                </select>
+                            </div>
+                            <div class="col-span-3 sm:col-span-2">
+                                <label
+                                    class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Bài
+                                    học</label>
+                                <input type="number" id="lesson-input"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-2.5 outline-none"
+                                    placeholder="1" required />
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label
+                                    class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Từ
+                                    tiếng Nhật</label>
+                                <input type="text" id="japanese-input"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-2.5 outline-none"
+                                    placeholder="食べる" required />
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label
+                                    class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Hiragana</label>
+                                <input type="text" id="hiragana-input"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-2.5 outline-none"
+                                    placeholder="たべる" required />
+                            </div>
+                            <div class="col-span-6 sm:col-span-3">
+                                <label
+                                    class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Nghĩa
+                                    tiếng Việt</label>
+                                <input type="text" id="meaning-input"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-2.5 outline-none"
+                                    placeholder="Ăn" required />
+                            </div>
+                            <div class="col-span-4 sm:col-span-4">
+                                <label
+                                    class="block text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">Loại
+                                    từ</label>
+                                <select id="type-select"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary py-2.5 outline-none">
+                                    <option value="Danh từ">Danh từ</option>
+                                    <option value="Động từ">Động từ</option>
+                                    <option value="Tính từ">Tính từ</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2 sm:col-span-2 flex items-end">
+                                <button type="submit"
+                                    class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined text-lg">publish</span> Thêm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- CSV Import Section -->
+                    <div
+                        class="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col">
+                        <h3
+                            class="text-base font-bold mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <span class="material-symbols-outlined text-primary text-xl">upload_file</span>
+                            Nhập nhiều từ (CSV)
+                        </h3>
+                        <p class="text-[11px] text-slate-500 mb-2">Đấu phẩy: Nhật,Hiragana,Nghĩa,Loại</p>
+                        <textarea id="csv-input"
+                            class="w-full flex-1 min-h-[90px] bg-slate-50 dark:bg-slate-800 border-dashed border-2 border-slate-200 dark:border-slate-700 rounded-xl text-sm p-4 focus:ring-2 focus:ring-primary mb-3 resize-none outline-none font-mono"
+                            placeholder="猫,ねこ,Con mèo,Danh từ"></textarea>
+                        <button id="import-csv-btn"
+                            class="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg transition-colors text-sm border border-emerald-500/20">
+                            Thêm CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vocabulary List Table -->
+                <div
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-[400px]">
+                    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-3">
+                        <div class="flex justify-between items-center">
+                            <h2 id="current-lesson-title" class="font-bold text-lg">Chọn bài học ở sidebar</h2>
+                            <span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold">Danh sách
+                                từ</span>
+                        </div>
+                        <div class="flex flex-wrap gap-3 items-center justify-between">
+                            <div class="relative w-full sm:max-w-sm flex-1">
+                                <span
+                                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                                <input type="text" id="admin-search-input"
+                                    class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-full text-sm focus:ring-2 focus:ring-primary outline-none"
+                                    placeholder="Tìm kiếm từ vựng..." />
+                            </div>
+                            <button id="bulk-delete-btn"
+                                class="hidden text-xs font-bold text-rose-500 bg-rose-50 dark:bg-rose-500/10 px-4 py-2 rounded-lg items-center gap-1 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors">
+                                <span class="material-symbols-outlined text-sm">delete</span> Xóa (<span
+                                    id="selected-count">0</span>)
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Table Body Frame with Scroll -->
+                    <div class="flex-1 overflow-auto max-h-[600px] relative">
+                        <table class="w-full text-left table-fixed min-w-[700px]" id="vocab-table">
+                            <thead
+                                class="sticky top-0 bg-slate-50 dark:bg-slate-800/90 backdrop-blur-sm z-10 shadow-sm">
+                                <tr
+                                    class="text-[10px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200 dark:border-slate-700/50">
+                                    <th class="px-4 py-3 w-12 text-center">
+                                        <input type="checkbox" id="select-all-cb"
+                                            class="rounded text-primary focus:ring-primary bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 size-4 cursor-pointer align-middle outline-none" />
+                                    </th>
+                                    <th class="px-3 py-3 w-1/3">Từ Nhật</th>
+                                    <th class="px-3 py-3 w-1/4">Hiragana</th>
+                                    <th class="px-3 py-3 w-1/4">Nghĩa VN</th>
+                                    <th class="px-4 py-3 w-32 text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vocab-list" class="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                <!-- List populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Background Decoration -->
+        <div
+            class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0">
+        </div>
+        <div
+            class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none z-0">
+        </div>
+    </div>
 </body>
 
 </html>

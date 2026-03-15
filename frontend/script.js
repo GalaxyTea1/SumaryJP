@@ -7,6 +7,7 @@ import { actions } from "./components/actions.js";
 import { historyModal } from "./components/historyModal.js";
 import { tts } from "./components/tts.js";
 import { wordDetailsModal } from "./components/wordDetailsModal.js";
+import { auth } from "./components/auth.js";
 
 window.onload = async function () {
     try {
@@ -65,7 +66,7 @@ window.onload = async function () {
         actions.init();
         historyModal.init();
         wordDetailsModal.init();
-        tts.initContextMenu();
+        auth.init();
 
     } catch (error) {
         console.error("Initialization error for index.html:", error);

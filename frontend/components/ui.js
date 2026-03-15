@@ -46,13 +46,18 @@ export const ui = {
                     lessonBtn.classList.add('lesson-nav-active', 'bg-indigo-500', 'text-white', 'border-indigo-600', 'shadow-md', 'dark:bg-indigo-600', 'dark:border-indigo-500');
                     
 
-                    vocabTable.renderSkeleton();
-                    const { dashboardStats } = await import("./dashboardStats.js");
-                    dashboardStats.renderSkeleton();
-
-
-                    await vocabTable.render(lesson, level);
-                    dashboardStats.updateStats();
+                    if (document.body.dataset.isAdmin) {
+                        const { adminTable } = await import("./adminTable.js");
+                        adminTable.renderSkeleton();
+                        await adminTable.render(lesson, level);
+                        if (window.updateAdminStats) window.updateAdminStats();
+                    } else {
+                        vocabTable.renderSkeleton();
+                        const { dashboardStats } = await import("./dashboardStats.js");
+                        dashboardStats.renderSkeleton();
+                        await vocabTable.render(lesson, level);
+                        dashboardStats.updateStats();
+                    }
                 });
                 lessonContainer.appendChild(lessonBtn);
             });

@@ -1,5 +1,6 @@
 import { state } from "./state.js";
 import { ui } from "./components/ui.js";
+import { adminTable } from "./components/adminTable.js";
 
 window.onload = function () {
     const loginSection = document.getElementById("login-section");
@@ -10,12 +11,11 @@ window.onload = function () {
     const logoutBtn = document.getElementById("admin-logout-btn");
     const errorMsg = document.getElementById("login-error");
 
-    // Check if already logged in via sessionStorage
     if (sessionStorage.getItem("adminLoggedIn") === "true") {
-        loginSection.style.display = "none";
+        loginSection.classList.add("hidden");
         showAdminContent();
     } else {
-        loginSection.style.display = "flex";
+        loginSection.classList.remove("hidden");
     }
 
     loginBtn.addEventListener("click", () => {
@@ -24,18 +24,18 @@ window.onload = function () {
 
         if (user === "admin" && pass === "1") {
             sessionStorage.setItem("adminLoggedIn", "true");
-            errorMsg.style.display = "none";
-            loginSection.style.display = "none";
+            errorMsg.classList.add("hidden");
+            loginSection.classList.add("hidden");
             showAdminContent();
         } else {
-            errorMsg.style.display = "block";
+            errorMsg.classList.remove("hidden");
         }
     });
 
     logoutBtn.addEventListener("click", () => {
         sessionStorage.removeItem("adminLoggedIn");
-        adminContent.style.display = "none";
-        loginSection.style.display = "flex";
+        adminContent.classList.add("hidden");
+        loginSection.classList.remove("hidden");
         usernameInput.value = "";
         passwordInput.value = "";
     });
@@ -46,26 +46,15 @@ window.onload = function () {
         }
     });
 
-    // Dark mode logic
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    if (darkModeToggle) {
-        if (localStorage.getItem("theme") === "dark") {
-            document.body.classList.add("dark-mode");
-        }
-        darkModeToggle.addEventListener("click", () => {
-            document.body.classList.toggle("dark-mode");
-            localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
-        });
-    }
 };
 
 async function showAdminContent() {
-    document.getElementById("admin-content").style.display = "flex";
+    document.getElementById("admin-content").classList.remove("hidden");
     document.body.classList.add('admin-view');
 
     try {
         await state.loadFromServer();
-        ui.updateLessonSidebar();
+        ui.initSidebar();
         updateAdminStats();
 
         const vocabForm = document.getElementById("vocab-form");
@@ -141,10 +130,10 @@ async function showAdminContent() {
 }
 
 function refreshUI(lesson, level) {
-    ui.updateLessonSidebar();
+    ui.initSidebar();
     updateAdminStats();
     if (state.currentLesson && state.currentLesson.lesson === lesson && state.currentLesson.level === level) {
-        ui.displayVocabulary(lesson, level);
+        adminTable.render(lesson, level);
     }
 }
 

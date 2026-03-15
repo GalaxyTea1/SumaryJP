@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const vocabRoutes = require('./routes/vocab');
 const historyRoutes = require('./routes/history');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ app.use(express.json({ limit: '10kb' }));
 // Routes
 app.use('/api/vocab', vocabRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use((req, res) => {
