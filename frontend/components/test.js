@@ -1,5 +1,5 @@
 import { state } from "../state.js";
-import { utils } from "../components/utils.js";
+import { utils } from "./utils.js";
 import { tts } from "./tts.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -13,15 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let showHiragana = true;
     let selectedOptionValue = null;
 
-    // DOM Elements - Config
-    const overlayConfig = document.getElementById("config-overlay");
-    const selectLevel = document.getElementById("config-level");
-    const selectLesson = document.getElementById("config-lesson");
-    const inputCount = document.getElementById("config-count");
-    const inputTime = document.getElementById("config-time");
-    const checkHiragana = document.getElementById("config-hiragana");
-    const btnStart = document.getElementById("start-test-btn");
-    const btnCloseConfig = document.getElementById("close-config-btn");
+
 
     // DOM Elements - Test Area
     const elHeader = document.getElementById("test-header");
@@ -41,103 +33,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize Data
     try {
         await state.loadFromServer();
-        populateConfigDropdowns();
-        tts.initContextMenu();
+
     } catch (e) {
         alert("Có lỗi tải dữ liệu từ máy chủ.");
     }
 
-    // --- Configuration Logic ---
-    function populateConfigDropdowns() {
-        // Populate Levels
-        const levels = Object.keys(state.lessons || {});
-        levels.forEach(l => {
-            const opt = document.createElement("option");
-            opt.value = opt.textContent = l;
-            selectLevel.appendChild(opt);
-        });
-
-        // Initialize lessons based on 'all'
-        updateLessonDropdown("all");
-
-        selectLevel.addEventListener("change", (e) => {
-            updateLessonDropdown(e.target.value);
-        });
-    }
-
-    function updateLessonDropdown(levelStr) {
-        // clear old
-        while (selectLesson.options.length > 1) {
-            selectLesson.remove(1);
-        }
-
-        let filteredLessons = new Set();
-        if (levelStr === "all") {
-            Object.values(state.lessons || {}).forEach(lessonsObj => {
-                Object.keys(lessonsObj).forEach(lesson => filteredLessons.add(lesson));
-            });
-        } else {
-            Object.keys(state.lessons[levelStr] || {}).forEach(lesson => filteredLessons.add(lesson));
-        }
-
-        const sortedLessons = Array.from(filteredLessons).sort((a, b) => a - b);
-        sortedLessons.forEach(l => {
-            const opt = document.createElement("option");
-            opt.value = l;
-            opt.textContent = `Bài ${l}`;
-            selectLesson.appendChild(opt);
-        });
-        selectLesson.value = "all";
-    }
-
-    btnCloseConfig.addEventListener("click", () => window.location.href = "index.html");
     document.getElementById("quit-test-btn").addEventListener("click", () => {
         if (confirm("Bạn có chắc chắn muốn thoát khi bài thi chưa kết thúc?")) {
-            window.location.href = "index.html"
+            window.location.href = "index.html";
         }
     });
 
-    btnStart.addEventListener("click", () => {
-        const wordCount = parseInt(inputCount.value);
-        const testTime = parseInt(inputTime.value);
-        const selectedLevel = selectLevel.value;
-        const selectedLesson = selectLesson.value;
-        showHiragana = checkHiragana.checked;
+    // Check URL for configurations
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('count')) {
+        window.location.href = "index.html";
+        return;
+    }
 
-        if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
-            alert("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)");
-            return;
-        }
+    const wordCount = parseInt(urlParams.get("count"));
+    const testTime = parseInt(urlParams.get("time"));
+    const selectedLevel = urlParams.get("level");
+    const selectedLesson = urlParams.get("lesson");
+    showHiragana = urlParams.get("hiragana") === "true";
 
-        let allWords = [];
-        Object.entries(state.lessons).forEach(([level, lessons]) => {
-            if (selectedLevel !== "all" && level !== selectedLevel) return;
-            Object.entries(lessons).forEach(([lesson, words]) => {
-                if (selectedLesson !== "all" && lesson !== selectedLesson) return;
-                allWords = allWords.concat(words.map((word) => ({ ...word, level, lesson })));
-            });
+    let allWords = [];
+    Object.entries(state.lessons).forEach(([level, lessons]) => {
+        if (selectedLevel !== "all" && level !== selectedLevel) return;
+        Object.entries(lessons).forEach(([lesson, words]) => {
+            if (selectedLesson !== "all" && lesson !== selectedLesson) return;
+            allWords = allWords.concat(words.map((word) => ({ ...word, level, lesson })));
         });
-
-        if (allWords.length < 5) {
-            alert("Số lượng từ vựng trong phạm vi này quá ít (dưới 5 từ). Vui lòng chọn bài học khác.");
-            return;
-        }
-
-        if (allWords.length < wordCount) {
-            alert(`Phạm vi này hiện chỉ có ${allWords.length} từ. Bài kiểm tra sẽ lấy tối đa số từ đang có.`);
-        }
-
-        utils.shuffleArray(allWords);
-        testWords = allWords.slice(0, wordCount);
-
-        startTestEngine(testTime);
     });
+
+    utils.shuffleArray(allWords);
+    testWords = allWords.slice(0, wordCount);
+
+    startTestEngine(testTime);
 
     // --- Core Test Logic ---
     function startTestEngine(testTimeMinutes) {
-        // Unmount config
-        overlayConfig.classList.add("opacity-0", "pointer-events-none");
-        setTimeout(() => overlayConfig.classList.add("hidden"), 300);
 
         // Reset state
         currentTestIndex = 0;
@@ -146,9 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         testTimeLimit = testTimeMinutes * 60;
         testStartTime = new Date();
 
-        // Show UI
-        elHeader.classList.remove("hidden");
-        elMain.classList.remove("hidden");
+
 
         renderQuestion();
 

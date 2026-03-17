@@ -8,6 +8,7 @@ import { historyModal } from "./components/historyModal.js";
 import { tts } from "./components/tts.js";
 import { wordDetailsModal } from "./components/wordDetailsModal.js";
 import { auth } from "./components/auth.js";
+import { testConfigModal } from "./components/testConfigModal.js";
 
 window.onload = async function () {
     try {
@@ -67,6 +68,7 @@ window.onload = async function () {
         historyModal.init();
         wordDetailsModal.init();
         auth.init();
+        testConfigModal.init();
 
     } catch (error) {
         console.error("Initialization error for index.html:", error);

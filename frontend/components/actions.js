@@ -2,6 +2,7 @@ import { state } from "../state.js";
 import { vocabTable } from "./vocabTable.js";
 import { stats } from "./stats.js";
 import { historyModal } from "./historyModal.js";
+import { testConfigModal } from "./testConfigModal.js";
 
 export const actions = {
     init() {
@@ -47,7 +48,7 @@ export const actions = {
 
         if (startTestBtn) {
             startTestBtn.addEventListener("click", () => {
-                window.location.href = `test.html`;
+                testConfigModal.show();
             });
         }
 
