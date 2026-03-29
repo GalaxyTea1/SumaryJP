@@ -122,94 +122,163 @@
 
     <main class="flex-1 overflow-y-auto relative main-content">
 
-      <!-- NOTE: Search Bar -->
       <div
-        class="sticky top-0 z-40 bg-off-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-4 md:px-6 md:py-6 relative transition-colors duration-300">
-        <div class="relative max-w-2xl mx-auto search-container">
-          <span
-            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
-          <input id="global-search-input"
-            class="w-full h-14 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
-            placeholder="Tìm kiếm từ vựng (Kanji, Kana, Tiếng Việt...)" type="text" autocomplete="off" />
+        class="sticky top-0 z-40 bg-off-white/90 dark:bg-slate-900/90 backdrop-blur-md transition-colors duration-300">
 
-          <button id="ocr-upload-btn"
-            class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 z-10"
-            title="Tải ảnh lên để quét chữ">
-            <span id="ocr-icon" class="material-symbols-outlined">image</span>
-            <div id="ocr-spinner"
-              class="hidden w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          </button>
-          <input type="file" id="ocr-file-input" class="hidden" accept="image/*" />
-
-          <ul id="search-results-dropdown"
-            class="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-slate-100 hidden z-50 max-h-60 overflow-y-auto">
-          </ul>
-        </div>
-
-        <!-- Toolbar (Top Right) -->
-        <div class="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex items-center gap-3 z-50">
-
-          <!-- Toggle Hiragana Switch -->
+        <div class="flex md:hidden items-center justify-between px-4 pt-3 pb-2 gap-2">
           <label
-            class="hidden sm:flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group"
+            class="flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl shadow-sm transition-colors group"
             title="Ẩn/Hiện cách đọc (Hiragana)">
             <div class="relative">
               <input type="checkbox" id="toggle-hiragana" class="sr-only peer" checked>
               <div
-                class="block bg-slate-200 dark:bg-slate-700 w-10 h-6 rounded-full transition-colors peer-checked:bg-indigo-500">
+                class="block bg-slate-200 dark:bg-slate-700 w-9 h-5 rounded-full transition-colors peer-checked:bg-indigo-500">
               </div>
               <div
-                class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4">
+                class="dot absolute left-1 top-0.5 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4">
               </div>
             </div>
-            <span
-              class="ml-3 text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Hiragana</span>
+            <span class="ml-2 text-xs font-bold text-slate-600 dark:text-slate-300">Hiragana</span>
           </label>
 
-          <!-- Dark Mode Toggle Button -->
-          <button id="dark-mode-toggle"
-            class="size-9 md:size-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-md hover:scale-105 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-base">dark_mode</span>
-          </button>
-
-          <!-- Auth Section -->
-          <div id="auth-header-section" class="ml-2 flex items-center">
-            <!-- Guest View -->
-            <button id="header-login-btn"
-              class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md transition-colors flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm">login</span> Đăng nhập
+          <div class="flex items-center gap-2">
+            <!-- Dark Mode Toggle (mobile) -->
+            <button id="dark-mode-toggle"
+              class="size-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-md active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-base">dark_mode</span>
             </button>
 
-            <!-- Logged In View -->
-            <div id="header-user-profile" class="hidden flex items-center gap-3 relative">
-              <!-- Streak Counter -->
-              <div
-                class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-500/10 rounded-xl border border-orange-100 dark:border-orange-500/20 cursor-default"
-                title="Chuỗi ngày học liên tiếp">
-                <span class="text-orange-500 dark:text-orange-400 text-lg/none">🔥</span>
-                <span id="header-streak-count" class="font-black text-orange-600 dark:text-orange-400 text-sm">0</span>
-              </div>
-
-              <button id="header-avatar-btn"
-                class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
-                <div
-                  class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white dark:ring-slate-900">
-                  <span id="header-user-initial">A</span>
-                </div>
-                <span id="header-username"
-                  class="text-sm font-bold text-slate-700 dark:text-slate-200 hidden md:block">User</span>
-                <span class="material-symbols-outlined text-slate-400 text-sm hidden md:block">expand_more</span>
+            <!-- Auth Section (mobile) -->
+            <div id="auth-header-section" class="flex items-center">
+              <!-- Guest View -->
+              <button id="header-login-btn"
+                class="hidden px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">login</span> Đăng nhập
               </button>
 
-              <!-- User Dropdown Menu -->
-              <div id="header-user-dropdown"
-                class="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden transform transition-all duration-200 opacity-0 scale-95 pointer-events-none z-50">
-                <div class="py-1">
-                  <button id="dropdown-logout-btn"
-                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors">
-                    <span class="material-symbols-outlined text-lg">logout</span>
-                    Đăng xuất
-                  </button>
+              <!-- Logged In View -->
+              <div id="header-user-profile" class="hidden flex items-center gap-2 relative">
+                <!-- Streak Counter -->
+                <div
+                  class="flex items-center gap-1 px-2.5 py-1.5 bg-orange-50 dark:bg-orange-500/10 rounded-xl border border-orange-100 dark:border-orange-500/20 cursor-default"
+                  title="Chuỗi ngày học liên tiếp">
+                  <span class="text-orange-500 dark:text-orange-400 text-base/none">🔥</span>
+                  <span id="header-streak-count"
+                    class="font-black text-orange-600 dark:text-orange-400 text-xs">0</span>
+                </div>
+
+                <button id="header-avatar-btn"
+                  class="flex items-center gap-1.5 px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                  <div
+                    class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white dark:ring-slate-900">
+                    <span id="header-user-initial">A</span>
+                  </div>
+                </button>
+
+                <!-- User Dropdown Menu -->
+                <div id="header-user-dropdown"
+                  class="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden transform transition-all duration-200 opacity-0 scale-95 pointer-events-none z-50">
+                  <div class="py-1">
+                    <button id="dropdown-logout-btn"
+                      class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors">
+                      <span class="material-symbols-outlined text-lg">logout</span>
+                      Đăng xuất
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search bar row -->
+        <div class="px-4 py-3 md:px-6 md:py-6 relative">
+          <div class="relative max-w-2xl mx-auto search-container">
+            <span
+              class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
+            <input id="global-search-input"
+              class="w-full h-14 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+              placeholder="Tìm kiếm từ vựng (Kanji, Kana, Tiếng Việt...)" type="text" autocomplete="off" />
+
+            <button id="ocr-upload-btn"
+              class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 z-10"
+              title="Tải ảnh lên để quét chữ">
+              <span id="ocr-icon" class="material-symbols-outlined">image</span>
+              <div id="ocr-spinner"
+                class="hidden w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            </button>
+            <input type="file" id="ocr-file-input" class="hidden" accept="image/*" />
+
+            <ul id="search-results-dropdown"
+              class="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-slate-100 hidden z-50 max-h-60 overflow-y-auto">
+            </ul>
+          </div>
+
+          <!-- Desktop-only Toolbar (Top Right) - hidden on mobile -->
+          <div class="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 items-center gap-3 z-50">
+            <!-- Toggle Hiragana Switch (desktop) -->
+            <label
+              class="flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group"
+              title="Ẩn/Hiện cách đọc (Hiragana)">
+              <div class="relative">
+                <input type="checkbox" id="toggle-hiragana-desktop" class="sr-only peer" checked>
+                <div
+                  class="block bg-slate-200 dark:bg-slate-700 w-10 h-6 rounded-full transition-colors peer-checked:bg-indigo-500">
+                </div>
+                <div
+                  class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4">
+                </div>
+              </div>
+              <span
+                class="ml-3 text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Hiragana</span>
+            </label>
+
+            <!-- Dark Mode Toggle Button (desktop) -->
+            <button id="dark-mode-toggle-desktop"
+              class="size-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-md hover:scale-105 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-base">dark_mode</span>
+            </button>
+
+            <!-- Auth Section (desktop) -->
+            <div id="auth-header-section-desktop" class="ml-2 flex items-center">
+              <!-- Guest View -->
+              <button id="header-login-btn-desktop"
+                class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">login</span> Đăng nhập
+              </button>
+
+              <!-- Logged In View -->
+              <div id="header-user-profile-desktop" class="hidden flex items-center gap-3 relative">
+                <!-- Streak Counter -->
+                <div
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-500/10 rounded-xl border border-orange-100 dark:border-orange-500/20 cursor-default"
+                  title="Chuỗi ngày học liên tiếp">
+                  <span class="text-orange-500 dark:text-orange-400 text-lg/none">🔥</span>
+                  <span id="header-streak-count-desktop"
+                    class="font-black text-orange-600 dark:text-orange-400 text-sm">0</span>
+                </div>
+
+                <button id="header-avatar-btn-desktop"
+                  class="flex items-center gap-2 px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                  <div
+                    class="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white dark:ring-slate-900">
+                    <span id="header-user-initial-desktop">A</span>
+                  </div>
+                  <span id="header-username-desktop"
+                    class="text-sm font-bold text-slate-700 dark:text-slate-200">User</span>
+                  <span class="material-symbols-outlined text-slate-400 text-sm">expand_more</span>
+                </button>
+
+                <!-- User Dropdown Menu -->
+                <div id="header-user-dropdown-desktop"
+                  class="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden transform transition-all duration-200 opacity-0 scale-95 pointer-events-none z-50">
+                  <div class="py-1">
+                    <button id="dropdown-logout-btn-desktop"
+                      class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2 transition-colors">
+                      <span class="material-symbols-outlined text-lg">logout</span>
+                      Đăng xuất
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -435,12 +504,41 @@
   <!-- NOTE: Mobile Bottom Navigation -->
   <nav
     class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl px-8 py-4 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl z-50 md:hidden gap-8">
-    <a class="text-indigo-600 dark:text-indigo-400 scale-110" href="#"><span
-        class="material-symbols-outlined font-bold">dashboard</span></a>
-    <a class="text-slate-400 dark:text-slate-500" href="#"><span class="material-symbols-outlined">menu_book</span></a>
-    <a class="text-slate-400 dark:text-slate-500" href="#"><span class="material-symbols-outlined">analytics</span></a>
-    <a class="text-slate-400 dark:text-slate-500" href="#"><span class="material-symbols-outlined">person</span></a>
+    <button id="mobile-nav-dashboard"
+      class="text-indigo-600 dark:text-indigo-400 scale-110 transition-all active:scale-95"><span
+        class="material-symbols-outlined font-bold">dashboard</span></button>
+    <button id="mobile-nav-lessons" class="text-slate-400 dark:text-slate-500 transition-all active:scale-95"><span
+        class="material-symbols-outlined">menu_book</span></button>
+    <button id="mobile-nav-stats" class="text-slate-400 dark:text-slate-500 transition-all active:scale-95"><span
+        class="material-symbols-outlined">analytics</span></button>
+    <button id="mobile-nav-profile" class="text-slate-400 dark:text-slate-500 transition-all active:scale-95"><span
+        class="material-symbols-outlined">person</span></button>
   </nav>
+
+  <!-- Mobile Lesson Sheet -->
+  <div id="mobile-lesson-sheet-overlay"
+    class="fixed inset-0 z-[55] bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 md:hidden"
+    onclick="document.getElementById('mobile-lesson-sheet').classList.add('translate-y-full'); this.classList.add('opacity-0'); setTimeout(()=>{this.classList.add('hidden');},300)">
+  </div>
+  <div id="mobile-lesson-sheet"
+    class="fixed bottom-0 left-0 right-0 z-[56] bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl border-t border-slate-200 dark:border-slate-700 transition-transform duration-300 translate-y-full md:hidden max-h-[75vh] flex flex-col">
+    <!-- Handle -->
+    <div class="flex justify-center pt-4 pb-2 flex-shrink-0">
+      <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+    </div>
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 pb-3 flex-shrink-0">
+      <h3 class="font-black text-slate-900 dark:text-white text-lg">Chọn bài học</h3>
+      <button id="mobile-lesson-sheet-close"
+        class="size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-200 dark:hover:bg-slate-600">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
+    <!-- Lesson List -->
+    <div id="mobile-lesson-nav-container" class="overflow-y-auto flex-1 px-4 pb-24 flex flex-col gap-2">
+      <!-- Populated by ui.js -->
+    </div>
+  </div>
 
   <!-- Learning History Modal Overlay -->
   <div id="history-overlay"

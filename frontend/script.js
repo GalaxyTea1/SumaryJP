@@ -41,28 +41,6 @@ window.onload = async function () {
         dashboardStats.updateStats();
         dashboardStats.initGoalSetting();
 
-        // Toggle Hiragana
-        const toggleHiragana = document.getElementById("toggle-hiragana");
-        const vocabSection = document.querySelector(".vocabulary-section");
-
-        if (toggleHiragana && vocabSection) {
-            // Restore saved preference
-            const savedPref = localStorage.getItem("showHiragana");
-            if (savedPref === "false") {
-                toggleHiragana.checked = false;
-                vocabSection.classList.add("hide-hiragana");
-            }
-
-            toggleHiragana.addEventListener("change", (e) => {
-                if (e.target.checked) {
-                    vocabSection.classList.remove("hide-hiragana");
-                    localStorage.setItem("showHiragana", "true");
-                } else {
-                    vocabSection.classList.add("hide-hiragana");
-                    localStorage.setItem("showHiragana", "false");
-                }
-            });
-        }
 
         search.init();
         actions.init();

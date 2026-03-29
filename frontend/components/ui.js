@@ -2,6 +2,27 @@ import { state } from "../state.js";
 import { vocabTable } from "./vocabTable.js";
 import { dashboardStats } from "./dashboardStats.js";
 
+// Helper to open/close the mobile lesson sheet
+function openMobileLessonSheet() {
+    const overlay = document.getElementById("mobile-lesson-sheet-overlay");
+    const sheet = document.getElementById("mobile-lesson-sheet");
+    if (!overlay || !sheet) return;
+    overlay.classList.remove("hidden", "opacity-0");
+    // Trigger transition
+    requestAnimationFrame(() => {
+        sheet.classList.remove("translate-y-full");
+    });
+}
+
+function closeMobileLessonSheet() {
+    const overlay = document.getElementById("mobile-lesson-sheet-overlay");
+    const sheet = document.getElementById("mobile-lesson-sheet");
+    if (!overlay || !sheet) return;
+    sheet.classList.add("translate-y-full");
+    overlay.classList.add("opacity-0");
+    setTimeout(() => overlay.classList.add("hidden"), 300);
+}
+
 export const ui = {
     initSidebar() {
         const sidebar = document.getElementById("lesson-sidebar");
@@ -16,6 +37,7 @@ export const ui = {
         const sortedLevels = Object.entries(state.lessons).sort(([levelA], [levelB]) => levelB.localeCompare(levelA));
 
         const levelListFragment = document.createDocumentFragment();
+        const levelWrappers = []; // Keep refs so we can clone for mobile BEFORE fragment is consumed
 
         sortedLevels.forEach(([level, lessons]) => {
             const levelWrapper = document.createElement("div");
@@ -66,10 +88,11 @@ export const ui = {
                 const icon = levelBtn.querySelector('.material-symbols-outlined');
                 const isExpanded = lessonContainer.style.maxHeight !== "0px";
                 
-                // Collapse all other levels (accordion behavior)
-                document.querySelectorAll('.lesson-container').forEach(c => {
+
+                navContainer.querySelectorAll('.lesson-container').forEach(c => {
                     c.style.maxHeight = "0px";
-                    c.previousElementSibling.querySelector('.material-symbols-outlined').style.transform = "rotate(0deg)";
+                    const prevIcon = c.previousElementSibling?.querySelector('.material-symbols-outlined');
+                    if (prevIcon) prevIcon.style.transform = "rotate(0deg)";
                 });
 
                 if (!isExpanded) {
@@ -81,13 +104,80 @@ export const ui = {
             lessonContainer.classList.add('lesson-container');
             levelWrapper.appendChild(levelBtn);
             levelWrapper.appendChild(lessonContainer);
+            levelWrappers.push(levelWrapper); // Save ref before appending to fragment
             levelListFragment.appendChild(levelWrapper);
         });
 
         if (navContainer) {
             navContainer.appendChild(levelListFragment);
             
-            // Auto-expand the first level
+
+            const mobileNavContainer = document.getElementById("mobile-lesson-nav-container");
+            if (mobileNavContainer) {
+                mobileNavContainer.innerHTML = "";
+                levelWrappers.forEach(wrapper => mobileNavContainer.appendChild(wrapper.cloneNode(true)));
+
+                // Re-attach click listeners to cloned mobile lesson buttons
+                mobileNavContainer.querySelectorAll(".lesson-container button").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        // Close the sheet
+                        closeMobileLessonSheet();
+
+                        // Update active state in mobile list
+                        mobileNavContainer.querySelectorAll(".lesson-nav-active").forEach(el => {
+                            el.classList.remove("lesson-nav-active", "bg-indigo-500", "text-white", "border-indigo-600", "shadow-md", "dark:bg-indigo-600", "dark:border-indigo-500");
+                            el.classList.add("text-slate-500", "border-slate-100", "dark:text-slate-400", "dark:border-slate-700/50");
+                        });
+                        btn.classList.remove("text-slate-500", "border-slate-100", "dark:text-slate-400", "dark:border-slate-700/50");
+                        btn.classList.add("lesson-nav-active", "bg-indigo-500", "text-white", "border-indigo-600", "shadow-md", "dark:bg-indigo-600", "dark:border-indigo-500");
+
+                        // Extract lesson info from button text ("Bài X")
+                        const text = btn.textContent.trim();
+                        const lessonMatch = text.match(/Bài (\S+)/);
+                        if (!lessonMatch) return;
+                        const lesson = lessonMatch[1];
+
+                        // Find which level this belongs to by looking at parent level wrapper
+                        const wrapper = btn.closest(".flex-col");
+                        const levelSpan = wrapper ? wrapper.querySelector("button > span") : null;
+                        const level = levelSpan ? levelSpan.textContent.trim() : "N5";
+
+                        vocabTable.renderSkeleton();
+                        await vocabTable.render(lesson, level);
+                        dashboardStats.updateStats();
+                    });
+                });
+
+                // Re-attach accordion behavior to cloned level buttons
+                mobileNavContainer.querySelectorAll(".flex-col > button").forEach(levelBtn => {
+                    levelBtn.addEventListener("click", () => {
+                        const icon = levelBtn.querySelector(".material-symbols-outlined");
+                        const lessonContainer = levelBtn.nextElementSibling;
+                        if (!lessonContainer) return;
+                        const isExpanded = lessonContainer.style.maxHeight !== "0px";
+
+                        mobileNavContainer.querySelectorAll(".lesson-container").forEach(c => {
+                            c.style.maxHeight = "0px";
+                            const prevIcon = c.previousElementSibling?.querySelector(".material-symbols-outlined");
+                            if (prevIcon) prevIcon.style.transform = "rotate(0deg)";
+                        });
+
+                        if (!isExpanded) {
+                            lessonContainer.style.maxHeight = lessonContainer.scrollHeight + "px";
+                            if (icon) icon.style.transform = "rotate(180deg)";
+                        }
+                    });
+                });
+
+                // Auto-expand first level in mobile
+                const firstMobileWrapper = mobileNavContainer.querySelector(".flex-col");
+                if (firstMobileWrapper) {
+                    const mobileFirstLevelBtn = firstMobileWrapper.querySelector("button");
+                    if (mobileFirstLevelBtn) mobileFirstLevelBtn.click();
+                }
+            }
+
+            // Auto-expand the first level in desktop sidebar
             const firstLevelWrapper = navContainer.querySelector('.flex-col');
             if(firstLevelWrapper) {
                 const btn = firstLevelWrapper.querySelector('button');
@@ -101,31 +191,117 @@ export const ui = {
             }
         }
 
-
         this.initDarkMode();
+        this.initMobileNav();
     },
 
     initDarkMode() {
-        const darkModeToggle = document.getElementById("dark-mode-toggle");
-        if (!darkModeToggle) return;
+        // Support both mobile (#dark-mode-toggle) and desktop (#dark-mode-toggle-desktop) toggles
+        const toggleIds = ["dark-mode-toggle", "dark-mode-toggle-desktop"];
 
-
-        if (localStorage.getItem("theme") === "dark") {
+        // Restore saved theme
+        const isDark = localStorage.getItem("theme") === "dark";
+        if (isDark) {
             document.documentElement.classList.add("dark");
         }
+        
+        // Update icon text on all buttons
+        const syncIcons = () => {
+            const dark = document.documentElement.classList.contains("dark");
+            toggleIds.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    const span = btn.querySelector("span");
+                    if (span) span.textContent = dark ? "light_mode" : "dark_mode";
+                }
+            });
+        };
+        syncIcons();
 
-        darkModeToggle.addEventListener("click", () => {
-            document.documentElement.classList.toggle("dark");
-            
-
-            
-            if (document.documentElement.classList.contains("dark")) {
-                localStorage.setItem("theme", "dark");
-                darkModeToggle.querySelector('span').textContent = "light_mode";
-            } else {
-                localStorage.setItem("theme", "light");
-                darkModeToggle.querySelector('span').textContent = "dark_mode";
-            }
+        toggleIds.forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener("click", () => {
+                document.documentElement.classList.toggle("dark");
+                const dark = document.documentElement.classList.contains("dark");
+                localStorage.setItem("theme", dark ? "dark" : "light");
+                syncIcons();
+            });
         });
+
+        // Sync desktop hiragana toggle to mirror mobile toggle and vice versa
+        const mobileToggle = document.getElementById("toggle-hiragana");
+        const desktopToggle = document.getElementById("toggle-hiragana-desktop");
+        const vocabSection = document.querySelector(".vocabulary-section");
+
+        const applyHiragana = (checked) => {
+            if (vocabSection) {
+                vocabSection.classList.toggle("hide-hiragana", !checked);
+            }
+            localStorage.setItem("showHiragana", checked ? "true" : "false");
+        };
+
+        const savedPref = localStorage.getItem("showHiragana");
+        const showHiragana = savedPref !== "false";
+        if (mobileToggle) mobileToggle.checked = showHiragana;
+        if (desktopToggle) desktopToggle.checked = showHiragana;
+        applyHiragana(showHiragana);
+
+        if (mobileToggle) {
+            mobileToggle.addEventListener("change", (e) => {
+                if (desktopToggle) desktopToggle.checked = e.target.checked;
+                applyHiragana(e.target.checked);
+            });
+        }
+        if (desktopToggle) {
+            desktopToggle.addEventListener("change", (e) => {
+                if (mobileToggle) mobileToggle.checked = e.target.checked;
+                applyHiragana(e.target.checked);
+            });
+        }
+    },
+
+    initMobileNav() {
+        const lessonBtn = document.getElementById("mobile-nav-lessons");
+        const statsBtn = document.getElementById("mobile-nav-stats");
+        const closeSheetBtn = document.getElementById("mobile-lesson-sheet-close");
+
+        if (lessonBtn) {
+            lessonBtn.addEventListener("click", () => openMobileLessonSheet());
+        }
+
+        if (closeSheetBtn) {
+            closeSheetBtn.addEventListener("click", () => closeMobileLessonSheet());
+        }
+
+        if (statsBtn) {
+            statsBtn.addEventListener("click", () => {
+                // Trigger the existing stats modal
+                const showStatsBtn = document.getElementById("show-stats");
+                if (showStatsBtn) showStatsBtn.click();
+            });
+        }
+
+        // Highlight active nav icon
+        const allNavBtns = [
+            document.getElementById("mobile-nav-dashboard"),
+            document.getElementById("mobile-nav-lessons"),
+            document.getElementById("mobile-nav-stats"),
+            document.getElementById("mobile-nav-profile"),
+        ];
+
+        const setActive = (activeBtn) => {
+            allNavBtns.forEach(b => {
+                if (!b) return;
+                b.className = b === activeBtn
+                    ? "text-indigo-600 dark:text-indigo-400 scale-110 transition-all active:scale-95"
+                    : "text-slate-400 dark:text-slate-500 transition-all active:scale-95";
+            });
+        };
+
+        allNavBtns[0] && allNavBtns[0].addEventListener("click", () => setActive(allNavBtns[0]));
+        allNavBtns[1] && allNavBtns[1].addEventListener("click", () => setActive(allNavBtns[1]));
+        allNavBtns[2] && allNavBtns[2].addEventListener("click", () => setActive(allNavBtns[0])); // keep dashboard active
+        allNavBtns[3] && allNavBtns[3].addEventListener("click", () => setActive(allNavBtns[3]));
     }
 };

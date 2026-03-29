@@ -17,17 +17,25 @@ export const auth = {
         this.closeCtaBtn = document.getElementById("close-cta-btn");
         this.ctaLoginBtn = document.getElementById("cta-login-btn");
 
-        // Header
+        // Header (mobile)
         this.headerLoginBtn = document.getElementById("header-login-btn");
         this.headerUserProfile = document.getElementById("header-user-profile");
-        this.headerUsername = document.getElementById("header-username");
+        this.headerUsername = document.getElementById("header-username"); // may not exist on mobile
         this.headerUserInitial = document.getElementById("header-user-initial");
         this.headerStreakCount = document.getElementById("header-streak-count");
-        
-        // Avatar Dropdown
         this.headerAvatarBtn = document.getElementById("header-avatar-btn");
         this.headerUserDropdown = document.getElementById("header-user-dropdown");
         this.dropdownLogoutBtn = document.getElementById("dropdown-logout-btn");
+
+        // Header (desktop)
+        this.headerLoginBtnDesktop = document.getElementById("header-login-btn-desktop");
+        this.headerUserProfileDesktop = document.getElementById("header-user-profile-desktop");
+        this.headerUsernameDesktop = document.getElementById("header-username-desktop");
+        this.headerUserInitialDesktop = document.getElementById("header-user-initial-desktop");
+        this.headerStreakCountDesktop = document.getElementById("header-streak-count-desktop");
+        this.headerAvatarBtnDesktop = document.getElementById("header-avatar-btn-desktop");
+        this.headerUserDropdownDesktop = document.getElementById("header-user-dropdown-desktop");
+        this.dropdownLogoutBtnDesktop = document.getElementById("dropdown-logout-btn-desktop");
 
         // Modal
         this.modalOverlay = document.getElementById("auth-modal-overlay");
@@ -56,6 +64,7 @@ export const auth = {
     bindEvents() {
         // Open Modal Triggers
         if(this.headerLoginBtn) this.headerLoginBtn.addEventListener("click", () => this.openModal('login'));
+        if(this.headerLoginBtnDesktop) this.headerLoginBtnDesktop.addEventListener("click", () => this.openModal('login'));
         if(this.ctaLoginBtn) this.ctaLoginBtn.addEventListener("click", () => this.openModal('login'));
 
         // Close Modal Triggers
@@ -70,7 +79,6 @@ export const auth = {
         if(this.closeCtaBtn) {
             this.closeCtaBtn.addEventListener("click", () => {
                 this.hideCTA();
-                // Optionally remember they closed it for this session
                 sessionStorage.setItem("cta_closed", "true");
             });
         }
@@ -93,25 +101,46 @@ export const auth = {
             this.authForm.addEventListener("submit", (e) => this.handleAuthSubmit(e));
         }
 
-        // Avatar Click -> Toggle Dropdown
-        if(this.headerAvatarBtn && this.headerUserDropdown) {
-            this.headerAvatarBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.toggleDropdown();
-            });
+        // Mobile Avatar Click -> Toggle Dropdown
+        this._bindAvatarDropdown(
+            this.headerAvatarBtn,
+            this.headerUserDropdown,
+            this.dropdownLogoutBtn
+        );
+        // Desktop Avatar Click -> Toggle Dropdown
+        this._bindAvatarDropdown(
+            this.headerAvatarBtnDesktop,
+            this.headerUserDropdownDesktop,
+            this.dropdownLogoutBtnDesktop
+        );
+    },
 
-            // Close dropdown when clicking outside
+    _bindAvatarDropdown(avatarBtn, dropdown, logoutBtn) {
+        if (avatarBtn && dropdown) {
+            avatarBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isHidden = dropdown.classList.contains("opacity-0");
+                if (isHidden) {
+                    dropdown.classList.remove("opacity-0", "scale-95", "pointer-events-none");
+                    dropdown.classList.add("opacity-100", "scale-100");
+                } else {
+                    dropdown.classList.remove("opacity-100", "scale-100");
+                    dropdown.classList.add("opacity-0", "scale-95", "pointer-events-none");
+                }
+            });
             document.addEventListener("click", (e) => {
-                if(!this.headerUserDropdown.contains(e.target) && !this.headerAvatarBtn.contains(e.target)) {
-                    this.closeDropdown();
+                if (!dropdown.contains(e.target) && !avatarBtn.contains(e.target)) {
+                    dropdown.classList.remove("opacity-100", "scale-100");
+                    dropdown.classList.add("opacity-0", "scale-95", "pointer-events-none");
                 }
             });
         }
-
-        // Logout from Dropdown
-        if(this.dropdownLogoutBtn) {
-            this.dropdownLogoutBtn.addEventListener("click", () => {
-                this.closeDropdown();
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", () => {
+                if (dropdown) {
+                    dropdown.classList.remove("opacity-100", "scale-100");
+                    dropdown.classList.add("opacity-0", "scale-95", "pointer-events-none");
+                }
                 this.logout();
             });
         }
@@ -242,25 +271,35 @@ export const auth = {
         // Hide CTA
         this.hideCTA();
 
-        // Update Header
+        // Update mobile header
         if(this.headerLoginBtn) this.headerLoginBtn.classList.add("hidden");
         if(this.headerUserProfile) {
             this.headerUserProfile.classList.remove("hidden");
-            if(this.headerUsername) this.headerUsername.textContent = user.username;
             if(this.headerUserInitial) this.headerUserInitial.textContent = user.username.charAt(0).toUpperCase();
             if(this.headerStreakCount) this.headerStreakCount.textContent = user.current_streak || 0;
+        }
+
+        // Update desktop header
+        if(this.headerLoginBtnDesktop) this.headerLoginBtnDesktop.classList.add("hidden");
+        if(this.headerUserProfileDesktop) {
+            this.headerUserProfileDesktop.classList.remove("hidden");
+            if(this.headerUsernameDesktop) this.headerUsernameDesktop.textContent = user.username;
+            if(this.headerUserInitialDesktop) this.headerUserInitialDesktop.textContent = user.username.charAt(0).toUpperCase();
+            if(this.headerStreakCountDesktop) this.headerStreakCountDesktop.textContent = user.current_streak || 0;
         }
     },
 
     updateUIToGuest() {
-        // Show CTA with a delay so it catches attention
-        setTimeout(() => {
-            this.showCTA();
-        }, 2000);
+        // Show CTA with a delay
+        setTimeout(() => { this.showCTA(); }, 2000);
 
-        // Update Header
+        // Update mobile header
         if(this.headerLoginBtn) this.headerLoginBtn.classList.remove("hidden");
         if(this.headerUserProfile) this.headerUserProfile.classList.add("hidden");
+
+        // Update desktop header
+        if(this.headerLoginBtnDesktop) this.headerLoginBtnDesktop.classList.remove("hidden");
+        if(this.headerUserProfileDesktop) this.headerUserProfileDesktop.classList.add("hidden");
     },
 
     async handleAuthSubmit(e) {
