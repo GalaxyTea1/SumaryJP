@@ -2,6 +2,11 @@ import { state } from "./state.js";
 import { ui } from "./components/ui.js";
 import { adminTable } from "./components/adminTable.js";
 
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
+const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
+const AUTH_URL = `${BASE_URL}/auth`;
+const ADMIN_TOKEN_KEY = "sumary_jp_admin_token";
+
 window.onload = function () {
     const loginSection = document.getElementById("login-section");
     const adminContent = document.getElementById("admin-content");
@@ -11,29 +16,76 @@ window.onload = function () {
     const logoutBtn = document.getElementById("admin-logout-btn");
     const errorMsg = document.getElementById("login-error");
 
-    if (sessionStorage.getItem("adminLoggedIn") === "true") {
-        loginSection.classList.add("hidden");
-        showAdminContent();
+    // Kiểm tra token đã lưu
+    const savedToken = sessionStorage.getItem(ADMIN_TOKEN_KEY);
+    if (savedToken) {
+        verifyAdminToken(savedToken).then(isValid => {
+            if (isValid) {
+                loginSection.classList.add("hidden");
+                showAdminContent();
+            } else {
+                sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+                loginSection.classList.remove("hidden");
+            }
+        });
     } else {
         loginSection.classList.remove("hidden");
     }
 
-    loginBtn.addEventListener("click", () => {
+    loginBtn.addEventListener("click", async () => {
         const user = usernameInput.value.trim();
         const pass = passwordInput.value.trim();
 
-        if (user === "admin" && pass === "1") {
-            sessionStorage.setItem("adminLoggedIn", "true");
+        if (!user || !pass) {
+            errorMsg.textContent = "Vui lòng nhập đầy đủ thông tin.";
+            errorMsg.classList.remove("hidden");
+            return;
+        }
+
+        // Disable button khi đang xử lý
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Đang xác thực...";
+
+        try {
+            const response = await fetch(`${AUTH_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, password: pass })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                errorMsg.textContent = data.error || "Sai tên đăng nhập hoặc mật khẩu.";
+                errorMsg.classList.remove("hidden");
+                return;
+            }
+
+            // Kiểm tra role admin
+            if (data.user.role !== 'admin') {
+                errorMsg.textContent = "Tài khoản không có quyền Admin.";
+                errorMsg.classList.remove("hidden");
+                return;
+            }
+
+            // Lưu token và hiển thị admin content
+            sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token);
             errorMsg.classList.add("hidden");
             loginSection.classList.add("hidden");
             showAdminContent();
-        } else {
+
+        } catch (error) {
+            console.error("Admin login error:", error);
+            errorMsg.textContent = "Không thể kết nối đến máy chủ.";
             errorMsg.classList.remove("hidden");
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Đăng nhập";
         }
     });
 
     logoutBtn.addEventListener("click", () => {
-        sessionStorage.removeItem("adminLoggedIn");
+        sessionStorage.removeItem(ADMIN_TOKEN_KEY);
         adminContent.classList.add("hidden");
         loginSection.classList.remove("hidden");
         usernameInput.value = "";
@@ -45,8 +97,20 @@ window.onload = function () {
             loginBtn.click();
         }
     });
-
 };
+
+async function verifyAdminToken(token) {
+    try {
+        const response = await fetch(`${AUTH_URL}/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) return false;
+        const data = await response.json();
+        return data.user && data.user.role === 'admin';
+    } catch {
+        return false;
+    }
+}
 
 async function showAdminContent() {
     document.getElementById("admin-content").classList.remove("hidden");

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .score-ring {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-ring-inner {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: #6caba0;
+      color: #fff;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #4d8a80;
+    }
+
+    .btn-outline {
+      border: 2px solid #6caba0;
+      color: #6caba0;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .btn-outline:hover {
+      background: #f0f7f6;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
+    <a href="dashboard.html" class="flex items-center gap-1 text-sm text-[#5f6b7a] hover:text-[#6caba0]">
+      <span class="material-symbols-outlined text-lg">arrow_back</span> Quay về Dashboard
+    </a>
+    <div id="result-test-title" class="font-bold font-['Plus_Jakarta_Sans'] text-sm">Kết quả bài test</div>
+    <div></div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-10 space-y-6">
+    <!-- Score Hero -->
+    <div class="card p-8 text-center">
+      <div id="score-ring" class="score-ring mx-auto mb-4"
+        style="background: conic-gradient(#6caba0 0% 0%, #e8ebee 0% 100%);">
+        <div class="score-ring-inner">
+          <div id="score-label" class="text-3xl font-extrabold font-['Plus_Jakarta_Sans'] text-[#6caba0]">--%</div>
+          <div id="score-detail" class="text-xs text-[#5f6b7a]">--/-- đúng</div>
+        </div>
+      </div>
+      <div id="score-badge"
+        class="inline-flex items-center gap-1.5 bg-[#f8fafb] text-[#5f6b7a] px-3 py-1 rounded-full text-sm font-semibold mb-3">
+        Đang tải...
+      </div>
+      <div class="flex justify-center gap-6 text-sm text-[#5f6b7a]">
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-lg">timer</span> <span id="result-time">--:--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Stats -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="card p-5 text-center">
+        <div id="stat-correct" class="text-2xl font-extrabold text-[#4caf50]">--</div>
+        <div class="text-xs text-[#5f6b7a] mt-1">Câu đúng</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div id="stat-wrong" class="text-2xl font-extrabold text-[#ef5350]">--</div>
+        <div class="text-xs text-[#5f6b7a] mt-1">Câu sai</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div id="stat-avg-time" class="text-2xl font-extrabold text-[#42a5f5]">--</div>
+        <div class="text-xs text-[#5f6b7a] mt-1">Thời gian TB/câu</div>
+      </div>
+    </div>
+
+    <!-- Weak Points -->
+    <div class="card p-6">
+      <h3 class="font-bold font-['Plus_Jakarta_Sans'] text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#ef5350]">flag</span> Điểm Cần Cải Thiện
+      </h3>
+      <div id="weak-points" class="space-y-3">
+        <div class="text-center text-[#5f6b7a] py-4">Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- Full Review -->
+    <div class="card p-6">
+      <h3 class="font-bold font-['Plus_Jakarta_Sans'] text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#6caba0]">list_alt</span> Chi Tiết Từng Câu
+      </h3>
+      <div id="answer-grid" class="flex flex-wrap gap-2">
+        <div class="text-[#5f6b7a] text-sm">Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-center gap-4">
+      <a href="test-center.html" class="btn-outline px-6 py-3 text-sm text-center">🔄 Làm Bài Test Khác</a>
+      <a href="dashboard.html" class="btn-primary px-6 py-3 text-sm text-center">📊 Về Dashboard</a>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/test-results.js"></script>
+</body>
+
+</html>

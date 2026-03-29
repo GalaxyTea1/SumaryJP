@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      opacity: 0.08;
+      transform: translate(20px, -20px);
+    }
+
+    .stat-card.teal::before {
+      background: #6caba0;
+    }
+
+    .stat-card.amber::before {
+      background: #f59e0b;
+    }
+
+    .stat-card.green::before {
+      background: #22c55e;
+    }
+
+    .stat-card.purple::before {
+      background: #8b5cf6;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50"><a href="landing.html"
+          class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸 Learning JP</a></div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>
+          Dashboard</a>
+        <a href="vocabulary.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">menu_book</span>
+          Từ Vựng</a>
+        <a href="grammar.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">edit_note</span> Ngữ
+          Pháp</a>
+        <a href="kanji.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">translate</span>
+          Kanji</a>
+        <a href="test-center.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">quiz</span> Bài
+          Test</a>
+        <a href="flashcard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">style</span>
+          Flashcard</a>
+        <a href="srs-review.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">replay</span> Ôn
+          Tập SRS</a>
+        <a href="statistics.html" class="sidebar-link active"><span
+            class="material-symbols-outlined text-xl">bar_chart</span> Thống Kê</a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 ml-[260px]">
+      <header class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 z-20">
+        <h1 class="text-xl font-bold font-['Plus_Jakarta_Sans']">Thống Kê</h1>
+        <p class="text-sm text-[#5f6b7a]">Tổng quan tiến độ học tập</p>
+      </header>
+
+      <div class="p-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="card stat-card teal p-5">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-xl bg-[#f0f7f6] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#6caba0]">menu_book</span>
+              </div>
+              <div class="text-xs text-[#5f6b7a]">Từ vựng</div>
+            </div>
+            <div id="stat-vocab-total" class="text-2xl font-bold">0</div>
+            <div class="flex items-center gap-2 mt-1">
+              <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div id="stat-vocab-bar" class="h-full bg-[#6caba0] rounded-full" style="width:0%"></div>
+              </div>
+              <span id="stat-vocab-pct" class="text-xs text-[#5f6b7a]">0%</span>
+            </div>
+          </div>
+
+          <div class="card stat-card amber p-5">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-xl bg-[#fff3e0] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#f59e0b]">edit_note</span>
+              </div>
+              <div class="text-xs text-[#5f6b7a]">Ngữ pháp</div>
+            </div>
+            <div id="stat-grammar-total" class="text-2xl font-bold">0</div>
+            <div class="text-xs text-[#5f6b7a] mt-1" id="stat-grammar-desc">— mẫu câu</div>
+          </div>
+
+          <div class="card stat-card green p-5">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-xl bg-[#f0fdf4] flex items-center justify-center">
+                <span class="material-symbols-outlined text-green-500">translate</span>
+              </div>
+              <div class="text-xs text-[#5f6b7a]">Kanji</div>
+            </div>
+            <div id="stat-kanji-total" class="text-2xl font-bold">0</div>
+            <div class="text-xs text-[#5f6b7a] mt-1" id="stat-kanji-desc">— chữ Kanji</div>
+          </div>
+
+          <div class="card stat-card purple p-5">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-10 h-10 rounded-xl bg-[#f5f3ff] flex items-center justify-center">
+                <span class="material-symbols-outlined text-purple-500">quiz</span>
+              </div>
+              <div class="text-xs text-[#5f6b7a]">Bài test</div>
+            </div>
+            <div id="stat-test-total" class="text-2xl font-bold">0</div>
+            <div class="text-xs text-[#5f6b7a] mt-1" id="stat-test-desc">bài test đã làm</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div class="card p-6">
+            <h3 class="font-bold font-['Plus_Jakarta_Sans'] mb-4">Phân bố từ vựng theo trạng thái</h3>
+            <div class="relative" style="height: 260px;">
+              <canvas id="chart-vocab-status"></canvas>
+            </div>
+          </div>
+          <div class="card p-6">
+            <h3 class="font-bold font-['Plus_Jakarta_Sans'] mb-4">Phân bố theo Level</h3>
+            <div class="relative" style="height: 260px;">
+              <canvas id="chart-level-dist"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Tests -->
+        <div class="card p-6">
+          <h3 class="font-bold font-['Plus_Jakarta_Sans'] mb-4">Bài test gần đây</h3>
+          <div id="recent-tests" class="space-y-3">
+            <div class="text-sm text-[#5f6b7a] italic">Chưa có bài test nào.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/statistics.js"></script>
+</body>
+
+</html>

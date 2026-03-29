@@ -5,5 +5,19 @@ export const utils = {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    },
+
+    /**
+     * Escape HTML entities để ngăn XSS attacks.
+     * Chuyển đổi &, <, >, ", ' thành HTML entities an toàn.
+     */
+    escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 };

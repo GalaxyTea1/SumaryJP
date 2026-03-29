@@ -74,6 +74,10 @@
       background: transparent;
     }
 
+    .custom-dropdown ul::-webkit-scrollbar-track {
+      margin-block: 16px;
+    }
+
     ::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
@@ -664,17 +668,22 @@
   </div>
 
   <!-- Test Configuration Modal Overlay -->
-  <div id="test-config-overlay" class="fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 hidden opacity-0">
-    <div id="test-config-content" class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-2xl rounded-3xl p-8 max-w-lg w-full transform transition-all duration-300 scale-95 opacity-0 relative overflow-hidden">
+  <div id="test-config-overlay"
+    class="fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 hidden opacity-0">
+    <div id="test-config-content"
+      class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-2xl rounded-3xl p-8 max-w-lg w-full transform transition-all duration-300 scale-95 opacity-0 relative">
       <!-- Decorative background blur -->
-      <div class="absolute -top-16 -right-16 size-40 bg-indigo-200/50 dark:bg-indigo-900/30 blur-3xl rounded-full pointer-events-none"></div>
+      <div class="absolute inset-0 z-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div class="absolute -top-16 -right-16 size-40 bg-indigo-200/50 dark:bg-indigo-900/30 blur-3xl rounded-full">
+        </div>
+      </div>
 
       <div class="flex items-center justify-between mb-8 relative z-10">
         <div>
           <h2 class="text-2xl font-black text-slate-800 dark:text-white">Cấu hình bài test</h2>
-          <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Tùy chỉnh phạm vi trắc nghiệm</p>
         </div>
-        <button id="test-close-btn" class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors">
+        <button id="test-close-btn"
+          class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors">
           <span class="material-symbols-outlined font-bold">close</span>
         </button>
       </div>
@@ -683,22 +692,34 @@
         <!-- Level Dropdown -->
         <div>
           <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Mức độ (JLPT)</label>
-          <div class="relative">
-            <select id="test-config-level" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+          <div class="relative custom-dropdown" id="level-dropdown-container">
+            <button type="button" id="test-config-level-btn"
+              class="w-full text-left bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer flex justify-between items-center">
+              <span id="test-config-level-label">Tất cả mức độ</span>
+              <span
+                class="material-symbols-outlined text-slate-400 dark:text-slate-500 pointer-events-none transition-transform duration-200">keyboard_arrow_down</span>
+            </button>
+            <ul id="test-config-level-list"
+              class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto hidden p-1.5">
               <!-- Populated by JS -->
-            </select>
-            <span class="material-symbols-outlined absolute right-3 top-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">keyboard_arrow_down</span>
+            </ul>
           </div>
         </div>
 
         <!-- Lesson Dropdown -->
         <div>
           <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Bài học</label>
-          <div class="relative">
-            <select id="test-config-lesson" class="w-full appearance-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer">
+          <div class="relative custom-dropdown" id="lesson-dropdown-container">
+            <button type="button" id="test-config-lesson-btn"
+              class="w-full text-left bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer flex justify-between items-center">
+              <span id="test-config-lesson-label">Tất cả bài học</span>
+              <span
+                class="material-symbols-outlined text-slate-400 dark:text-slate-500 pointer-events-none transition-transform duration-200">keyboard_arrow_down</span>
+            </button>
+            <ul id="test-config-lesson-list"
+              class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto hidden p-1.5">
               <!-- Populated by JS -->
-            </select>
-            <span class="material-symbols-outlined absolute right-3 top-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">keyboard_arrow_down</span>
+            </ul>
           </div>
         </div>
 
@@ -706,25 +727,96 @@
         <div class="flex gap-4">
           <div class="flex-1">
             <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Số câu hỏi</label>
-            <input type="number" id="test-config-count" value="10" min="5" max="100" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center" />
+            <input type="number" id="test-config-count" value="10" min="5" max="100"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center" />
           </div>
           <div class="flex-1">
-            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Thời gian (phút)</label>
-            <input type="number" id="test-config-time" value="5" min="1" max="60" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center" />
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Thời gian
+              (phút)</label>
+            <input type="number" id="test-config-time" value="5" min="1" max="60"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center" />
           </div>
         </div>
 
         <!-- Show Hiragana Toggle -->
-        <label class="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors mt-2">
-          <input type="checkbox" id="test-config-hiragana" checked class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800" />
+        <label
+          class="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors mt-2">
+          <input type="checkbox" id="test-config-hiragana" checked
+            class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800" />
           <span class="font-semibold text-slate-700 dark:text-slate-200">Hiển thị gợi ý Hiragana</span>
         </label>
       </div>
 
-      <button id="test-start-btn" class="w-full mt-8 bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
-        Bắt đầu làm bài <span class="material-symbols-outlined">rocket_launch</span>
+      <button id="test-start-btn"
+        class="w-full mt-8 bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+        Bắt đầu làm bài
+      </button>
+    </div>
+  </div>
+  <!-- Flashcard Configuration Modal Overlay -->
+  <div id="flashcard-config-overlay"
+    class="fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 hidden opacity-0">
+    <div id="flashcard-config-content"
+      class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-2xl rounded-3xl p-8 max-w-sm w-full transform transition-all duration-300 scale-95 opacity-0 relative">
+      <!-- Decorative background blur -->
+      <div class="absolute inset-0 z-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div class="absolute -top-16 -right-16 size-40 bg-indigo-200/50 dark:bg-indigo-900/30 blur-3xl rounded-full">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mb-8 relative z-10">
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 dark:text-white">Flashcards</h2>
+          <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Chọn phạm vi ôn tập</p>
+        </div>
+        <button id="flashcard-close-btn"
+          class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined font-bold">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-5 relative z-10">
+        <!-- Level Dropdown -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Mức độ (JLPT)</label>
+          <div class="relative custom-dropdown" id="fc-level-dropdown-container">
+            <button type="button" id="flashcard-config-level-btn"
+              class="w-full text-left bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer flex justify-between items-center transition-colors">
+              <span id="flashcard-config-level-label">Tất cả mức độ</span>
+              <span
+                class="material-symbols-outlined text-slate-400 dark:text-slate-500 pointer-events-none transition-transform duration-200">keyboard_arrow_down</span>
+            </button>
+            <ul id="flashcard-config-level-list"
+              class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto hidden p-1.5">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Lesson Dropdown -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 ml-1">Bài học</label>
+          <div class="relative custom-dropdown" id="fc-lesson-dropdown-container">
+            <button type="button" id="flashcard-config-lesson-btn"
+              class="w-full text-left bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer flex justify-between items-center transition-colors">
+              <span id="flashcard-config-lesson-label">Tất cả bài học</span>
+              <span
+                class="material-symbols-outlined text-slate-400 dark:text-slate-500 pointer-events-none transition-transform duration-200">keyboard_arrow_down</span>
+            </button>
+            <ul id="flashcard-config-lesson-list"
+              class="absolute top-full left-0 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto hidden p-1.5">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <button id="flashcard-start-btn"
+        class="w-full mt-8 bg-indigo-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+        Bắt đầu Flashcards <span class="material-symbols-outlined">layers</span>
       </button>
     </div>
   </div>
 </body>
+
 </html>

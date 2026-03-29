@@ -1,27 +1,24 @@
 import { state } from "../state.js";
 
-export const testConfigModal = {
+export const flashcardConfigModal = {
     init() {
-        this.overlay = document.getElementById("test-config-overlay");
-        this.content = document.getElementById("test-config-content");
+        this.overlay = document.getElementById("flashcard-config-overlay");
+        this.content = document.getElementById("flashcard-config-content");
         if (!this.overlay || !this.content) return;
 
-        this.btnLevel = document.getElementById("test-config-level-btn");
-        this.listLevel = document.getElementById("test-config-level-list");
-        this.labelLevel = document.getElementById("test-config-level-label");
+        this.btnLevel = document.getElementById("flashcard-config-level-btn");
+        this.listLevel = document.getElementById("flashcard-config-level-list");
+        this.labelLevel = document.getElementById("flashcard-config-level-label");
 
-        this.btnLesson = document.getElementById("test-config-lesson-btn");
-        this.listLesson = document.getElementById("test-config-lesson-list");
-        this.labelLesson = document.getElementById("test-config-lesson-label");
+        this.btnLesson = document.getElementById("flashcard-config-lesson-btn");
+        this.listLesson = document.getElementById("flashcard-config-lesson-list");
+        this.labelLesson = document.getElementById("flashcard-config-lesson-label");
 
         this.selectedLevel = "all";
         this.selectedLesson = "all";
 
-        this.inputCount = document.getElementById("test-config-count");
-        this.inputTime = document.getElementById("test-config-time");
-        this.checkHiragana = document.getElementById("test-config-hiragana");
-        this.btnStart = document.getElementById("test-start-btn");
-        this.btnClose = document.getElementById("test-close-btn");
+        this.btnStart = document.getElementById("flashcard-start-btn");
+        this.btnClose = document.getElementById("flashcard-close-btn");
 
         this.btnClose.addEventListener("click", () => this.hide());
         
@@ -46,55 +43,46 @@ export const testConfigModal = {
 
         // Close dropdowns when clicking outside
         document.addEventListener("click", (e) => {
-            if (!e.target.closest("#level-dropdown-container")) {
+            if (!e.target.closest("#fc-level-dropdown-container")) {
                 this.listLevel?.classList.add("hidden");
             }
-            if (!e.target.closest("#lesson-dropdown-container")) {
+            if (!e.target.closest("#fc-lesson-dropdown-container")) {
                 this.listLesson?.classList.add("hidden");
             }
         });
 
         this.btnStart.addEventListener("click", () => {
-            const wordCount = parseInt(this.inputCount.value);
-            const testTime = parseInt(this.inputTime.value);
             const selectedLevel = this.selectedLevel;
             const selectedLesson = this.selectedLesson;
-            const showHiragana = this.checkHiragana.checked;
 
-            if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
-                alert("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)");
+            if (selectedLevel === "all" || selectedLesson === "all") {
+                alert("Vui lòng chọn cụ thể cấp độ và bài học để ôn tập.");
                 return;
             }
 
             let count = 0;
-            Object.entries(state.lessons).forEach(([level, lessons]) => {
-                if (selectedLevel !== "all" && level !== selectedLevel) return;
-                Object.entries(lessons).forEach(([lesson, words]) => {
-                    if (selectedLesson !== "all" && lesson !== selectedLesson) return;
-                    count += words.length;
-                });
-            });
+            const lessons = state.getVocabularyByLesson(selectedLevel, selectedLesson);
+            if (lessons) {
+                count = lessons.length;
+            }
 
-            if (count < 5) {
-                alert("Số lượng từ vựng trong phạm vi này quá ít (dưới 5 từ). Vui lòng chọn bài học khác.");
+            if (count === 0) {
+                alert("Bài học này chưa có từ vựng nào. Vui lòng chọn bài khác.");
                 return;
             }
 
             const queryParams = new URLSearchParams({
                 level: selectedLevel,
-                lesson: selectedLesson,
-                count: wordCount,
-                time: testTime,
-                hiragana: showHiragana
+                lesson: selectedLesson
             });
 
-            window.location.href = `test.html?${queryParams.toString()}`;
+            window.location.href = `flashcard.html?${queryParams.toString()}`;
         });
     },
 
     populateConfigDropdowns() {
         this.selectedLevel = "all";
-        this.labelLevel.textContent = "Tất cả mức độ";
+        this.labelLevel.textContent = "Chọn mức độ";
         this.listLevel.innerHTML = "";
         
         const createMenuItem = (text, onClick) => {
@@ -104,13 +92,6 @@ export const testConfigModal = {
             li.addEventListener("click", onClick);
             return li;
         };
-
-        this.listLevel.appendChild(createMenuItem("Tất cả mức độ", () => {
-            this.selectedLevel = "all";
-            this.labelLevel.textContent = "Tất cả mức độ";
-            this.updateLessonDropdown("all");
-            this.listLevel.classList.add("hidden");
-        }));
 
         const levels = Object.keys(state.lessons || {}).sort((a,b) => b.localeCompare(a));
         levels.forEach(l => {
@@ -122,34 +103,31 @@ export const testConfigModal = {
             }));
         });
 
-        this.updateLessonDropdown("all");
+        // Pre-select first level if available
+        if (levels.length > 0) {
+            this.selectedLevel = levels[0];
+            this.labelLevel.textContent = levels[0];
+            this.updateLessonDropdown(levels[0]);
+        } else {
+            this.updateLessonDropdown("all");
+        }
     },
 
     updateLessonDropdown(levelStr) {
         this.selectedLesson = "all";
-        this.labelLesson.textContent = "Tất cả bài học";
+        this.labelLesson.textContent = "Chọn bài học";
         this.listLesson.innerHTML = "";
 
         const createMenuItem = (text, onClick) => {
             const li = document.createElement("li");
-            li.className = "px-4 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 cursor-pointer text-slate-700 dark:text-slate-200 transition-colors text-sm font-medium";
+            li.className = "px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 cursor-pointer rounded-lg text-slate-700 dark:text-slate-200 transition-colors text-sm font-medium";
             li.textContent = text;
             li.addEventListener("click", onClick);
             return li;
         };
 
-        this.listLesson.appendChild(createMenuItem("Tất cả bài học", () => {
-            this.selectedLesson = "all";
-            this.labelLesson.textContent = "Tất cả bài học";
-            this.listLesson.classList.add("hidden");
-        }));
-
         let filteredLessons = new Set();
-        if (levelStr === "all") {
-            Object.values(state.lessons || {}).forEach(lessonsObj => {
-                Object.keys(lessonsObj).forEach(lesson => filteredLessons.add(lesson));
-            });
-        } else {
+        if (levelStr !== "all") {
             Object.keys(state.lessons[levelStr] || {}).forEach(lesson => filteredLessons.add(lesson));
         }
 
@@ -161,6 +139,12 @@ export const testConfigModal = {
                 this.listLesson.classList.add("hidden");
             }));
         });
+        
+        // Pre-select first lesson if available
+        if (sortedLessons.length > 0) {
+            this.selectedLesson = sortedLessons[0];
+            this.labelLesson.textContent = `Bài ${sortedLessons[0]}`;
+        }
     },
 
     show() {

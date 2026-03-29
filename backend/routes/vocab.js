@@ -1,23 +1,16 @@
 const express = require('express');
 const vocabController = require('../controllers/vocabController');
+const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 
-// Get all vocabulary
+// Public routes — GET (ai cũng xem được từ vựng)
 router.get('/', vocabController.getAll);
-
-// Get vocabulary by level and lesson (route cụ thể đặt TRƯỚC route tổng quát)
 router.get('/:level/:lesson', vocabController.getByLevelAndLesson);
-
-// Get vocabulary by id
 router.get('/:id', vocabController.getById);
 
-// Add vocabulary
-router.post('/', vocabController.create);
-
-// Update vocabulary
-router.put('/:id', vocabController.update);
-
-// Delete vocabulary
-router.delete('/:id', vocabController.delete);
+// Protected routes — cần đăng nhập để thêm/sửa/xóa
+router.post('/', authMiddleware, vocabController.create);
+router.put('/:id', authMiddleware, vocabController.update);
+router.delete('/:id', authMiddleware, vocabController.delete);
 
 module.exports = router;

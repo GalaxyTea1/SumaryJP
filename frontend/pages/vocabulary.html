@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .filter-pill {
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: 1px solid #e5e7eb;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-pill:hover {
+      border-color: #6caba0;
+      color: #6caba0;
+    }
+
+    .filter-pill.active {
+      background: #6caba0;
+      color: #fff;
+      border-color: #6caba0;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    tbody tr {
+      transition: background 0.1s;
+    }
+
+    tbody tr:hover {
+      background: #f8fafb;
+    }
+
+    /* Custom Dropdown */
+    .custom-dropdown {
+      position: relative;
+      min-width: 140px;
+    }
+
+    .custom-dropdown-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      background: #fff;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .custom-dropdown-btn:hover {
+      border-color: #6caba0;
+    }
+
+    .custom-dropdown-btn.open {
+      border-color: #6caba0;
+      box-shadow: 0 0 0 2px rgba(108, 171, 160, 0.2);
+    }
+
+    .custom-dropdown-btn .arrow {
+      transition: transform 0.2s;
+      font-size: 1.125rem;
+    }
+
+    .custom-dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .custom-dropdown-list {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 50;
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: all 0.15s ease;
+    }
+
+    .custom-dropdown-list.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
+    }
+
+    .custom-dropdown-item {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .custom-dropdown-item:first-child {
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .custom-dropdown-item:last-child {
+      border-radius: 0 0 0.5rem 0.5rem;
+    }
+
+    .custom-dropdown-item:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .custom-dropdown-item.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50"><a href="landing.html"
+          class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸 Learning JP</a></div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>
+          Dashboard</a>
+        <a href="vocabulary.html" class="sidebar-link active"><span
+            class="material-symbols-outlined text-xl">menu_book</span> Từ Vựng</a>
+        <a href="grammar.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">edit_note</span> Ngữ
+          Pháp</a>
+        <a href="kanji.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">translate</span>
+          Kanji</a>
+        <a href="test-center.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">quiz</span> Bài
+          Test</a>
+        <a href="flashcard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">style</span>
+          Flashcard</a>
+        <a href="srs-review.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">replay</span> Ôn
+          Tập SRS</a>
+        <a href="statistics.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">bar_chart</span>
+          Thống Kê</a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 ml-[260px]">
+      <header class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 z-20">
+        <h1 class="text-xl font-bold font-['Plus_Jakarta_Sans']">Từ Vựng Tiếng Nhật</h1>
+        </p>
+      </header>
+
+      <div class="p-8 space-y-5">
+        <!-- Filters -->
+        <div class="card p-4 flex flex-wrap items-center gap-3">
+          <div class="flex gap-2 flex-wrap">
+            <span class="filter-pill active" data-level="all">Tất cả</span>
+            <span class="filter-pill" data-level="N5">N5</span>
+            <span class="filter-pill" data-level="N4">N4</span>
+            <span class="filter-pill" data-level="N3">N3</span>
+          </div>
+          <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+          <!-- Custom Lesson Dropdown -->
+          <div class="custom-dropdown" id="vocab-lesson-dropdown">
+            <button class="custom-dropdown-btn" type="button">
+              <span class="label">Tất cả bài</span>
+              <span class="material-symbols-outlined arrow">expand_more</span>
+            </button>
+            <div class="custom-dropdown-list">
+              <div class="custom-dropdown-item active" data-value="all">Tất cả bài</div>
+            </div>
+          </div>
+          <!-- Custom Status Dropdown -->
+          <div class="custom-dropdown" id="vocab-status-dropdown">
+            <button class="custom-dropdown-btn" type="button">
+              <span class="label">Tất cả trạng thái</span>
+              <span class="material-symbols-outlined arrow">expand_more</span>
+            </button>
+            <div class="custom-dropdown-list">
+              <div class="custom-dropdown-item active" data-value="all">Tất cả trạng thái</div>
+              <div class="custom-dropdown-item" data-value="not-learned">Chưa học</div>
+              <div class="custom-dropdown-item" data-value="learning">Đang học</div>
+              <div class="custom-dropdown-item" data-value="mastered">Đã thuộc</div>
+            </div>
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <div class="relative">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#5f6b7a] text-lg">search</span>
+              <input id="vocab-search"
+                class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-[#6caba0]"
+                placeholder="Tìm từ vựng..." type="text" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Vocab Table -->
+        <div class="card overflow-hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-[#f8fafb] text-left text-xs font-semibold text-[#5f6b7a] uppercase tracking-wider">
+                <th class="px-5 py-3 w-12">#</th>
+                <th class="px-5 py-3">Tiếng Nhật</th>
+                <th class="px-5 py-3">Hiragana</th>
+                <th class="px-5 py-3">Nghĩa</th>
+                <th class="px-5 py-3">Loại từ</th>
+                <th class="px-5 py-3 text-center">Trạng thái</th>
+                <th class="px-5 py-3 text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="vocab-table-body" class="text-sm">
+              <tr>
+                <td colspan="7" class="px-5 py-8 text-center text-[#5f6b7a]">Đang tải từ vựng...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary -->
+        <div id="vocab-summary" class="text-sm text-[#5f6b7a]"></div>
+
+        <!-- Pagination -->
+        <div id="vocab-pagination" class="flex justify-center gap-2 text-sm"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/vocabulary.js"></script>
+</body>
+
+</html>

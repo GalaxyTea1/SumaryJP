@@ -5,7 +5,7 @@ const User = {
         const query = `
             INSERT INTO users (username, password)
             VALUES ($1, $2)
-            RETURNING id, username, current_streak, created_at
+            RETURNING id, username, role, current_streak, created_at
         `;
         const values = [username, password];
         try {
@@ -27,7 +27,7 @@ const User = {
     },
 
     async findById(id) {
-        const query = 'SELECT id, username, current_streak, created_at FROM users WHERE id = $1';
+        const query = 'SELECT id, username, role, current_streak, created_at FROM users WHERE id = $1';
         try {
             const { rows } = await pool.query(query, [id]);
             return rows[0];

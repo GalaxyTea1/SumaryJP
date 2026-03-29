@@ -1,20 +1,44 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
 const vocabRoutes = require('./routes/vocab');
 const historyRoutes = require('./routes/history');
 const authRoutes = require('./routes/auth');
+const grammarRoutes = require('./routes/grammar');
+const kanjiRoutes = require('./routes/kanji');
+const testRoutes = require('./routes/test');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// CORS — chỉ cho phép các origin cụ thể
+const allowedOrigins = [
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL
+].filter(Boolean); // Loại bỏ undefined
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Cho phép request không có origin (curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('CORS: Origin not allowed'), false);
+    },
+    credentials: true
+}));
 app.use(express.json({ limit: '10kb' }));
 
 // Routes
 app.use('/api/vocab', vocabRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/grammar', grammarRoutes);
+app.use('/api/kanji', kanjiRoutes);
+app.use('/api/test', testRoutes);
 
 // 404 handler
 app.use((req, res) => {

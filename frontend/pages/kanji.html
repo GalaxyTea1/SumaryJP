@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .filter-pill {
+      padding: 0.375rem 1rem;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: 1px solid #e5e7eb;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-pill:hover {
+      background: #f0f7f6;
+      border-color: #6caba0;
+      color: #6caba0;
+    }
+
+    .filter-pill.active {
+      background: #6caba0;
+      color: #fff;
+      border-color: #6caba0;
+    }
+
+    .level-badge {
+      padding: 0.125rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+    }
+
+    .level-n5 {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .level-n4 {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .level-n3 {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .level-n2 {
+      background: #fce4ec;
+      color: #c62828;
+    }
+
+    .level-n1 {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    /* Kanji card */
+    .kanji-card {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kanji-card .kanji-char {
+      font-family: 'Noto Sans JP', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: #1a2332;
+      transition: color 0.2s;
+    }
+
+    .kanji-card:hover .kanji-char {
+      color: #6caba0;
+    }
+
+    .kanji-card .stroke-count {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      font-size: 0.6875rem;
+      color: #5f6b7a;
+      background: #f8fafb;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.375rem;
+    }
+
+    /* Custom Dropdown */
+    .custom-dropdown {
+      position: relative;
+    }
+
+    .custom-dropdown-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      background: #fff;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .custom-dropdown-btn:hover {
+      border-color: #6caba0;
+    }
+
+    .custom-dropdown-btn.open {
+      border-color: #6caba0;
+      box-shadow: 0 0 0 2px rgba(108, 171, 160, 0.2);
+    }
+
+    .custom-dropdown-btn .arrow {
+      transition: transform 0.2s;
+      font-size: 1.125rem;
+    }
+
+    .custom-dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .custom-dropdown-list {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 50;
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: all 0.15s ease;
+    }
+
+    .custom-dropdown-list.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+
+    .custom-dropdown-item {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .custom-dropdown-item:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .custom-dropdown-item.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    /* Kanji Detail Modal */
+    .kanji-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kanji-modal-overlay.show {
+      display: flex;
+    }
+
+    .kanji-modal {
+      background: #fff;
+      border-radius: 1.5rem;
+      max-width: 480px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50"><a href="landing.html"
+          class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸 Learning JP</a></div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>
+          Dashboard</a>
+        <a href="vocabulary.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">menu_book</span>
+          Từ Vựng</a>
+        <a href="grammar.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">edit_note</span> Ngữ
+          Pháp</a>
+        <a href="kanji.html" class="sidebar-link active"><span
+            class="material-symbols-outlined text-xl">translate</span> Kanji</a>
+        <a href="test-center.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">quiz</span> Bài
+          Test</a>
+        <a href="flashcard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">style</span>
+          Flashcard</a>
+        <a href="srs-review.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">replay</span> Ôn
+          Tập SRS</a>
+        <a href="statistics.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">bar_chart</span>
+          Thống Kê</a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 ml-[260px]">
+      <header class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 z-20">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold font-['Plus_Jakarta_Sans']">Kanji</h1>
+            <p class="text-sm text-[#5f6b7a]">Khám phá và học Kanji theo bài</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#5f6b7a] text-lg">search</span>
+              <input type="text" id="kanji-search" placeholder="Tìm kanji, nghĩa..."
+                class="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm w-64 focus:ring-2 focus:ring-[#6caba0] focus:border-transparent outline-none" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="p-8">
+        <!-- Filters -->
+        <div class="flex items-center gap-3 mb-6 flex-wrap">
+          <div class="flex items-center gap-2">
+            <button class="filter-pill active" data-level="all">Tất cả</button>
+            <button class="filter-pill" data-level="N5">N5</button>
+            <button class="filter-pill" data-level="N4">N4</button>
+            <button class="filter-pill" data-level="N3">N3</button>
+            <button class="filter-pill" data-level="N2">N2</button>
+          </div>
+          <div class="ml-auto w-48">
+            <div class="custom-dropdown" id="kanji-lesson-dropdown">
+              <button class="custom-dropdown-btn" type="button">
+                <span class="label">Tất cả bài</span>
+                <span class="material-symbols-outlined arrow">expand_more</span>
+              </button>
+              <div class="custom-dropdown-list">
+                <div class="custom-dropdown-item active" data-value="all">Tất cả bài</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="flex items-center gap-4 mb-6 text-sm text-[#5f6b7a]">
+          <span id="kanji-count" class="font-semibold">0 Kanji</span>
+          <span>•</span>
+          <span id="kanji-lesson-count">0 bài</span>
+        </div>
+
+        <!-- Kanji Grid -->
+        <div id="kanji-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <!-- Cards rendered by JS -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="kanji-empty" class="hidden text-center py-16">
+          <div class="text-5xl mb-4">🈳</div>
+          <h3 class="text-lg font-bold font-['Plus_Jakarta_Sans'] mb-2">Không tìm thấy Kanji nào</h3>
+          <p class="text-sm text-[#5f6b7a]">Thử lọc theo level hoặc bài khác</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Kanji Detail Modal -->
+  <div id="kanji-modal-overlay" class="kanji-modal-overlay">
+    <div class="kanji-modal">
+      <div class="bg-gradient-to-br from-[#6caba0] to-[#4d8a80] p-8 text-center text-white rounded-t-2xl relative">
+        <button id="kanji-modal-close"
+          class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-all">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+        <div id="modal-kanji-char" class="text-7xl font-bold font-['Noto_Sans_JP'] mb-2">漢</div>
+        <div id="modal-kanji-meaning" class="text-lg font-semibold">Hán</div>
+        <div class="flex items-center justify-center gap-3 mt-3">
+          <span id="modal-kanji-level" class="level-badge level-n5">N5</span>
+          <span id="modal-kanji-lesson" class="text-sm text-white/80">Bài 1</span>
+          <span id="modal-kanji-strokes" class="text-sm text-white/80">• 13 nét</span>
+        </div>
+      </div>
+      <div class="p-6 space-y-5">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-[#f8fafb] rounded-xl p-4">
+            <div class="text-xs text-[#5f6b7a] mb-1 uppercase tracking-wider">On'yomi (Âm On)</div>
+            <div id="modal-kanji-onyomi" class="font-bold text-lg font-['Noto_Sans_JP']">カン</div>
+          </div>
+          <div class="bg-[#f8fafb] rounded-xl p-4">
+            <div class="text-xs text-[#5f6b7a] mb-1 uppercase tracking-wider">Kun'yomi (Âm Kun)</div>
+            <div id="modal-kanji-kunyomi" class="font-bold text-lg font-['Noto_Sans_JP']">—</div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-[#5f6b7a] mb-2 uppercase tracking-wider">Từ ví dụ</div>
+          <div id="modal-kanji-examples" class="space-y-2">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+        <div id="modal-kanji-radical-row">
+          <div class="text-xs text-[#5f6b7a] mb-1 uppercase tracking-wider">Bộ thủ</div>
+          <div id="modal-kanji-radical" class="font-bold text-lg font-['Noto_Sans_JP']">⺾</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/kanji.js"></script>
+</body>
+
+</html>

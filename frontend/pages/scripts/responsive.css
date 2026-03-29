@@ -1,0 +1,149 @@
+/* ============================================
+   Responsive CSS — Sumary Japanese
+   Shared across all pages
+   ============================================ */
+
+/* --- Hamburger button (hidden on desktop) --- */
+.hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    border-radius: 0.625rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.hamburger-btn:hover { background: #f0f7f6; }
+.hamburger-btn .material-symbols-outlined { font-size: 1.25rem; color: #5f6b7a; }
+
+/* --- Sidebar overlay (mobile) --- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 29;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+.sidebar-overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* ========================================
+   TABLET (≤ 1024px) — Sidebar overlay mode
+   ======================================== */
+@media (max-width: 1024px) {
+    .hamburger-btn {
+        display: flex;
+    }
+
+    /* Sidebar: off-screen by default on tablet/mobile */
+    aside {
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 40 !important;
+    }
+    aside.open {
+        transform: translateX(0);
+    }
+
+    /* Main content: full width */
+    main {
+        margin-left: 0 !important;
+    }
+
+    /* Header: add left padding for hamburger */
+    main > header {
+        padding-left: 3.5rem !important;
+    }
+}
+
+/* ========================================
+   MOBILE (≤ 640px) — Compact layout
+   ======================================== */
+@media (max-width: 640px) {
+    main > header {
+        padding: 0.75rem 1rem 0.75rem 3.5rem !important;
+    }
+    main > header h1 { font-size: 1rem !important; }
+    main > header p { font-size: 0.75rem !important; }
+
+    /* Content padding */
+    main > div,
+    main > .p-8 {
+        padding: 1rem !important;
+    }
+
+    /* Cards grid → single column */
+    .grid-cols-2,
+    .sm\:grid-cols-3,
+    .md\:grid-cols-4,
+    .lg\:grid-cols-5,
+    .xl\:grid-cols-6 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Filter pills → wrap */
+    .filter-pill {
+        padding: 0.25rem 0.625rem;
+        font-size: 0.75rem;
+    }
+
+    /* Flashcard/SRS card size */
+    .flashcard-container,
+    .review-card {
+        height: 260px !important;
+        max-width: 100% !important;
+    }
+
+    /* Custom dropdown */
+    .custom-dropdown-btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.8125rem;
+    }
+
+    /* Hide desktop-only text */
+    .hide-mobile { display: none !important; }
+
+    /* Search input smaller */
+    main header input[type="text"] {
+        width: 100% !important;
+        max-width: 180px;
+    }
+
+    /* Stats grid on mobile */
+    .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Chart containers */
+    .grid.grid-cols-1.lg\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ========================================
+   VERY SMALL (≤ 380px)
+   ======================================== */
+@media (max-width: 380px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .rating-btn {
+        padding: 0.375rem 0.625rem;
+        font-size: 0.6875rem;
+    }
+
+    .kanji-char { font-size: 2.5rem !important; }
+}

@@ -1,4 +1,5 @@
 import { state } from "../state.js";
+import { utils } from "./utils.js";
 
 export const adminTable = {
     selectedIds: new Set(),
@@ -54,9 +55,9 @@ export const adminTable = {
                 <td class="px-4 py-4 text-center">
                     <input type="checkbox" class="vocab-cb rounded text-primary focus:ring-primary bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 size-4 cursor-pointer align-middle outline-none" data-id="${vocab.id}">
                 </td>
-                <td class="px-3 py-4 font-bold text-sm text-slate-800 dark:text-slate-100">${vocab.japanese}</td>
-                <td class="px-3 py-4 text-sm text-slate-600 dark:text-slate-400">${vocab.hiragana || ""}</td>
-                <td class="px-3 py-4 text-sm text-slate-700 dark:text-slate-300">${vocab.meaning}</td>
+                <td class="px-3 py-4 font-bold text-sm text-slate-800 dark:text-slate-100">${utils.escapeHtml(vocab.japanese)}</td>
+                <td class="px-3 py-4 text-sm text-slate-600 dark:text-slate-400">${utils.escapeHtml(vocab.hiragana || "")}</td>
+                <td class="px-3 py-4 text-sm text-slate-700 dark:text-slate-300">${utils.escapeHtml(vocab.meaning)}</td>
                 <td class="px-4 py-4 text-right flex justify-end gap-2">
                     <button class="edit-btn text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg hover:text-primary hover:bg-primary/10 transition-colors flex items-center gap-1" title="Sửa" data-id="${vocab.id}">
                         <span class="material-symbols-outlined text-sm">edit</span> Sửa

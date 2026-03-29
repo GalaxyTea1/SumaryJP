@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .progress-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #e8ebee;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .action-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid #e5e7eb;
+    }
+
+    .action-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+      border-color: #6caba0;
+    }
+
+    .btn-primary {
+      background: #6caba0;
+      color: #fff;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.8125rem;
+      padding: 0.5rem 1rem;
+      transition: all 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #4d8a80;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50">
+        <a href="landing.html" class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸
+          Learning JP</a>
+      </div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link active">
+          <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
+        </a>
+        <a href="vocabulary.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">menu_book</span> Từ Vựng
+        </a>
+        <a href="grammar.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">edit_note</span> Ngữ Pháp
+        </a>
+        <a href="kanji.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">translate</span> Kanji
+        </a>
+        <a href="test-center.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">quiz</span> Bài Test
+        </a>
+        <a href="flashcard.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">style</span> Flashcard
+        </a>
+        <a href="srs-review.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">replay</span> Ôn Tập SRS
+        </a>
+        <a href="statistics.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">bar_chart</span> Thống Kê
+        </a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+          <span
+            class="material-symbols-outlined text-[#5f6b7a] text-xl cursor-pointer hover:text-[#6caba0]">settings</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-[260px]">
+      <!-- Top Bar -->
+      <header
+        class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 flex items-center justify-between z-20">
+        <div>
+          <h1 id="dashboard-greeting" class="text-xl font-bold font-['Plus_Jakarta_Sans']">Chào buổi sáng! 🌸</h1>
+          <p class="text-sm text-[#5f6b7a]">Hãy tiếp tục hành trình học tiếng Nhật nào</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <button
+            class="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50">
+            <span class="material-symbols-outlined text-[#5f6b7a] text-xl">notifications</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="p-8 space-y-6">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-[#5f6b7a]">Từ Vựng</span>
+              <div class="w-8 h-8 rounded-lg bg-[#f0f7f6] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#6caba0] text-lg">menu_book</span>
+              </div>
+            </div>
+            <div id="stat-vocab-count" class="text-2xl font-bold font-['Plus_Jakarta_Sans']">-- <span
+                class="text-sm font-normal text-[#5f6b7a]">/ --</span></div>
+            <div class="progress-bar mt-2">
+              <div id="stat-vocab-bar" class="progress-fill bg-[#6caba0]" style="width: 0%"></div>
+            </div>
+            <div id="stat-vocab-pct" class="text-xs text-[#5f6b7a] mt-1.5">Đang tải...</div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-[#5f6b7a]">Ngữ Pháp</span>
+              <div class="w-8 h-8 rounded-lg bg-[#fff3e0] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#f0a868] text-lg">edit_note</span>
+              </div>
+            </div>
+            <div id="stat-grammar-count" class="text-2xl font-bold font-['Plus_Jakarta_Sans']">-- <span
+                class="text-sm font-normal text-[#5f6b7a]">/ --</span></div>
+            <div class="progress-bar mt-2">
+              <div id="stat-grammar-bar" class="progress-fill bg-[#f0a868]" style="width: 0%"></div>
+            </div>
+            <div id="stat-grammar-pct" class="text-xs text-[#5f6b7a] mt-1.5">Đang tải...</div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-[#5f6b7a]">Kanji</span>
+              <div class="w-8 h-8 rounded-lg bg-[#e8f5e9] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#4caf50] text-lg">translate</span>
+              </div>
+            </div>
+            <div id="stat-kanji-count" class="text-2xl font-bold font-['Plus_Jakarta_Sans']">-- <span
+                class="text-sm font-normal text-[#5f6b7a]">/ --</span></div>
+            <div class="progress-bar mt-2">
+              <div id="stat-kanji-bar" class="progress-fill bg-[#4caf50]" style="width: 0%"></div>
+            </div>
+            <div id="stat-kanji-pct" class="text-xs text-[#5f6b7a] mt-1.5">Đang tải...</div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-sm text-[#5f6b7a]">XP Hôm Nay</span>
+              <div class="w-8 h-8 rounded-lg bg-[#e3f2fd] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#42a5f5] text-lg">bolt</span>
+              </div>
+            </div>
+            <div class="text-2xl font-bold font-['Plus_Jakarta_Sans']">150 <span
+                class="text-sm font-normal text-[#5f6b7a]">XP</span></div>
+            <div class="flex items-center gap-1 mt-2">
+              <span class="material-symbols-outlined text-[#4caf50] text-sm">trending_up</span>
+              <span class="text-xs text-[#4caf50]">+23% so với hôm qua</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Goal -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold font-['Plus_Jakarta_Sans']">Mục tiêu tuần</h3>
+              <p class="text-sm text-[#5f6b7a]">Thuộc 20 từ mới trong tuần này</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div id="weekly-goal-count" class="text-2xl font-bold text-[#6caba0]">--<span
+                  class="text-sm font-normal text-[#5f6b7a]">/--</span></div>
+            </div>
+          </div>
+          <div class="progress-bar mt-3">
+            <div id="weekly-goal-progress" class="progress-fill bg-[#6caba0]" style="width: 0%"></div>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <span
+              class="w-8 h-8 rounded-full bg-[#6caba0] text-white text-xs flex items-center justify-center font-semibold">T2</span>
+            <span
+              class="w-8 h-8 rounded-full bg-[#6caba0] text-white text-xs flex items-center justify-center font-semibold">T3</span>
+            <span
+              class="w-8 h-8 rounded-full bg-[#6caba0] text-white text-xs flex items-center justify-center font-semibold">T4</span>
+            <span
+              class="w-8 h-8 rounded-full bg-[#6caba0] text-white text-xs flex items-center justify-center font-semibold">T5</span>
+            <span
+              class="w-8 h-8 rounded-full bg-[#6caba0] text-white text-xs flex items-center justify-center font-semibold">T6</span>
+            <span
+              class="w-8 h-8 rounded-full bg-[#e8ebee] text-[#5f6b7a] text-xs flex items-center justify-center font-semibold">T7</span>
+            <span
+              class="w-8 h-8 rounded-full bg-[#e8ebee] text-[#5f6b7a] text-xs flex items-center justify-center font-semibold">CN</span>
+          </div>
+        </div>
+
+        <!-- Gamification Widget -->
+        <div id="gamification-widget" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- XP & Level -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-[#5f6b7a]">Level & XP</h3>
+              <span id="gm-level-badge"
+                class="text-xs px-2.5 py-1 bg-gradient-to-r from-[#6caba0] to-[#4d8a80] text-white rounded-full font-bold">Lv.1</span>
+            </div>
+            <div id="gm-level-title" class="text-lg font-bold font-['Plus_Jakarta_Sans'] mb-1">Tân binh</div>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                <div id="gm-xp-bar"
+                  class="h-full bg-gradient-to-r from-[#6caba0] to-[#4d8a80] rounded-full transition-all duration-500"
+                  style="width: 0%"></div>
+              </div>
+              <span id="gm-xp-text" class="text-xs font-semibold text-[#5f6b7a]">0 XP</span>
+            </div>
+            <div id="gm-xp-next" class="text-[0.6875rem] text-[#5f6b7a] mt-1">Cần 50 XP để lên level tiếp</div>
+          </div>
+
+          <!-- Streak -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-[#5f6b7a]">Chuỗi ngày học</h3>
+              <span class="text-2xl">🔥</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="gm-streak-count" class="text-3xl font-bold font-['Plus_Jakarta_Sans'] text-[#f59e0b]">0</span>
+              <span class="text-sm text-[#5f6b7a]">ngày liên tục</span>
+            </div>
+            <div id="gm-streak-msg" class="text-xs text-[#5f6b7a] mt-1">Hãy học mỗi ngày để duy trì streak!</div>
+          </div>
+
+          <!-- Badges -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-[#5f6b7a]">Huy hiệu</h3>
+              <span id="gm-badge-count" class="text-xs text-[#5f6b7a]">0/15</span>
+            </div>
+            <div id="gm-badges-grid" class="flex flex-wrap gap-1.5">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column: Quick Actions + Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <!-- Quick Actions -->
+          <div class="lg:col-span-3 space-y-4">
+            <h3 class="font-bold font-['Plus_Jakarta_Sans'] text-lg">Hành động nhanh</h3>
+            <a href="flashcard.html" class="action-card flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-[#f0f7f6] flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[#6caba0] text-2xl">style</span>
+              </div>
+              <div class="flex-1">
+                <div class="font-semibold text-sm">Học Flashcard</div>
+                <div class="text-xs text-[#5f6b7a]">15 thẻ cần ôn hôm nay</div>
+              </div>
+              <button class="btn-primary">Bắt đầu</button>
+            </a>
+            <a href="test-center.html" class="action-card flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-[#fff3e0] flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[#f0a868] text-2xl">quiz</span>
+              </div>
+              <div class="flex-1">
+                <div class="font-semibold text-sm">Làm Bài Test</div>
+                <div class="text-xs text-[#5f6b7a]">Bài test từ vựng N5</div>
+              </div>
+              <button class="btn-primary">Làm ngay</button>
+            </a>
+            <a href="srs-review.html" class="action-card flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-[#e3f2fd] flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[#42a5f5] text-2xl">replay</span>
+              </div>
+              <div class="flex-1">
+                <div class="font-semibold text-sm">Ôn Tập SRS</div>
+                <div class="text-xs text-[#5f6b7a]">8 từ đến hạn ôn</div>
+              </div>
+              <button class="btn-primary">Ôn tập</button>
+            </a>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="lg:col-span-2">
+            <h3 class="font-bold font-['Plus_Jakarta_Sans'] text-lg mb-4">Hoạt động gần đây</h3>
+            <div id="recent-activity" class="card p-4 space-y-3">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#e8f5e9] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span class="material-symbols-outlined text-[#4caf50] text-sm">check</span>
+                </div>
+                <div>
+                  <div class="text-sm">Đã thuộc <span class="font-semibold font-['Noto_Sans_JP']">食べる</span> <span
+                      class="text-[#5f6b7a]">(taberu)</span></div>
+                  <div class="text-xs text-[#5f6b7a]">2 phút trước</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#fff3e0] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span class="material-symbols-outlined text-[#f0a868] text-sm">emoji_events</span>
+                </div>
+                <div>
+                  <div class="text-sm">Hoàn thành test N5 Bài 3 — <span class="font-semibold text-[#4caf50]">85%</span>
+                  </div>
+                  <div class="text-xs text-[#5f6b7a]">1 giờ trước</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#f0f7f6] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span class="material-symbols-outlined text-[#6caba0] text-sm">replay</span>
+                </div>
+                <div>
+                  <div class="text-sm">Ôn tập ngữ pháp <span class="font-semibold font-['Noto_Sans_JP']">～てください</span>
+                  </div>
+                  <div class="text-xs text-[#5f6b7a]">3 giờ trước</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-[#e3f2fd] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span class="material-symbols-outlined text-[#42a5f5] text-sm">school</span>
+                </div>
+                <div>
+                  <div class="text-sm">Học 10 từ mới Bài 5</div>
+                  <div class="text-xs text-[#5f6b7a]">Hôm qua</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/dashboard.js"></script>
+</body>
+
+</html>

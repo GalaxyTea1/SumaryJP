@@ -1,16 +1,17 @@
-export const tts = {
-    initContextMenu() {
-        // Feature not currently implemented
-    },
+// ============================================
+// Text-to-Speech — Sumary Japanese
+// ============================================
+
+const tts = {
     speak(text) {
         if (!('speechSynthesis' in window)) {
-            alert("Trình duyệt của bạn không hỗ trợ tính năng đọc văn bản.");
+            console.warn('Trình duyệt không hỗ trợ TTS.');
             return;
         }
 
         const utterance = new SpeechSynthesisUtterance(text);
 
-        // Auto-detect language based on character set
+        // Auto-detect language
         const hasJapanese = /[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/.test(text);
         if (hasJapanese) {
             utterance.lang = 'ja-JP';
@@ -23,3 +24,5 @@ export const tts = {
         window.speechSynthesis.speak(utterance);
     }
 };
+
+window.tts = tts;

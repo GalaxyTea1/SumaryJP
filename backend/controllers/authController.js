@@ -2,7 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sumary_japanese_super_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('FATAL: JWT_SECRET is not set in environment variables. Server cannot start.');
+}
 
 const authController = {
     async register(req, res) {
@@ -27,7 +30,7 @@ const authController = {
             const newUser = await User.create(username, hashedPassword);
 
             // Auto generated JWT for quick login
-            const token = jwt.sign({ id: newUser.id, username: newUser.username }, JWT_SECRET, {
+            const token = jwt.sign({ id: newUser.id, username: newUser.username, role: newUser.role || 'user' }, JWT_SECRET, {
                 expiresIn: '30d'
             });
 
@@ -63,7 +66,7 @@ const authController = {
             }
 
             // Generate JWT
-            const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+            const token = jwt.sign({ id: user.id, username: user.username, role: user.role || 'user' }, JWT_SECRET, {
                 expiresIn: '30d' // Hạn sử dụng 30 ngày giống mock
             });
 
@@ -72,6 +75,7 @@ const authController = {
                 user: {
                     id: user.id,
                     username: user.username,
+                    role: user.role || 'user',
                     current_streak: user.current_streak
                 },
                 token

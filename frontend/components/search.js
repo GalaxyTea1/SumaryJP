@@ -1,5 +1,6 @@
 import { state } from "../state.js";
 import { vocabTable } from "./vocabTable.js";
+import { utils } from "./utils.js";
 
 export const search = {
     init() {
@@ -93,10 +94,10 @@ export const search = {
                     li.className = "px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex justify-between items-center";
                     li.innerHTML = `
                         <div>
-                            <span class="font-bold text-slate-800 dark:text-white block">${vocab.japanese}</span>
-                            <span class="text-xs text-slate-500 dark:text-slate-400">${vocab.hiragana} - ${vocab.meaning}</span>
+                            <span class="font-bold text-slate-800 dark:text-white block">${utils.escapeHtml(vocab.japanese)}</span>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">${utils.escapeHtml(vocab.hiragana)} - ${utils.escapeHtml(vocab.meaning)}</span>
                         </div>
-                        <span class="text-[10px] text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">Bài ${vocab.lesson}</span>
+                        <span class="text-[10px] text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">Bài ${utils.escapeHtml(vocab.lesson)}</span>
                     `;
                     
                     li.addEventListener("click", () => {
@@ -162,16 +163,16 @@ export const search = {
             row.innerHTML = `
                 <td class="px-8 py-6">
                     <div class="flex items-center gap-4">
-                        <div class="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-2xl">${vocab.japanese.charAt(0) || "あ"}</div>
-                        <div class="font-bold text-lg text-slate-900 dark:text-white">${vocab.japanese} <span class="text-xs text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full ml-2">Bài ${vocab.lesson}-${vocab.level}</span></div>
+                        <div class="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-2xl">${utils.escapeHtml(vocab.japanese.charAt(0) || "あ")}</div>
+                        <div class="font-bold text-lg text-slate-900 dark:text-white">${utils.escapeHtml(vocab.japanese)} <span class="text-xs text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full ml-2">Bài ${utils.escapeHtml(vocab.lesson)}-${utils.escapeHtml(vocab.level)}</span></div>
                     </div>
                 </td>
-                <td class="px-8 py-6 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">${vocab.hiragana}</td>
+                <td class="px-8 py-6 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">${utils.escapeHtml(vocab.hiragana)}</td>
                 <td class="px-8 py-6">
-                    <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">${vocab.meaning}</div>
+                    <div class="text-sm font-semibold text-slate-700 dark:text-slate-300">${utils.escapeHtml(vocab.meaning)}</div>
                 </td>
                 <td class="px-8 py-6">
-                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg uppercase tracking-wider">${vocab.type || "Từ vựng"}</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg uppercase tracking-wider">${utils.escapeHtml(vocab.type || "Từ vựng")}</span>
                 </td>
                 <td class="px-8 py-6 text-center whitespace-nowrap">
                    <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50">View Only</span>

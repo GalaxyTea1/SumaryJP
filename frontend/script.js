@@ -9,6 +9,7 @@ import { tts } from "./components/tts.js";
 import { wordDetailsModal } from "./components/wordDetailsModal.js";
 import { auth } from "./components/auth.js";
 import { testConfigModal } from "./components/testConfigModal.js";
+import { flashcardConfigModal } from "./components/flashcardConfigModal.js";
 
 window.onload = async function () {
     try {
@@ -69,6 +70,7 @@ window.onload = async function () {
         wordDetailsModal.init();
         auth.init();
         testConfigModal.init();
+        flashcardConfigModal.init();
 
     } catch (error) {
         console.error("Initialization error for index.html:", error);

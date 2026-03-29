@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #6caba0;
+      color: #fff;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: #4d8a80;
+    }
+
+    /* Flashcard styles */
+    .flashcard-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 520px;
+      height: 320px;
+      margin: 0 auto;
+      cursor: pointer;
+    }
+
+    .flashcard-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .flashcard-inner.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front,
+    .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .flashcard-front {
+      background: #fff;
+    }
+
+    .flashcard-back {
+      background: linear-gradient(135deg, #f0f7f6, #e8f0ee);
+      transform: rotateY(180deg);
+    }
+
+    /* Custom Dropdown */
+    .custom-dropdown {
+      position: relative;
+    }
+
+    .custom-dropdown-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      background: #fff;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .custom-dropdown-btn:hover {
+      border-color: #6caba0;
+    }
+
+    .custom-dropdown-btn.open {
+      border-color: #6caba0;
+      box-shadow: 0 0 0 2px rgba(108, 171, 160, 0.2);
+    }
+
+    .custom-dropdown-btn .arrow {
+      transition: transform 0.2s;
+      font-size: 1.125rem;
+    }
+
+    .custom-dropdown-btn.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .custom-dropdown-list {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 50;
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: all 0.15s ease;
+    }
+
+    .custom-dropdown-list.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-dropdown-list::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
+
+    .custom-dropdown-item {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .custom-dropdown-item:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .custom-dropdown-item.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .progress-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #6caba0;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50"><a href="landing.html"
+          class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸 Learning JP</a></div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>
+          Dashboard</a>
+        <a href="vocabulary.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">menu_book</span>
+          Từ Vựng</a>
+        <a href="grammar.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">edit_note</span> Ngữ
+          Pháp</a>
+        <a href="kanji.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">translate</span>
+          Kanji</a>
+        <a href="test-center.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">quiz</span> Bài
+          Test</a>
+        <a href="flashcard.html" class="sidebar-link active"><span
+            class="material-symbols-outlined text-xl">style</span> Flashcard</a>
+        <a href="srs-review.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">replay</span> Ôn
+          Tập SRS</a>
+        <a href="statistics.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">bar_chart</span>
+          Thống Kê</a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 ml-[260px]">
+      <header class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 z-20">
+        <h1 class="text-xl font-bold font-['Plus_Jakarta_Sans']">Flashcard</h1>
+        <p class="text-sm text-[#5f6b7a]">Học từ vựng bằng phương pháp lật thẻ</p>
+      </header>
+
+      <div class="p-8">
+        <!-- Config bar -->
+        <div id="flashcard-config" class="bg-white rounded-xl shadow-sm p-5 mb-6">
+          <div class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[140px]">
+              <label class="block text-sm font-semibold mb-1.5">Loại</label>
+              <div class="custom-dropdown" id="fc-type-dropdown">
+                <button class="custom-dropdown-btn" type="button">
+                  <span class="label">Từ Vựng</span>
+                  <span class="material-symbols-outlined arrow">expand_more</span>
+                </button>
+                <div class="custom-dropdown-list">
+                  <div class="custom-dropdown-item active" data-value="vocab">Từ Vựng</div>
+                  <div class="custom-dropdown-item" data-value="kanji">Kanji</div>
+                  <div class="custom-dropdown-item" data-value="grammar">Ngữ Pháp</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-1 min-w-[140px]">
+              <label class="block text-sm font-semibold mb-1.5">Level</label>
+              <div class="custom-dropdown" id="fc-level-dropdown">
+                <button class="custom-dropdown-btn" type="button">
+                  <span class="label">Tất cả</span>
+                  <span class="material-symbols-outlined arrow">expand_more</span>
+                </button>
+                <div class="custom-dropdown-list">
+                  <div class="custom-dropdown-item active" data-value="all">Tất cả</div>
+                  <div class="custom-dropdown-item" data-value="N5">N5</div>
+                  <div class="custom-dropdown-item" data-value="N4">N4</div>
+                  <div class="custom-dropdown-item" data-value="N3">N3</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-1 min-w-[140px]">
+              <label class="block text-sm font-semibold mb-1.5">Bài</label>
+              <div class="custom-dropdown" id="fc-lesson-dropdown">
+                <button class="custom-dropdown-btn" type="button">
+                  <span class="label">Tất cả bài</span>
+                  <span class="material-symbols-outlined arrow">expand_more</span>
+                </button>
+                <div class="custom-dropdown-list">
+                  <div class="custom-dropdown-item active" data-value="all">Tất cả bài</div>
+                </div>
+              </div>
+            </div>
+            <button id="fc-start-btn" class="btn-primary px-6 py-2.5 text-sm flex items-center gap-2">
+              <span class="material-symbols-outlined text-lg">play_arrow</span> Bắt đầu
+            </button>
+            <button id="fc-shuffle-btn"
+              class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-1.5 text-[#5f6b7a]">
+              <span class="material-symbols-outlined text-lg">shuffle</span> Trộn
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div id="flashcard-progress" class="hidden mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <span id="fc-counter" class="text-sm font-semibold text-[#5f6b7a]">1 / 20</span>
+            <span id="fc-score" class="text-sm font-semibold text-[#6caba0]">Biết: 0 | Chưa biết: 0</span>
+          </div>
+          <div class="progress-bar">
+            <div id="fc-progress-fill" class="progress-bar-fill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Flashcard -->
+        <div id="flashcard-area" class="hidden">
+          <div class="text-center text-xs text-[#5f6b7a] mb-3">
+            <span class="material-symbols-outlined text-sm align-middle">touch_app</span> Click thẻ hoặc nhấn <kbd
+              class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">Space</kbd> để lật
+          </div>
+
+          <div class="flashcard-container" id="fc-card">
+            <div class="flashcard-inner" id="fc-card-inner">
+              <div class="flashcard-front">
+                <div id="fc-front-label" class="text-xs text-[#5f6b7a] mb-3 uppercase tracking-wider">Tiếng Nhật</div>
+                <div id="fc-front-main" class="text-4xl font-bold font-['Noto_Sans_JP'] mb-2">食べる</div>
+                <div id="fc-front-sub" class="text-lg text-[#5f6b7a]">たべる</div>
+                <button id="fc-front-tts"
+                  class="mt-4 w-10 h-10 rounded-full bg-[#f0f7f6] flex items-center justify-center hover:bg-[#e0eeec] transition-all">
+                  <span class="material-symbols-outlined text-[#6caba0]">volume_up</span>
+                </button>
+              </div>
+              <div class="flashcard-back">
+                <div id="fc-back-label" class="text-xs text-[#5f6b7a] mb-3 uppercase tracking-wider">Nghĩa</div>
+                <div id="fc-back-main" class="text-2xl font-bold mb-2">Ăn</div>
+                <div id="fc-back-sub" class="text-sm text-[#5f6b7a]">Động từ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div class="flex items-center justify-center gap-4 mt-6">
+            <button id="fc-prev-btn"
+              class="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button id="fc-unknown-btn"
+              class="px-5 py-2.5 rounded-xl border-2 border-red-200 text-red-500 font-semibold text-sm hover:bg-red-50 transition-all flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-lg">close</span> Chưa biết
+            </button>
+            <button id="fc-known-btn"
+              class="px-5 py-2.5 rounded-xl border-2 border-green-200 text-green-600 font-semibold text-sm hover:bg-green-50 transition-all flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-lg">check</span> Đã biết
+            </button>
+            <button id="fc-next-btn"
+              class="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+
+          <!-- Keyboard hints -->
+          <div class="text-center mt-4 text-xs text-[#5f6b7a]">
+            <kbd class="px-1.5 py-0.5 bg-gray-100 rounded">←</kbd> Trước
+            <span class="mx-2">|</span>
+            <kbd class="px-1.5 py-0.5 bg-gray-100 rounded">→</kbd> Tiếp
+            <span class="mx-2">|</span>
+            <kbd class="px-1.5 py-0.5 bg-gray-100 rounded">1</kbd> Chưa biết
+            <span class="mx-2">|</span>
+            <kbd class="px-1.5 py-0.5 bg-gray-100 rounded">2</kbd> Đã biết
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="flashcard-empty" class="text-center py-16">
+          <div class="text-5xl mb-4">🃏</div>
+          <h3 class="text-lg font-bold font-['Plus_Jakarta_Sans'] mb-2">Chọn loại thẻ và bắt đầu học!</h3>
+          <p class="text-sm text-[#5f6b7a]">Chọn loại, level và bài ở trên rồi nhấn "Bắt đầu"</p>
+        </div>
+
+        <!-- Completion -->
+        <div id="flashcard-complete" class="hidden text-center py-16">
+          <div class="text-5xl mb-4">🎉</div>
+          <h3 class="text-lg font-bold font-['Plus_Jakarta_Sans'] mb-2">Hoàn thành!</h3>
+          <div class="flex items-center justify-center gap-6 mt-4 mb-6">
+            <div class="text-center">
+              <div id="fc-final-known" class="text-3xl font-bold text-green-600">0</div>
+              <div class="text-xs text-[#5f6b7a]">Đã biết</div>
+            </div>
+            <div class="text-center">
+              <div id="fc-final-unknown" class="text-3xl font-bold text-red-500">0</div>
+              <div class="text-xs text-[#5f6b7a]">Chưa biết</div>
+            </div>
+            <div class="text-center">
+              <div id="fc-final-total" class="text-3xl font-bold text-[#6caba0]">0</div>
+              <div class="text-xs text-[#5f6b7a]">Tổng</div>
+            </div>
+          </div>
+          <button id="fc-restart-btn" class="btn-primary px-8 py-2.5 text-sm">Học lại</button>
+          <button id="fc-review-unknown-btn"
+            class="ml-3 px-6 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50">Ôn lại từ chưa
+            biết</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/flashcard.js"></script>
+</body>
+
+</html>

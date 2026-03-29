@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Admin Panel - Sumary Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #6caba0;
+      color: #fff;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: #4d8a80;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    /* Tabs */
+    .admin-tab {
+      padding: 0.625rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #5f6b7a;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .admin-tab:hover {
+      color: #6caba0;
+    }
+
+    .admin-tab.active {
+      color: #6caba0;
+      border-bottom-color: #6caba0;
+    }
+
+    /* Table */
+    .admin-table {
+      width: 100%;
+      font-size: 0.8125rem;
+    }
+
+    .admin-table th {
+      background: #f8fafb;
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      color: #5f6b7a;
+      border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+
+    .admin-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    .admin-table tr:hover td {
+      background: #f8fafb;
+    }
+
+    .admin-table .actions {
+      white-space: nowrap;
+    }
+
+    /* Modal */
+    .admin-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .admin-modal-overlay.show {
+      display: flex;
+    }
+
+    .admin-modal {
+      background: #fff;
+      border-radius: 1.25rem;
+      max-width: 560px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    .admin-modal input,
+    .admin-modal textarea,
+    .admin-modal select {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border 0.15s;
+    }
+
+    .admin-modal input:focus,
+    .admin-modal textarea:focus,
+    .admin-modal select:focus {
+      border-color: #6caba0;
+      box-shadow: 0 0 0 2px rgba(108, 171, 160, 0.15);
+    }
+
+    .admin-modal label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #5f6b7a;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50"><a href="landing.html"
+          class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸 Learning JP</a></div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">dashboard</span>
+          Dashboard</a>
+        <a href="vocabulary.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">menu_book</span>
+          Từ Vựng</a>
+        <a href="grammar.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">edit_note</span> Ngữ
+          Pháp</a>
+        <a href="kanji.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">translate</span>
+          Kanji</a>
+        <a href="test-center.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">quiz</span> Bài
+          Test</a>
+        <a href="flashcard.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">style</span>
+          Flashcard</a>
+        <a href="srs-review.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">replay</span> Ôn
+          Tập SRS</a>
+        <a href="statistics.html" class="sidebar-link"><span class="material-symbols-outlined text-xl">bar_chart</span>
+          Thống Kê</a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="flex-1 ml-[260px]">
+      <header class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 z-20">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold font-['Plus_Jakarta_Sans']">⚙️ Admin Panel</h1>
+            <p class="text-sm text-[#5f6b7a]">Quản lý dữ liệu ứng dụng</p>
+          </div>
+          <div id="admin-auth-status" class="text-sm text-[#5f6b7a]"></div>
+        </div>
+      </header>
+
+      <!-- Auth Guard -->
+      <div id="admin-login-prompt" class="hidden p-8 text-center py-20">
+        <div class="text-5xl mb-4">🔒</div>
+        <h3 class="text-lg font-bold mb-2">Yêu cầu đăng nhập</h3>
+        <p class="text-sm text-[#5f6b7a] mb-4">Bạn cần đăng nhập để truy cập Admin Panel.</p>
+        <button id="admin-login-btn" class="btn-primary px-6 py-2.5 text-sm">Đăng nhập</button>
+      </div>
+
+      <!-- Admin Content -->
+      <div id="admin-content" class="hidden">
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-100 px-8 pt-2">
+          <button class="admin-tab active" data-tab="vocab">📖 Từ Vựng</button>
+          <button class="admin-tab" data-tab="grammar">📝 Ngữ Pháp</button>
+          <button class="admin-tab" data-tab="kanji">🈳 Kanji</button>
+        </div>
+
+        <div class="p-8">
+          <!-- Toolbar -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <span
+                  class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#5f6b7a] text-lg">search</span>
+                <input type="text" id="admin-search" placeholder="Tìm kiếm..."
+                  class="pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm w-64 focus:ring-2 focus:ring-[#6caba0] focus:border-transparent outline-none" />
+              </div>
+              <span id="admin-count" class="text-sm text-[#5f6b7a]">0 mục</span>
+            </div>
+            <button id="admin-add-btn" class="btn-primary px-4 py-2 text-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-lg">add</span> Thêm mới
+            </button>
+          </div>
+
+          <!-- Table -->
+          <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+            <table class="admin-table">
+              <thead id="admin-thead"></thead>
+              <tbody id="admin-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex items-center justify-between mt-4">
+            <span id="admin-page-info" class="text-xs text-[#5f6b7a]">Trang 1</span>
+            <div class="flex gap-2">
+              <button id="admin-prev-page"
+                class="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+                disabled>← Trước</button>
+              <button id="admin-next-page"
+                class="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-40"
+                disabled>Tiếp →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="admin-modal-overlay" class="admin-modal-overlay">
+    <div class="admin-modal">
+      <div class="flex items-center justify-between p-5 border-b border-gray-100">
+        <h3 id="admin-modal-title" class="font-bold font-['Plus_Jakarta_Sans'] text-lg">Thêm mới</h3>
+        <button id="admin-modal-close"
+          class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-all">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <form id="admin-form" class="p-5 space-y-4">
+        <div id="admin-form-fields">
+          <!-- Rendered dynamically -->
+        </div>
+        <div id="admin-form-error" class="hidden text-sm text-red-500 bg-red-50 p-3 rounded-lg"></div>
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" id="admin-form-cancel"
+            class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Hủy</button>
+          <button type="submit" class="btn-primary px-6 py-2 text-sm">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div id="admin-delete-overlay" class="admin-modal-overlay">
+    <div class="admin-modal" style="max-width: 400px;">
+      <div class="p-6 text-center">
+        <div class="text-4xl mb-3">⚠️</div>
+        <h3 class="font-bold text-lg mb-2">Xác nhận xóa</h3>
+        <p id="admin-delete-msg" class="text-sm text-[#5f6b7a] mb-5">Bạn có chắc muốn xóa mục này?</p>
+        <div class="flex items-center justify-center gap-3">
+          <button id="admin-delete-cancel"
+            class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">Hủy</button>
+          <button id="admin-delete-confirm" class="btn-danger px-6 py-2 text-sm">Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/admin.js"></script>
+</body>
+
+</html>

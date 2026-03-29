@@ -1,6 +1,7 @@
 import { state } from "../state.js";
 import { wordDetailsModal } from "./wordDetailsModal.js";
 import { tts } from "./tts.js";
+import { utils } from "./utils.js";
 
 // Status display config (centralized for maintainability)
 const STATUS_CONFIG = {
@@ -88,15 +89,15 @@ export const vocabTable = {
             row.innerHTML = `
                 <td class="px-4 py-4 md:px-8 md:py-6">
                     <div class="flex items-center gap-2 md:gap-4">
-                        <div class="font-bold text-base md:text-lg text-slate-900 dark:text-white">${vocab.japanese}</div>
-                        <button class="speaker-btn text-slate-400 hover:text-indigo-500 transition-colors focus:outline-none flex items-center justify-center" title="Phát âm" data-text="${vocab.japanese}">
+                        <div class="font-bold text-base md:text-lg text-slate-900 dark:text-white">${utils.escapeHtml(vocab.japanese)}</div>
+                        <button class="speaker-btn text-slate-400 hover:text-indigo-500 transition-colors focus:outline-none flex items-center justify-center" title="Phát âm" data-text="${utils.escapeHtml(vocab.japanese)}">
                             <span class="material-symbols-outlined text-xl">volume_up</span>
                         </button>
                     </div>
                 </td>
-                <td class="px-4 py-4 md:px-8 md:py-6 text-sm md:text-base text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap hiragana-col">${vocab.hiragana}</td>
+                <td class="px-4 py-4 md:px-8 md:py-6 text-sm md:text-base text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap hiragana-col">${utils.escapeHtml(vocab.hiragana)}</td>
                 <td class="px-4 py-4 md:px-8 md:py-6">
-                    <div class="text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-300">${vocab.meaning}</div>
+                    <div class="text-xs md:text-sm font-semibold text-slate-700 dark:text-slate-300">${utils.escapeHtml(vocab.meaning)}</div>
                 </td>
                 <td class="px-4 py-4 md:px-8 md:py-6 text-center whitespace-nowrap relative">
                     <select class="status-select appearance-none bg-transparent absolute inset-0 w-full h-full opacity-0 cursor-pointer" aria-label="Change Status">

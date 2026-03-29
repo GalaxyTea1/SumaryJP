@@ -6,6 +6,7 @@ const BASE_URL = isLocalhost
 
 const API_URL = `${BASE_URL}/vocab`;
 const HISTORY_URL = `${BASE_URL}/history`;
+const AUTH_TOKEN_KEY = 'sumary_jp_token';
 
 let activeRequests = 0;
 
@@ -13,6 +14,17 @@ const request = async (url, options = {}) => {
     const isMutative = ['POST', 'PUT', 'DELETE'].includes(options.method);
     const shouldShowOverlay = options.showOverlay !== undefined ? options.showOverlay : isMutative;
     const overlay = document.getElementById('api-loading-overlay');
+
+    // Tự động gắn auth token vào requests cần xác thực
+    if (isMutative) {
+        const token = localStorage.getItem(AUTH_TOKEN_KEY);
+        if (token) {
+            options.headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            };
+        }
+    }
 
     if (shouldShowOverlay && overlay) {
         activeRequests++;

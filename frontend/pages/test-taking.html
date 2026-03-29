@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .option-card {
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-size: 0.9375rem;
+    }
+
+    .option-card:hover {
+      border-color: #6caba0;
+      background: #f0f7f6;
+    }
+
+    .option-card.selected {
+      border-color: #6caba0;
+      background: #f0f7f6;
+    }
+
+    .option-card.correct {
+      border-color: #4caf50;
+      background: #e8f5e9;
+    }
+
+    .option-card.incorrect {
+      border-color: #ef5350;
+      background: #ffebee;
+    }
+
+    .progress-thin {
+      height: 4px;
+      background: #e8ebee;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-thin .fill {
+      height: 100%;
+      background: #6caba0;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+
+  <!-- Top Bar -->
+  <header class="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
+    <a href="test-center.html" id="btn-quit"
+      class="flex items-center gap-1 text-sm text-[#5f6b7a] hover:text-[#6caba0]">
+      <span class="material-symbols-outlined text-lg">arrow_back</span> Thoát
+    </a>
+    <div class="text-center">
+      <div id="test-title" class="font-bold font-['Plus_Jakarta_Sans'] text-sm">Đang tải...</div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1.5 text-sm">
+        <span class="material-symbols-outlined text-lg text-[#f0a868]">timer</span>
+        <span id="timer" class="font-bold font-mono">--:--</span>
+      </div>
+      <div id="question-counter" class="text-sm text-[#5f6b7a]">Câu --/--</div>
+    </div>
+  </header>
+
+  <!-- Progress Bar -->
+  <div class="progress-thin">
+    <div class="fill" style="width: 0%"></div>
+  </div>
+
+  <!-- Question Area -->
+  <main class="max-w-2xl mx-auto px-6 py-10">
+    <div class="card p-8">
+      <div id="question-label" class="text-xs font-bold text-[#6caba0] uppercase tracking-widest mb-3">Câu 1</div>
+      <h2 id="question-text" class="text-xl font-bold font-['Plus_Jakarta_Sans'] mb-8">Đang tải câu hỏi...</h2>
+      <div id="options" class="space-y-3"></div>
+      <div id="feedback" class="hidden mt-6"></div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex justify-between mt-6">
+      <button id="btn-prev"
+        class="flex items-center gap-1 px-5 py-2.5 text-sm font-semibold text-[#5f6b7a] border border-gray-200 rounded-lg hover:bg-gray-50"
+        style="visibility: hidden;">
+        <span class="material-symbols-outlined text-lg">arrow_back</span> Câu trước
+      </button>
+      <button id="btn-next"
+        class="flex items-center gap-1 px-5 py-2.5 text-sm font-semibold bg-[#6caba0] text-white rounded-lg hover:bg-[#4d8a80]">
+        Câu tiếp theo <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <link rel="stylesheet" href="scripts/responsive.css" />
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/tts.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <script src="scripts/test-taking.js"></script>
+</body>
+
+</html>
