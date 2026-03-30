@@ -11,17 +11,16 @@ const testRoutes = require('./routes/test');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// CORS — chỉ cho phép các origin cụ thể
 const allowedOrigins = [
     'http://localhost:5500',
     'http://127.0.0.1:5500',
     'http://localhost:3000',
+    'https://sumary-jp.vercel.app',
     process.env.FRONTEND_URL
-].filter(Boolean); // Loại bỏ undefined
+].filter(Boolean);
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Cho phép request không có origin (curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
