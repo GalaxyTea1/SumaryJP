@@ -5,7 +5,9 @@ import { utils } from "./utils.js";
 export const search = {
     init() {
         const searchInput = document.getElementById("global-search-input");
+        const mobileSearchInput = document.getElementById("global-search-input-mobile");
         const resultsDropdown = document.getElementById("search-results-dropdown");
+        const mobileResultsDropdown = document.getElementById("search-results-dropdown-mobile");
         const ocrUploadBtn = document.getElementById("ocr-upload-btn");
         const ocrFileInput = document.getElementById("ocr-file-input");
         const ocrIcon = document.getElementById("ocr-icon");
@@ -67,19 +69,17 @@ export const search = {
             });
         }
 
-        searchInput.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            resultsDropdown.innerHTML = "";
+        // Helper: perform search and update dropdown
+        const performSearch = (query, dropdown, inputEl) => {
+            dropdown.innerHTML = "";
 
             if (query.length === 0) {
-                resultsDropdown.classList.add("hidden");
-                // Reset to current lesson view
-                if(state.currentLesson) {
+                dropdown.classList.add("hidden");
+                if (state.currentLesson) {
                     vocabTable.render(state.currentLesson.lesson, state.currentLesson.level);
                 }
                 return;
             }
-
 
             const results = state.vocabulary.filter(v =>
                 v.japanese.toLowerCase().includes(query) ||
@@ -88,7 +88,7 @@ export const search = {
             );
 
             if (results.length > 0) {
-                resultsDropdown.classList.remove("hidden");
+                dropdown.classList.remove("hidden");
                 results.slice(0, 5).forEach((vocab) => {
                     const li = document.createElement("li");
                     li.className = "px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex justify-between items-center";
@@ -101,41 +101,59 @@ export const search = {
                     `;
                     
                     li.addEventListener("click", () => {
-
-                        searchInput.value = "";
-                        resultsDropdown.classList.add("hidden");
+                        inputEl.value = "";
+                        dropdown.classList.add("hidden");
 
                         // Try to activate the correct sidebar button
                         const sidebarItems = document.querySelectorAll('#lesson-sidebar .lesson-nav-active, #lesson-sidebar button');
                         let targetLessonBtn = Array.from(sidebarItems).find(btn => btn.textContent === `Bài ${vocab.lesson}` && btn.closest('.flex-col').previousElementSibling.textContent.includes(vocab.level));
                         
-                        if(targetLessonBtn){
+                        if (targetLessonBtn) {
                             targetLessonBtn.click();
                         } else {
-                           vocabTable.render(vocab.lesson, vocab.level);
+                            vocabTable.render(vocab.lesson, vocab.level);
                         }
                     });
                     
-                    resultsDropdown.appendChild(li);
+                    dropdown.appendChild(li);
                 });
             } else {
-                resultsDropdown.classList.remove("hidden");
+                dropdown.classList.remove("hidden");
                 const noResultLi = document.createElement("li");
                 noResultLi.className = "px-4 py-3 text-sm text-slate-500 dark:text-slate-400";
                 noResultLi.textContent = `Không tìm thấy "${query}"`;
-                resultsDropdown.appendChild(noResultLi);
+                dropdown.appendChild(noResultLi);
             }
 
             // Live-filter the main table as well
             this.renderSearchResultsTable(results);
+        };
+
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            performSearch(query, resultsDropdown, searchInput);
         });
 
-
+        // Desktop search close
         document.addEventListener("click", (e) => {
             if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
                 resultsDropdown.classList.add("hidden");
             }
         });
+
+        // Mobile search input
+        if (mobileSearchInput && mobileResultsDropdown) {
+            mobileSearchInput.addEventListener("input", (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                performSearch(query, mobileResultsDropdown, mobileSearchInput);
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!mobileSearchInput.contains(e.target) && !mobileResultsDropdown.contains(e.target)) {
+                    mobileResultsDropdown.classList.add("hidden");
+                }
+            });
+        }
     },
 
     renderSearchResultsTable(results) {
