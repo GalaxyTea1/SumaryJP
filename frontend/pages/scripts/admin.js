@@ -346,6 +346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 await config.save(formData);
             }
+            if (sessionCache) sessionCache.invalidate(sessionCache.KEYS[activeTab]);
             closeModal();
             await loadData();
             renderTable();
@@ -372,6 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const config = TAB_CONFIG[activeTab];
         try {
             await config.delete(deletingId);
+            if (sessionCache) sessionCache.invalidate(sessionCache.KEYS[activeTab]);
             deleteOverlay.classList.remove('show');
             deletingId = null;
             await loadData();

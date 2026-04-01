@@ -1,11 +1,47 @@
-// ============================================
-// API Client — Sumary Japanese (Pages Version)
-// ============================================
-
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
 const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
 
 const AUTH_TOKEN_KEY = 'sumary_jp_token';
+const SESSION_CACHE_TTL = 30 * 60 * 1000;
+
+const sessionCache = {
+    KEYS: {
+        vocab: 'sj_cache_vocab',
+        kanji: 'sj_cache_kanji',
+        grammar: 'sj_cache_grammar',
+    },
+
+    get(key) {
+        try {
+            const raw = sessionStorage.getItem(key);
+            if (!raw) return null;
+            const { data, ts } = JSON.parse(raw);
+            if (Date.now() - ts > SESSION_CACHE_TTL) {
+                sessionStorage.removeItem(key);
+                return null;
+            }
+            return data;
+        } catch {
+            return null;
+        }
+    },
+
+    set(key, data) {
+        try {
+            sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+        } catch (e) {
+            console.warn('sessionCache: Không thể lưu cache:', e);
+        }
+    },
+
+    invalidate(...keys) {
+        keys.forEach(k => sessionStorage.removeItem(k));
+    },
+
+    invalidateAll() {
+        Object.values(this.KEYS).forEach(k => sessionStorage.removeItem(k));
+    },
+};
 
 // --- Core request function ---
 async function request(url, options = {}) {
@@ -40,7 +76,11 @@ async function request(url, options = {}) {
 const api = {
     // === VOCABULARY ===
     async getAllVocabulary() {
-        return request(`${BASE_URL}/vocab`);
+        const cached = sessionCache.get(sessionCache.KEYS.vocab);
+        if (cached) return cached;
+        const data = await request(`${BASE_URL}/vocab`);
+        sessionCache.set(sessionCache.KEYS.vocab, data);
+        return data;
     },
 
     async getVocabularyByLesson(level, lesson) {
@@ -110,7 +150,15 @@ const api = {
         if (filters.lesson) params.append('lesson', filters.lesson);
         if (filters.textbook) params.append('textbook', filters.textbook);
         const qs = params.toString();
-        return request(`${BASE_URL}/grammar${qs ? '?' + qs : ''}`);
+
+        if (!qs) {
+            const cached = sessionCache.get(sessionCache.KEYS.grammar);
+            if (cached) return cached;
+            const data = await request(`${BASE_URL}/grammar`);
+            sessionCache.set(sessionCache.KEYS.grammar, data);
+            return data;
+        }
+        return request(`${BASE_URL}/grammar?${qs}`);
     },
 
     async getGrammarById(id) {
@@ -143,7 +191,15 @@ const api = {
         if (filters.level) params.append('level', filters.level);
         if (filters.lesson) params.append('lesson', filters.lesson);
         const qs = params.toString();
-        return request(`${BASE_URL}/kanji${qs ? '?' + qs : ''}`);
+
+        if (!qs) {
+            const cached = sessionCache.get(sessionCache.KEYS.kanji);
+            if (cached) return cached;
+            const data = await request(`${BASE_URL}/kanji`);
+            sessionCache.set(sessionCache.KEYS.kanji, data);
+            return data;
+        }
+        return request(`${BASE_URL}/kanji?${qs}`);
     },
 
     async getKanjiById(id) {
@@ -191,4 +247,5 @@ const api = {
 // Export for use in other scripts
 window.api = api;
 window.AUTH_TOKEN_KEY = AUTH_TOKEN_KEY;
+window.sessionCache = sessionCache;
 
