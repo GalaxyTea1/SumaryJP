@@ -12,12 +12,10 @@ export const auth = {
     },
 
     cacheDOM() {
-        // CTA Popup
         this.ctaPopup = document.getElementById("auth-cta-popup");
         this.closeCtaBtn = document.getElementById("close-cta-btn");
         this.ctaLoginBtn = document.getElementById("cta-login-btn");
 
-        // Header (mobile)
         this.headerLoginBtn = document.getElementById("header-login-btn");
         this.headerUserProfile = document.getElementById("header-user-profile");
         this.headerUsername = document.getElementById("header-username"); // may not exist on mobile
@@ -27,7 +25,6 @@ export const auth = {
         this.headerUserDropdown = document.getElementById("header-user-dropdown");
         this.dropdownLogoutBtn = document.getElementById("dropdown-logout-btn");
 
-        // Header (desktop)
         this.headerLoginBtnDesktop = document.getElementById("header-login-btn-desktop");
         this.headerUserProfileDesktop = document.getElementById("header-user-profile-desktop");
         this.headerUsernameDesktop = document.getElementById("header-username-desktop");
@@ -37,19 +34,16 @@ export const auth = {
         this.headerUserDropdownDesktop = document.getElementById("header-user-dropdown-desktop");
         this.dropdownLogoutBtnDesktop = document.getElementById("dropdown-logout-btn-desktop");
 
-        // Modal
         this.modalOverlay = document.getElementById("auth-modal-overlay");
         this.modalContent = document.getElementById("auth-modal-content");
         this.closeModalBtn = document.getElementById("close-auth-modal");
         
-        // Tabs
         this.tabLogin = document.getElementById("tab-login");
         this.tabRegister = document.getElementById("tab-register");
         this.tabIndicator = document.getElementById("auth-tab-indicator");
         this.modalTitle = document.getElementById("auth-modal-title");
         this.modalSubtitle = document.getElementById("auth-modal-subtitle");
         
-        // Form
         this.authForm = document.getElementById("auth-form");
         this.registerFields = document.getElementById("register-fields");
         this.submitText = document.getElementById("auth-submit-text");
@@ -62,12 +56,10 @@ export const auth = {
     },
 
     bindEvents() {
-        // Open Modal Triggers
         if(this.headerLoginBtn) this.headerLoginBtn.addEventListener("click", () => this.openModal('login'));
         if(this.headerLoginBtnDesktop) this.headerLoginBtnDesktop.addEventListener("click", () => this.openModal('login'));
         if(this.ctaLoginBtn) this.ctaLoginBtn.addEventListener("click", () => this.openModal('login'));
 
-        // Close Modal Triggers
         if(this.closeModalBtn) this.closeModalBtn.addEventListener("click", () => this.closeModal());
         if(this.modalOverlay) {
             this.modalOverlay.addEventListener("click", (e) => {
@@ -75,7 +67,6 @@ export const auth = {
             });
         }
         
-        // Close CTA
         if(this.closeCtaBtn) {
             this.closeCtaBtn.addEventListener("click", () => {
                 this.hideCTA();
@@ -83,11 +74,9 @@ export const auth = {
             });
         }
 
-        // Tab Switching
         if(this.tabLogin) this.tabLogin.addEventListener("click", () => this.switchTab('login'));
         if(this.tabRegister) this.tabRegister.addEventListener("click", () => this.switchTab('register'));
 
-        // Toggle Password Visibility
         if(this.togglePasswordBtn) {
             this.togglePasswordBtn.addEventListener("click", () => {
                 const type = this.passwordInput.getAttribute("type") === "password" ? "text" : "password";
@@ -96,18 +85,15 @@ export const auth = {
             });
         }
 
-        // Form Submit
         if(this.authForm) {
             this.authForm.addEventListener("submit", (e) => this.handleAuthSubmit(e));
         }
 
-        // Mobile Avatar Click -> Toggle Dropdown
         this._bindAvatarDropdown(
             this.headerAvatarBtn,
             this.headerUserDropdown,
             this.dropdownLogoutBtn
         );
-        // Desktop Avatar Click -> Toggle Dropdown
         this._bindAvatarDropdown(
             this.headerAvatarBtnDesktop,
             this.headerUserDropdownDesktop,
@@ -150,7 +136,6 @@ export const auth = {
         if(!this.modalOverlay) return;
         this.switchTab(defaultTab);
         this.modalOverlay.classList.remove("hidden");
-        // small delay to allow display block to apply before animating opacity
         setTimeout(() => {
             this.modalOverlay.classList.remove("opacity-0");
             this.modalContent.classList.remove("scale-95", "opacity-0");
@@ -168,7 +153,7 @@ export const auth = {
         setTimeout(() => {
             this.modalOverlay.classList.add("hidden");
             this.authForm.reset();
-        }, 300); // match duration-300
+        }, 300);
     },
 
     switchTab(tab) {
@@ -224,7 +209,6 @@ export const auth = {
         if(sessionStorage.getItem("cta_closed") === "true") return;
 
         this.ctaPopup.classList.remove("hidden");
-        // small delay for transition
         setTimeout(() => {
             this.ctaPopup.classList.remove("translate-y-24", "opacity-0", "pointer-events-none");
         }, 100);
@@ -233,16 +217,13 @@ export const auth = {
     hideCTA() {
         if(!this.ctaPopup) return;
         this.ctaPopup.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
-        setTimeout(() => {
-            this.ctaPopup.classList.add("hidden");
-        }, 500); // match duration-500
+        setTimeout(() => this.ctaPopup.classList.add("hidden"), 500);
     },
 
     async checkAuthStatus() {
         const token = localStorage.getItem(this.STORAGE_KEY);
         if(token) {
             try {
-                // Verify token by calling /me
                 const response = await fetch(`${this.API_URL}/me`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -254,7 +235,6 @@ export const auth = {
                     this.updateUIToLoggedIn(data.user);
                     return;
                 } else {
-                    // Token expired or invalid
                     console.warn("Session expired or invalid token.");
                     localStorage.removeItem(this.STORAGE_KEY);
                 }
@@ -263,15 +243,12 @@ export const auth = {
             }
         }
         
-        // Not logged in
         this.updateUIToGuest();
     },
 
     updateUIToLoggedIn(user) {
-        // Hide CTA
         this.hideCTA();
 
-        // Update mobile header
         if(this.headerLoginBtn) this.headerLoginBtn.classList.add("hidden");
         if(this.headerUserProfile) {
             this.headerUserProfile.classList.remove("hidden");
@@ -279,7 +256,6 @@ export const auth = {
             if(this.headerStreakCount) this.headerStreakCount.textContent = user.current_streak || 0;
         }
 
-        // Update desktop header
         if(this.headerLoginBtnDesktop) this.headerLoginBtnDesktop.classList.add("hidden");
         if(this.headerUserProfileDesktop) {
             this.headerUserProfileDesktop.classList.remove("hidden");
@@ -290,14 +266,11 @@ export const auth = {
     },
 
     updateUIToGuest() {
-        // Show CTA with a delay
         setTimeout(() => { this.showCTA(); }, 2000);
 
-        // Update mobile header
         if(this.headerLoginBtn) this.headerLoginBtn.classList.remove("hidden");
         if(this.headerUserProfile) this.headerUserProfile.classList.add("hidden");
 
-        // Update desktop header
         if(this.headerLoginBtnDesktop) this.headerLoginBtnDesktop.classList.remove("hidden");
         if(this.headerUserProfileDesktop) this.headerUserProfileDesktop.classList.add("hidden");
     },
@@ -309,7 +282,6 @@ export const auth = {
         const password = this.passwordInput.value.trim();
         if(!username || !password) return;
 
-        // Reset text and disable button during submit
         const originalText = this.submitText.textContent;
         this.submitText.textContent = "Đang xử lý...";
         const submitBtn = document.getElementById("auth-submit-btn");
@@ -319,7 +291,6 @@ export const auth = {
             let endpoint = `${this.API_URL}/login`;
             const payload = { username, password };
 
-            // Handle Registration validation
             if (this.currentTab === 'register') {
                 const confirmPassword = this.confirmPasswordInput.value.trim();
                 if (password !== confirmPassword) {
@@ -329,7 +300,6 @@ export const auth = {
                 endpoint = `${this.API_URL}/register`;
             }
 
-            // Call API
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -343,10 +313,8 @@ export const auth = {
                 return;
             }
 
-            // Save Token to LocalStorage (Real JWT)
             localStorage.setItem(this.STORAGE_KEY, data.token);
-            
-            // Update UI
+
             this.closeModal();
             this.updateUIToLoggedIn(data.user);
             

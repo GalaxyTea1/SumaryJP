@@ -1,4 +1,5 @@
 import { state } from "../state.js";
+import { viewManager } from "./viewManager.js";
 
 export const flashcardConfigModal = {
     init() {
@@ -76,7 +77,8 @@ export const flashcardConfigModal = {
                 lesson: selectedLesson
             });
 
-            window.location.href = `flashcard.html?${queryParams.toString()}`;
+            this.hide();
+            viewManager.show('flashcard', { level: selectedLevel, lesson: selectedLesson });
         });
     },
 

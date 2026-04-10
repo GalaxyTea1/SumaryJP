@@ -1,3 +1,7 @@
+let cachedHistoryData = null;
+let historyFetchedAt = 0;
+const HISTORY_CACHE_TTL = 2 * 60 * 1000;
+
 export const historyModal = {
     overlay: null,
     modalContent: null,
@@ -21,13 +25,10 @@ export const historyModal = {
     async show() {
         if (!this.overlay || !this.feedList) return;
 
-
         this.feedList.scrollTop = 0;
         this.renderSkeleton();
 
-
         this.overlay.classList.remove('hidden');
-        // Delay for CSS transition to take effect
         setTimeout(() => {
             this.overlay.classList.remove('opacity-0');
             this.overlay.classList.add('opacity-100');
@@ -35,17 +36,16 @@ export const historyModal = {
             this.modalContent.classList.add('scale-100', 'opacity-100');
         }, 10);
 
-
         try {
-            const apiManager = (await import('../api.js')).default;
-            const historyData = await apiManager.getLearningHistory(30);
-            
-            // Delay for smooth skeleton-to-content transition
-            setTimeout(() => {
-                this.renderData(historyData);
-            }, 300);
+            const now = Date.now();
+            if (!cachedHistoryData || (now - historyFetchedAt) > HISTORY_CACHE_TTL) {
+                const apiManager = (await import('../api.js')).default;
+                cachedHistoryData = await apiManager.getLearningHistory(30);
+                historyFetchedAt = now;
+            }
 
-        } catch(error) {
+            setTimeout(() => this.renderData(cachedHistoryData), 300);
+        } catch (error) {
             console.error("Failed to fetch history:", error);
             this.feedList.innerHTML = `<p class="text-center text-rose-500 py-8 font-medium">Không thể tải lịch sử. Vui lòng thử lại sau.</p>`;
         }
@@ -57,15 +57,12 @@ export const historyModal = {
         this.overlay.classList.add('opacity-0');
         this.modalContent.classList.remove('scale-100', 'opacity-100');
         this.modalContent.classList.add('scale-95', 'opacity-0');
-        
-        setTimeout(() => {
-            this.overlay.classList.add('hidden');
-        }, 300);
+        setTimeout(() => this.overlay.classList.add('hidden'), 300);
     },
 
     renderSkeleton() {
         let html = '';
-        for(let i=0; i<5; i++) {
+        for (let i = 0; i < 5; i++) {
             html += `
                 <div class="bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/50 rounded-2xl p-4 flex items-start gap-4 animate-pulse">
                     <div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0"></div>
@@ -100,36 +97,28 @@ export const historyModal = {
             'mastered': { label: 'Đã thuộc', class: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-700' },
         };
 
+        const iconTemplates = {
+            'mastered': `<div class="size-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200 dark:border-emerald-700"><span class="material-symbols-outlined text-lg">check_circle</span></div>`,
+            'learning': `<div class="size-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-sm border border-amber-200 dark:border-amber-700"><span class="material-symbols-outlined text-lg">local_fire_department</span></div>`,
+            'default': `<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0 shadow-sm border border-slate-200 dark:border-slate-600"><span class="material-symbols-outlined text-lg">radio_button_unchecked</span></div>`
+        };
+
         let lastDateString = '';
         let html = '';
 
-        data.forEach(item => {
-            // Group items by date
+        for (const item of data) {
             const dt = new Date(item.created_at);
             const dateStr = dt.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
             if (dateStr !== lastDateString) {
-                html += `
-                    <div class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-4 mb-2 pl-2">
-                        ${dateStr}
-                    </div>
-                `;
+                html += `<div class="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mt-4 mb-2 pl-2">${dateStr}</div>`;
                 lastDateString = dateStr;
             }
 
-            const timeStr = dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' });
-            
+            const timeStr = dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             const oldStatus = statusMap[item.old_status] || statusMap['not-learned'];
             const newStatus = statusMap[item.new_status] || statusMap['not-learned'];
-
-            let iconHtml = '';
-            if (item.new_status === 'mastered') {
-                iconHtml = `<div class="size-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-sm border border-emerald-200 dark:border-emerald-700"><span class="material-symbols-outlined text-lg">check_circle</span></div>`;
-            } else if (item.new_status === 'learning') {
-                 iconHtml = `<div class="size-10 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-sm border border-amber-200 dark:border-amber-700"><span class="material-symbols-outlined text-lg">local_fire_department</span></div>`;
-            } else {
-                 iconHtml = `<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400 flex items-center justify-center shrink-0 shadow-sm border border-slate-200 dark:border-slate-600"><span class="material-symbols-outlined text-lg">radio_button_unchecked</span></div>`;
-            }
+            const iconHtml = iconTemplates[item.new_status] || iconTemplates['default'];
 
             html += `
                 <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 hover:border-indigo-200 dark:hover:border-indigo-500 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4 transition-colors shadow-sm">
@@ -153,7 +142,7 @@ export const historyModal = {
                     </div>
                 </div>
             `;
-        });
+        }
 
         this.feedList.innerHTML = html;
     }

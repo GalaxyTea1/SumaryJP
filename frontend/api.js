@@ -15,7 +15,6 @@ const request = async (url, options = {}) => {
     const shouldShowOverlay = options.showOverlay !== undefined ? options.showOverlay : isMutative;
     const overlay = document.getElementById('api-loading-overlay');
 
-    // Tự động gắn auth token vào requests cần xác thực
     if (isMutative) {
         const token = localStorage.getItem(AUTH_TOKEN_KEY);
         if (token) {

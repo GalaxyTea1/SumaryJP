@@ -1,4 +1,5 @@
 import { state } from "../state.js";
+import { viewManager } from "./viewManager.js";
 
 export const testConfigModal = {
     init() {
@@ -88,7 +89,14 @@ export const testConfigModal = {
                 hiragana: showHiragana
             });
 
-            window.location.href = `test.html?${queryParams.toString()}`;
+            this.hide();
+            viewManager.show('test', {
+                level: selectedLevel,
+                lesson: selectedLesson,
+                count: wordCount,
+                time: testTime,
+                hiragana: showHiragana
+            });
         });
     },
 
