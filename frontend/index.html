@@ -1,10 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Japanese Learning</title>
+  <title>Học Từ Vựng Tiếng Nhật - SumaryJP</title>
+
+  <meta name="description"
+    content="Ứng dụng học từ vựng tiếng Nhật miễn phí với Flashcard, ôn tập Spaced Repetition, và kiểm tra JLPT N5-N1. Hỗ trợ Kanji, Hiragana, và nghĩa tiếng Việt." />
+  <meta name="keywords"
+    content="học tiếng Nhật, từ vựng tiếng Nhật, JLPT, flashcard, kanji, hiragana, N5, N4, N3, N2, N1, ôn tập từ vựng, spaced repetition" />
+  <meta name="author" content="SumaryJP" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#6366f1" />
+  <link rel="canonical" href="https://sumary-jp.vercel.app/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sumary-jp.vercel.app/" />
+  <meta property="og:title" content="Học Từ Vựng Tiếng Nhật | SumaryJP" />
+  <meta property="og:description"
+    content="Ứng dụng học từ vựng tiếng Nhật miễn phí với Flashcard, Spaced Repetition, và kiểm tra JLPT N5-N1." />
+  <meta property="og:image" content="https://sumary-jp.vercel.app/images/og-preview.png" />
+  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:site_name" content="SumaryJP" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Học Từ Vựng Tiếng Nhật | SumaryJP" />
+  <meta name="twitter:description" content="Flashcard, ôn tập Spaced Repetition, kiểm tra từ vựng JLPT miễn phí." />
+  <meta name="twitter:image" content="https://sumary-jp.vercel.app/images/og-preview.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <link rel="apple-touch-icon" href="images/favicon.svg" />
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+
+  <!-- Stylesheets -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
@@ -12,9 +48,29 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="style.css">
 
+  <!-- Scripts -->
   <script type="module" src="script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SumaryJP - Học Từ Vựng Tiếng Nhật",
+    "description": "Ứng dụng học từ vựng tiếng Nhật miễn phí với Flashcard, Spaced Repetition, và kiểm tra JLPT N5-N1",
+    "url": "https://sumary-jp.vercel.app",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "inLanguage": ["vi", "ja"],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "VND"
+    }
+  }
+  </script>
 
   <script id="tailwind-config">
     tailwind.config = {
@@ -74,7 +130,13 @@
         <span class="text-white font-black text-xl italic">J</span>
       </div>
       <div class="flex flex-col gap-2 flex-1 w-full" id="lesson-nav-container">
-        <!-- Will be populated by ui.js -->
+        <div id="sidebar-skeleton" class="flex flex-col gap-3 w-full px-4">
+          <div class="skeleton-pulse h-11 w-full"></div>
+          <div class="skeleton-pulse h-11 w-full"></div>
+          <div class="skeleton-pulse h-11 w-full"></div>
+          <div class="skeleton-pulse h-11 w-full" style="opacity: 0.6;"></div>
+          <div class="skeleton-pulse h-11 w-full" style="opacity: 0.3;"></div>
+        </div>
       </div>
       <div class="flex flex-col gap-6 mt-auto">
         <!-- Dark mode button moved to top right -->
@@ -265,7 +327,8 @@
 
       <div class="px-4 md:px-6 pb-24 md:pb-20 max-w-7xl mx-auto vocabulary-section">
 
-        <!-- NOTE: Quick Action Cards -->
+        <h1 class="sr-only">SumaryJP - Ứng dụng Học Từ Vựng Tiếng Nhật JLPT</h1>
+
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mt-2 review-buttons">
           <button id="start-review" class="action-card-white group">
             <div
@@ -326,11 +389,13 @@
 
           <!-- Empty State: chưa chọn bài -->
           <div id="vocab-empty-state" class="flex flex-col items-center justify-center py-16 px-6 text-center">
-            <div class="size-20 rounded-3xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-6 border border-indigo-100 dark:border-indigo-800/50">
+            <div
+              class="size-20 rounded-3xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-6 border border-indigo-100 dark:border-indigo-800/50">
               <span class="material-symbols-outlined text-4xl text-indigo-400 dark:text-indigo-500">menu_book</span>
             </div>
             <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Chọn bài học để bắt đầu</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs">Chọn một bài học từ danh sách bên trái để xem từ vựng và bắt đầu ôn tập.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs">Chọn một bài học từ danh sách bên trái để xem
+              từ vựng và bắt đầu ôn tập.</p>
           </div>
 
           <!-- Bảng từ vựng (ẩn khi chưa chọn bài) -->
@@ -528,7 +593,12 @@
     </div>
     <!-- Lesson List -->
     <div id="mobile-lesson-nav-container" class="overflow-y-auto flex-1 px-4 pb-24 flex flex-col gap-2">
-      <!-- Populated by ui.js -->
+      <div id="mobile-sidebar-skeleton" class="flex flex-col gap-3 w-full">
+        <div class="skeleton-pulse h-11 w-full"></div>
+        <div class="skeleton-pulse h-11 w-full"></div>
+        <div class="skeleton-pulse h-11 w-full"></div>
+        <div class="skeleton-pulse h-11 w-full" style="opacity: 0.6;"></div>
+      </div>
     </div>
   </div>
 

@@ -30,6 +30,9 @@ export const ui = {
 
         const navContainer = sidebar.querySelector("#lesson-nav-container");
         if (navContainer) {
+            const skeleton = navContainer.querySelector("#sidebar-skeleton");
+            if (skeleton) skeleton.remove();
+
             navContainer.innerHTML = "";
         }
 
@@ -112,6 +115,9 @@ export const ui = {
 
             const mobileNavContainer = document.getElementById("mobile-lesson-nav-container");
             if (mobileNavContainer) {
+                const mobileSkeleton = mobileNavContainer.querySelector("#mobile-sidebar-skeleton");
+                if (mobileSkeleton) mobileSkeleton.remove();
+
                 mobileNavContainer.innerHTML = "";
                 levelWrappers.forEach(wrapper => mobileNavContainer.appendChild(wrapper.cloneNode(true)));
 
