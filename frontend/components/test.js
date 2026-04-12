@@ -21,6 +21,9 @@ export const testView = {
         const elProgressBar = document.getElementById("ts-progress-bar");
         const elTimer = document.getElementById("ts-timer");
         const btnNext = document.getElementById("ts-next-btn");
+        const btnPrev = document.getElementById("ts-prev-btn");
+        const jumpInput = document.getElementById("ts-jump-input");
+        const jumpBtn = document.getElementById("ts-jump-btn");
         const textLabel = document.getElementById("ts-question-label");
         const elResults = document.getElementById("ts-results");
 
@@ -31,9 +34,11 @@ export const testView = {
 
         let testWords = [];
         let currentTestIndex = 0;
+        // testAnswers[i] = { word, userAnswer, correct } — undefined nếu chưa trả lời
         let testAnswers = [];
         let testStartTime = null;
         let testTimeLimit = 0;
+        // Lưu đáp án đang chọn ở câu hiện tại (có thể là đáp án cũ khi quay lại)
         let selectedOptionValue = null;
 
         if (!wordCount) {
@@ -54,9 +59,11 @@ export const testView = {
         utils.shuffleArray(allWords);
         testWords = allWords.slice(0, parseInt(wordCount));
 
+        testAnswers = new Array(testWords.length).fill(null);
+
         function startTestEngine(timeMinutes) {
             currentTestIndex = 0;
-            testAnswers = [];
+            testAnswers = new Array(testWords.length).fill(null);
             selectedOptionValue = null;
             testTimeLimit = parseInt(timeMinutes) * 60;
             testStartTime = new Date();
@@ -85,6 +92,14 @@ export const testView = {
             }
         }
 
+        function updateNavButtons() {
+            // Nút Previous: disable ở câu đầu tiên
+            btnPrev.disabled = currentTestIndex === 0;
+
+            // Cập nhật max cho jump input
+            jumpInput.max = testWords.length;
+        }
+
         function renderQuestion() {
             const currentWord = testWords[currentTestIndex];
             elWord.textContent = currentWord.japanese;
@@ -92,13 +107,24 @@ export const testView = {
             textLabel.textContent = `Câu hỏi số ${currentTestIndex + 1}`;
             elProgress.textContent = `Câu: ${currentTestIndex + 1}/${testWords.length}`;
 
-            const pct = ((currentTestIndex) / testWords.length) * 100;
+            const pct = (currentTestIndex / testWords.length) * 100;
             elProgressBar.style.width = `${pct}%`;
 
             elOptions.innerHTML = "";
-            btnNext.disabled = true;
-            selectedOptionValue = null;
 
+            const savedAnswer = testAnswers[currentTestIndex];
+            selectedOptionValue = savedAnswer ? savedAnswer.userAnswer : null;
+
+            // Nếu đã có đáp án, cho phép bấm Next ngay
+            if (selectedOptionValue) {
+                btnNext.disabled = false;
+                btnNext.classList.remove("opacity-50", "cursor-not-allowed");
+            } else {
+                btnNext.disabled = true;
+                btnNext.classList.add("opacity-50", "cursor-not-allowed");
+            }
+
+            // Tạo options
             let allMeanings = [];
             Object.values(state.lessons).forEach((level) => {
                 Object.values(level).forEach((lesson) => {
@@ -116,23 +142,59 @@ export const testView = {
             const labels = ["A", "B", "C", "D"];
             options.forEach((optionTxt, index) => {
                 const btn = document.createElement("button");
-                btn.className = "option-btn group text-left w-full bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 rounded-2xl px-6 py-4 font-semibold text-slate-700 dark:text-slate-200 transition-all active:scale-[0.98] flex items-center gap-4 relative overflow-hidden";
+
+                const isSelected = selectedOptionValue && selectedOptionValue.toLowerCase() === optionTxt.toLowerCase();
+                const isCorrect = optionTxt.toLowerCase() === currentWord.meaning.toLowerCase();
+
+                // Style cơ bản
+                let btnClass = "option-btn group text-left w-full border-2 rounded-2xl px-6 py-4 font-semibold transition-all active:scale-[0.98] flex items-center gap-4 relative overflow-hidden ";
+
+                if (isSelected) {
+                    // Câu đã trả lời: hiển thị trạng thái đúng/sai
+                    if (isCorrect) {
+                        btnClass += "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-400 dark:border-emerald-500 text-emerald-800 dark:text-emerald-200";
+                    } else {
+                        btnClass += "bg-rose-50 dark:bg-rose-900/30 border-rose-400 dark:border-rose-500 text-rose-800 dark:text-rose-200";
+                    }
+                } else if (savedAnswer && isCorrect) {
+                    // Hiển thị đáp án đúng khi câu đã trả lời sai
+                    btnClass += "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300";
+                } else {
+                    btnClass += "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-200";
+                }
+
+                btn.className = btnClass;
+
+                let radioClass = "flex-shrink-0 size-6 rounded-full border-2 transition-colors flex items-center justify-center radio-circle ";
+                if (isSelected) {
+                    radioClass += isCorrect
+                        ? "border-emerald-500 bg-emerald-500"
+                        : "border-rose-500 bg-rose-500";
+                } else {
+                    radioClass += "border-slate-300 dark:border-slate-600";
+                }
+
                 btn.innerHTML = `
-                    <div class="flex-shrink-0 size-6 rounded-full border-2 border-slate-300 dark:border-slate-600 transition-colors flex items-center justify-center radio-circle"></div>
-                    <div class="flex-1 font-semibold text-slate-700 dark:text-slate-200 select-text">${optionTxt}</div>
+                    <div class="${radioClass}"></div>
+                    <div class="flex-1 font-semibold select-text">${optionTxt}</div>
                     <div class="absolute right-0 top-0 h-full w-12 bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-slate-400 dark:text-slate-500 opacity-50 text-xl border-l border-slate-200 dark:border-slate-700 transition-all group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 group-hover:text-indigo-500 dark:group-hover:text-indigo-400">${labels[index]}</div>
                 `;
 
                 btn.addEventListener("click", () => {
+                    // Cho phép đổi đáp án nếu muốn
                     elOptions.querySelectorAll(".option-btn").forEach(b => {
-                        b.classList.remove("selected", "border-indigo-500", "dark:border-indigo-400", "bg-indigo-50/80", "dark:bg-indigo-900/40");
-                        b.querySelector('.radio-circle').classList.remove("border-indigo-600", "dark:border-indigo-400", "bg-indigo-600", "dark:bg-indigo-400", "shadow-[inset_0_0_0_4px_#EEF2FF]", "dark:shadow-[inset_0_0_0_4px_#1e1b4b]");
+                        b.className = "option-btn group text-left w-full border-2 rounded-2xl px-6 py-4 font-semibold transition-all active:scale-[0.98] flex items-center gap-4 relative overflow-hidden bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/30";
+                        b.querySelector('.radio-circle').className = "flex-shrink-0 size-6 rounded-full border-2 border-slate-300 dark:border-slate-600 transition-colors flex items-center justify-center radio-circle";
                     });
 
-                    btn.classList.add("selected", "border-indigo-500", "dark:border-indigo-400", "bg-indigo-50/80", "dark:bg-indigo-900/40");
-                    btn.querySelector('.radio-circle').classList.add("border-indigo-600", "dark:border-indigo-400", "bg-indigo-600", "dark:bg-indigo-400", "shadow-[inset_0_0_0_4px_#EEF2FF]", "dark:shadow-[inset_0_0_0_4px_#1e1b4b]");
+                    btn.className = "option-btn group text-left w-full border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50/80 dark:bg-indigo-900/40 rounded-2xl px-6 py-4 font-semibold transition-all active:scale-[0.98] flex items-center gap-4 relative overflow-hidden text-slate-700 dark:text-slate-200";
+                    btn.querySelector('.radio-circle').className = "flex-shrink-0 size-6 rounded-full border-2 border-indigo-600 dark:border-indigo-400 bg-indigo-600 dark:bg-indigo-400 transition-colors flex items-center justify-center radio-circle shadow-[inset_0_0_0_4px_#EEF2FF] dark:shadow-[inset_0_0_0_4px_#1e1b4b]";
 
                     selectedOptionValue = optionTxt;
+                    // Lưu ngay đáp án tạm vào mảng
+                    const isCorr = optionTxt.toLowerCase() === currentWord.meaning.toLowerCase();
+                    testAnswers[currentTestIndex] = { word: currentWord, userAnswer: optionTxt, correct: isCorr };
+
                     btnNext.disabled = false;
                     btnNext.classList.remove("opacity-50", "cursor-not-allowed");
                 });
@@ -140,15 +202,14 @@ export const testView = {
                 elOptions.appendChild(btn);
             });
 
-            btnNext.disabled = true;
-            btnNext.classList.add("opacity-50", "cursor-not-allowed");
+            updateNavButtons();
         }
 
         function onNextClick() {
             if (!selectedOptionValue) return;
             const currentWord = testWords[currentTestIndex];
             const isCorrect = selectedOptionValue.toLowerCase() === currentWord.meaning.toLowerCase();
-            testAnswers.push({ word: currentWord, userAnswer: selectedOptionValue, correct: isCorrect });
+            testAnswers[currentTestIndex] = { word: currentWord, userAnswer: selectedOptionValue, correct: isCorrect };
 
             currentTestIndex++;
             if (currentTestIndex < testWords.length) {
@@ -156,6 +217,34 @@ export const testView = {
             } else {
                 finishTest();
             }
+        }
+
+        function onPrevClick() {
+            if (currentTestIndex === 0) return;
+            if (selectedOptionValue) {
+                const currentWord = testWords[currentTestIndex];
+                const isCorrect = selectedOptionValue.toLowerCase() === currentWord.meaning.toLowerCase();
+                testAnswers[currentTestIndex] = { word: currentWord, userAnswer: selectedOptionValue, correct: isCorrect };
+            }
+            currentTestIndex--;
+            renderQuestion();
+        }
+
+        function onJump() {
+            const val = parseInt(jumpInput.value);
+            if (isNaN(val) || val < 1 || val > testWords.length) {
+                jumpInput.classList.add("text-rose-500");
+                setTimeout(() => jumpInput.classList.remove("text-rose-500"), 800);
+                return;
+            }
+            if (selectedOptionValue) {
+                const currentWord = testWords[currentTestIndex];
+                const isCorrect = selectedOptionValue.toLowerCase() === currentWord.meaning.toLowerCase();
+                testAnswers[currentTestIndex] = { word: currentWord, userAnswer: selectedOptionValue, correct: isCorrect };
+            }
+            currentTestIndex = val - 1;
+            jumpInput.value = "";
+            renderQuestion();
         }
 
         function finishTest() {
@@ -166,8 +255,9 @@ export const testView = {
             elMain.classList.add("hidden");
             elResults.classList.remove("hidden");
 
-            const correctCountNum = testAnswers.filter((a) => a.correct).length;
-            const score = Math.round((correctCountNum / testWords.length) * 100);
+            const answeredCount = testAnswers.filter(a => a !== null).length;
+            const correctCountNum = testAnswers.filter((a) => a && a.correct).length;
+            const score = answeredCount > 0 ? Math.round((correctCountNum / testWords.length) * 100) : 0;
             const timeTaken = Math.floor((new Date() - testStartTime) / 1000);
 
             document.getElementById("ts-final-score").textContent = score;
@@ -176,10 +266,29 @@ export const testView = {
             document.getElementById("ts-time-taken").textContent = `${Math.floor(timeTaken / 60).toString().padStart(2, "0")}:${(timeTaken % 60).toString().padStart(2, "0")}`;
 
             const reviewListContainer = document.getElementById("ts-answers-list");
-            reviewListContainer.innerHTML = testAnswers.map(a => {
+            reviewListContainer.innerHTML = testAnswers.map((a, i) => {
+                if (!a) {
+                    return `
+                        <div class="ts-review-item wrong">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-slate-400">help</span>
+                                <div>
+                                    <span class="text-2xl font-black text-slate-800 dark:text-white block">${testWords[i].japanese}</span>
+                                    <span class="text-xs font-bold uppercase tracking-widest opacity-60">${testWords[i].hiragana}</span>
+                                </div>
+                            </div>
+                            <div class="flex-1 text-sm sm:text-right">
+                                <span class="font-semibold block text-base text-slate-400 dark:text-slate-500 italic">Chưa trả lời</span>
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400 mt-1 block px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 inline-block rounded-lg text-xs">${testWords[i].meaning}</span>
+                            </div>
+                        </div>
+                    `;
+                }
                 const cls = a.correct ? "correct" : "wrong";
-                const icon = a.correct ? '<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400">check_circle</span>' : '<span class="material-symbols-outlined text-rose-500 dark:text-rose-400">cancel</span>';
-                const userAnsCls = a.correct ? 'text-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400 line-through';
+                const icon = a.correct
+                    ? '<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400">check_circle</span>'
+                    : '<span class="material-symbols-outlined text-rose-500 dark:text-rose-400">cancel</span>';
+                const userAnsCls = a.correct ? "text-slate-800 dark:text-white" : "text-slate-500 dark:text-slate-400 line-through";
                 return `
                     <div class="ts-review-item ${cls}">
                         <div class="flex items-center gap-3">
@@ -204,14 +313,24 @@ export const testView = {
             }
         }
 
+        function onJumpKeydown(e) {
+            if (e.key === "Enter") onJump();
+        }
+
         const onBackFromResults = () => viewManager.back();
 
         btnNext.addEventListener("click", onNextClick);
+        btnPrev.addEventListener("click", onPrevClick);
+        jumpBtn.addEventListener("click", onJump);
+        jumpInput.addEventListener("keydown", onJumpKeydown);
         document.getElementById("ts-quit-btn").addEventListener("click", onQuit);
         document.getElementById("ts-back-btn").addEventListener("click", onBackFromResults);
 
         cleanupFns.push(
             () => btnNext.removeEventListener("click", onNextClick),
+            () => btnPrev.removeEventListener("click", onPrevClick),
+            () => jumpBtn.removeEventListener("click", onJump),
+            () => jumpInput.removeEventListener("keydown", onJumpKeydown),
             () => document.getElementById("ts-quit-btn")?.removeEventListener("click", onQuit),
             () => document.getElementById("ts-back-btn")?.removeEventListener("click", onBackFromResults)
         );

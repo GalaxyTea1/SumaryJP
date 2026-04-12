@@ -1,0 +1,35 @@
+<div id="history-overlay"
+  class="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 hidden opacity-0">
+  <div
+    class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl border border-white/50 dark:border-slate-700/50 shadow-[0_0_50px_rgba(0,0,0,0.1)] dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-6 md:p-8 max-w-2xl w-full transform transition-all duration-300 scale-95 opacity-0 relative overflow-hidden flex flex-col h-[600px] max-h-[90vh]"
+    id="history-modal-content">
+
+    <!-- Decorative background blur -->
+    <div
+      class="absolute -top-32 -right-32 size-64 bg-emerald-200/50 dark:bg-emerald-900/40 blur-3xl rounded-full pointer-events-none z-0">
+    </div>
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 relative z-10 shrink-0">
+      <div>
+        <h2 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-500">history</span>
+          Lịch sử học tập
+        </h2>
+        <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Hoạt động mới nhất của bạn</p>
+      </div>
+      <button id="close-history-btn"
+        class="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors shadow-sm border border-slate-200 dark:border-slate-600">
+        <span class="material-symbols-outlined font-bold">close</span>
+      </button>
+    </div>
+
+    <!-- Content Feed -->
+    <div class="flex-1 overflow-y-auto pr-2 relative z-10 custom-scrollbar" id="history-feed-container">
+      <div class="flex flex-col gap-4" id="history-feed-list">
+        <!-- Will be dynamically populated by historyModal.js -->
+      </div>
+    </div>
+
+  </div>
+</div>

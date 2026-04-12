@@ -1,0 +1,64 @@
+<div id="view-review" class="hidden view-container fixed inset-0 z-[60] bg-off-white dark:bg-slate-900 flex flex-col"
+  style="transition: opacity 0.2s ease;">
+  <nav
+    class="w-full px-6 py-4 flex items-center justify-between bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-b border-white/50 dark:border-slate-800/50 sticky top-0 z-50">
+    <div class="flex items-center gap-4">
+      <button id="rv-exit"
+        class="size-10 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:text-rose-500 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-800/50 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-all">
+        <span class="material-symbols-outlined font-bold">close</span>
+      </button>
+      <div>
+        <h1 class="font-black text-xl text-slate-800 dark:text-white">Ôn tập (Spaced Repetition)</h1>
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5"
+          id="rv-header-title">Đang rèn luyện trí nhớ</p>
+      </div>
+    </div>
+    <div
+      class="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 px-4 py-2 rounded-xl border border-indigo-100/50 dark:border-indigo-800/50">
+      <span class="material-symbols-outlined text-indigo-500 dark:text-indigo-400 text-xl">school</span>
+      <span id="rv-progress" class="font-extrabold text-indigo-700 dark:text-indigo-300 text-sm">Còn lại: 0</span>
+    </div>
+  </nav>
+  <main class="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-2xl mx-auto relative">
+    <div id="rv-empty-state"
+      class="hidden text-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white dark:border-slate-700 shadow-2xl rounded-3xl p-8">
+      <div
+        class="size-24 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6">
+        <span class="material-symbols-outlined text-5xl text-emerald-500 dark:text-emerald-400">task_alt</span>
+      </div>
+      <h2 class="text-3xl font-black text-slate-800 dark:text-white mb-2" id="rv-empty-title">Tuyệt vời!</h2>
+      <p class="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto" id="rv-empty-desc">Bạn không có từ nào cần
+        ôn tập ngày hôm nay.</p>
+      <button id="rv-back-btn"
+        class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/50 hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 mx-auto w-full max-w-xs">
+        <span class="material-symbols-outlined">home</span> Xong
+      </button>
+    </div>
+    <div id="rv-container" class="w-full relative z-10 hidden">
+      <div
+        class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border border-white dark:border-slate-700 shadow-xl rounded-3xl p-8 text-center relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 size-32 bg-indigo-100/50 dark:bg-indigo-900/30 rounded-full blur-2xl">
+        </div>
+        <div class="absolute -bottom-10 -left-10 size-24 bg-sky-100/50 dark:bg-sky-900/30 rounded-full blur-xl"></div>
+        <div class="relative z-10">
+          <h2 id="rv-word"
+            class="text-6xl sm:text-7xl font-black text-slate-900 dark:text-white mb-4 tracking-tighter">漢字</h2>
+          <p id="rv-hint" class="text-lg font-medium text-slate-500 dark:text-slate-400 mb-10 h-6">hiragana</p>
+          <div class="relative max-w-sm mx-auto">
+            <input type="text" id="rv-answer" autocomplete="off" placeholder="Nhập nghĩa tiếng Việt..."
+              class="w-full h-14 px-6 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-500/20 text-center font-bold text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-lg transition-all" />
+            <div id="rv-result"
+              class="absolute inset-x-0 -bottom-12 transform translate-y-4 opacity-0 transition-all font-bold text-sm py-2 px-4 rounded-xl text-center shadow-lg">
+            </div>
+          </div>
+          <div class="mt-8">
+            <button id="rv-submit"
+              class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-indigo-200 dark:shadow-indigo-900/50 hover:bg-indigo-700 hover:shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 w-full max-w-sm mx-auto">
+              Kiểm tra <span class="material-symbols-outlined">keyboard_return</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

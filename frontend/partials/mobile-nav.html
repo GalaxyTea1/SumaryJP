@@ -1,0 +1,42 @@
+<nav
+  class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl px-8 py-4 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl z-50 md:hidden gap-8">
+  <button id="mobile-nav-dashboard"
+    class="text-indigo-600 dark:text-indigo-400 scale-110 transition-all active:scale-95"><span
+      class="material-symbols-outlined font-bold">dashboard</span></button>
+  <button id="mobile-nav-lessons" class="text-slate-400 dark:text-slate-500 transition-all active:scale-95"><span
+      class="material-symbols-outlined">menu_book</span></button>
+  <button id="mobile-nav-stats" class="text-slate-400 dark:text-slate-500 transition-all active:scale-95"><span
+      class="material-symbols-outlined">analytics</span></button>
+  <button id="mobile-nav-profile" class="text-slate-400 dark:text-slate-500 transition-all active:scale-95"><span
+      class="material-symbols-outlined">person</span></button>
+</nav>
+
+<!-- Mobile Lesson Sheet -->
+<div id="mobile-lesson-sheet-overlay"
+  class="fixed inset-0 z-[55] bg-slate-900/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 md:hidden"
+  onclick="document.getElementById('mobile-lesson-sheet').classList.add('translate-y-full'); this.classList.add('opacity-0'); setTimeout(()=>{this.classList.add('hidden');},300)">
+</div>
+<div id="mobile-lesson-sheet"
+  class="fixed bottom-0 left-0 right-0 z-[56] bg-white dark:bg-slate-800 rounded-t-3xl shadow-2xl border-t border-slate-200 dark:border-slate-700 transition-transform duration-300 translate-y-full md:hidden max-h-[75vh] flex flex-col">
+  <!-- Handle -->
+  <div class="flex justify-center pt-4 pb-2 flex-shrink-0">
+    <div class="w-10 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+  </div>
+  <!-- Header -->
+  <div class="flex items-center justify-between px-5 pb-3 flex-shrink-0">
+    <h3 class="font-black text-slate-900 dark:text-white text-lg">Chọn bài học</h3>
+    <button id="mobile-lesson-sheet-close"
+      class="size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-200 dark:hover:bg-slate-600">
+      <span class="material-symbols-outlined text-lg">close</span>
+    </button>
+  </div>
+  <!-- Lesson List -->
+  <div id="mobile-lesson-nav-container" class="overflow-y-auto flex-1 px-4 pb-24 flex flex-col gap-2">
+    <div id="mobile-sidebar-skeleton" class="flex flex-col gap-3 w-full">
+      <div class="skeleton-pulse h-11 w-full"></div>
+      <div class="skeleton-pulse h-11 w-full"></div>
+      <div class="skeleton-pulse h-11 w-full"></div>
+      <div class="skeleton-pulse h-11 w-full" style="opacity: 0.6;"></div>
+    </div>
+  </div>
+</div>
