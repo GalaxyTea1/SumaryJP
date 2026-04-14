@@ -176,38 +176,106 @@ export const ui = {
     },
 
     initDarkMode() {
-        const toggleIds = ["dark-mode-toggle", "dark-mode-toggle-desktop"];
+        // Mobile dark mode toggle id
+        const mobileToggleId = "dark-mode-toggle";
 
         const isDark = localStorage.getItem("theme") === "dark";
         if (isDark) {
             document.documentElement.classList.add("dark");
         }
 
-        const syncIcons = () => {
+        // Sync all dark mode related UI elements
+        const syncDarkModeUI = () => {
             const dark = document.documentElement.classList.contains("dark");
-            toggleIds.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    const span = btn.querySelector("span");
-                    if (span) span.textContent = dark ? "light_mode" : "dark_mode";
-                }
-            });
-        };
-        syncIcons();
 
-        toggleIds.forEach(id => {
-            const btn = document.getElementById(id);
-            if (!btn) return;
-            btn.addEventListener("click", () => {
+            // Mobile button icon
+            const mobileBtn = document.getElementById(mobileToggleId);
+            if (mobileBtn) {
+                const span = mobileBtn.querySelector("span");
+                if (span) span.textContent = dark ? "light_mode" : "dark_mode";
+            }
+
+            // Settings menu icon/label (desktop)
+            const icon = document.getElementById("settings-darkmode-icon");
+            const label = document.getElementById("settings-darkmode-label");
+            const sub = document.getElementById("settings-darkmode-sub");
+            if (icon) icon.textContent = dark ? "light_mode" : "dark_mode";
+            if (label) label.textContent = dark ? "Chế độ sáng" : "Chế độ tối";
+            if (sub) sub.textContent = dark ? "Tắt dark mode" : "Bật dark mode";
+        };
+        syncDarkModeUI();
+
+        // Mobile dark mode button
+        const mobileBtn = document.getElementById(mobileToggleId);
+        if (mobileBtn) {
+            mobileBtn.addEventListener("click", () => {
                 document.documentElement.classList.toggle("dark");
                 const dark = document.documentElement.classList.contains("dark");
                 localStorage.setItem("theme", dark ? "dark" : "light");
-                syncIcons();
+                syncDarkModeUI();
             });
-        });
+        }
 
-        const mobileToggle = document.getElementById("toggle-hiragana");
+        // ── Desktop Settings Context Menu ──────────────────────────────
+        const settingsBtn = document.getElementById("settings-menu-btn");
+        const settingsMenu = document.getElementById("settings-context-menu");
+
+        const openSettingsMenu = () => {
+            if (!settingsMenu) return;
+            settingsMenu.classList.remove("opacity-0", "scale-95", "pointer-events-none");
+            settingsMenu.classList.add("opacity-100", "scale-100");
+        };
+
+        const closeSettingsMenu = () => {
+            if (!settingsMenu) return;
+            settingsMenu.classList.add("opacity-0", "scale-95", "pointer-events-none");
+            settingsMenu.classList.remove("opacity-100", "scale-100");
+        };
+
+        if (settingsBtn) {
+            settingsBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isOpen = !settingsMenu?.classList.contains("pointer-events-none");
+                isOpen ? closeSettingsMenu() : openSettingsMenu();
+            });
+        }
+
+        // Dark mode row click inside settings menu
+        const darkModeRow = document.getElementById("settings-darkmode-row");
+        if (darkModeRow) {
+            darkModeRow.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document.documentElement.classList.toggle("dark");
+                const dark = document.documentElement.classList.contains("dark");
+                localStorage.setItem("theme", dark ? "dark" : "light");
+                syncDarkModeUI();
+            });
+        }
+
+        // Hiragana row click → toggle the checkbox
+        const hiraganaRow = document.getElementById("settings-hiragana-row");
         const desktopToggle = document.getElementById("toggle-hiragana-desktop");
+        if (hiraganaRow && desktopToggle) {
+            hiraganaRow.addEventListener("click", (e) => {
+                // Avoid double-fire if click lands on the checkbox itself
+                if (e.target === desktopToggle) return;
+                e.stopPropagation();
+                desktopToggle.checked = !desktopToggle.checked;
+                desktopToggle.dispatchEvent(new Event("change"));
+            });
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener("click", (e) => {
+            const wrapper = document.getElementById("settings-menu-wrapper");
+            if (wrapper && !wrapper.contains(e.target)) {
+                closeSettingsMenu();
+            }
+        });
+        // ──────────────────────────────────────────────────────────────
+
+        // Hiragana sync
+        const mobileHiragana = document.getElementById("toggle-hiragana");
         const vocabSection = document.querySelector(".vocabulary-section");
 
         const applyHiragana = (checked) => {
@@ -219,19 +287,19 @@ export const ui = {
 
         const savedPref = localStorage.getItem("showHiragana");
         const showHiragana = savedPref !== "false";
-        if (mobileToggle) mobileToggle.checked = showHiragana;
+        if (mobileHiragana) mobileHiragana.checked = showHiragana;
         if (desktopToggle) desktopToggle.checked = showHiragana;
         applyHiragana(showHiragana);
 
-        if (mobileToggle) {
-            mobileToggle.addEventListener("change", (e) => {
+        if (mobileHiragana) {
+            mobileHiragana.addEventListener("change", (e) => {
                 if (desktopToggle) desktopToggle.checked = e.target.checked;
                 applyHiragana(e.target.checked);
             });
         }
         if (desktopToggle) {
             desktopToggle.addEventListener("change", (e) => {
-                if (mobileToggle) mobileToggle.checked = e.target.checked;
+                if (mobileHiragana) mobileHiragana.checked = e.target.checked;
                 applyHiragana(e.target.checked);
             });
         }

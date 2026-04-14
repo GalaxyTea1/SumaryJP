@@ -148,7 +148,7 @@
       <div
         class="sticky top-0 z-40 bg-off-white/90 dark:bg-slate-900/90 backdrop-blur-md transition-colors duration-300">
 
-        <div class="flex md:hidden items-center justify-between px-4 pt-3 pb-2 gap-2">
+        <div class="flex lg:hidden items-center justify-between px-4 pt-3 pb-2 gap-2">
           <label
             class="flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1.5 rounded-xl shadow-sm transition-colors group"
             title="Ẩn/Hiện cách đọc (Hiragana)">
@@ -215,7 +215,7 @@
         </div>
 
         <!-- Mobile Search Bar -->
-        <div class="flex md:hidden px-4 pb-3 relative">
+        <div class="flex lg:hidden px-4 pb-3 relative">
           <div class="relative w-full search-container">
             <span
               class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
@@ -229,16 +229,16 @@
         </div>
 
         <!-- Desktop Search bar row -->
-        <div class="hidden md:grid px-6 py-4 items-center gap-3 z-10" style="grid-template-columns: 1fr auto 1fr;">
+        <div class="hidden lg:grid px-2 py-4 items-center gap-2 z-10" style="grid-template-columns: 1fr auto 1fr;">
           <!-- Left spacer -->
           <div></div>
           <!-- Search Container -->
-          <div class="relative w-full max-w-xl min-w-[280px] search-container">
+          <div class="relative w-full max-w-xl min-w-[360px] search-container">
             <span
               class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
             <input id="global-search-input"
               class="w-full h-14 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
-              placeholder="Tìm kiếm từ vựng (Kanji, Kana, Tiếng Việt...)" type="text" autocomplete="off" />
+              placeholder="Tìm kiếm từ vựng (Kanji, Kana...)" type="text" autocomplete="off" />
 
             <button id="ocr-upload-btn"
               class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 z-10"
@@ -254,35 +254,12 @@
             </ul>
           </div>
 
-          <div class="flex items-center gap-3 justify-end z-50">
-            <!-- Toggle Hiragana Switch (desktop) -->
-            <label
-              class="flex items-center cursor-pointer bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-xl shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group"
-              title="Ẩn/Hiện cách đọc (Hiragana)">
-              <div class="relative">
-                <input type="checkbox" id="toggle-hiragana-desktop" class="sr-only peer" checked>
-                <div
-                  class="block bg-slate-200 dark:bg-slate-700 w-10 h-6 rounded-full transition-colors peer-checked:bg-indigo-500">
-                </div>
-                <div
-                  class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4">
-                </div>
-              </div>
-              <span
-                class="ml-3 text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Hiragana</span>
-            </label>
-
-            <!-- Dark Mode Toggle Button (desktop) -->
-            <button id="dark-mode-toggle-desktop"
-              class="size-10 flex-shrink-0 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-md hover:scale-105 active:scale-95 transition-all">
-              <span class="material-symbols-outlined text-base">dark_mode</span>
-            </button>
-
+          <div class="flex items-center gap-1 justify-end z-50">
             <!-- Auth Section (desktop) -->
             <div id="auth-header-section-desktop" class="ml-2 flex items-center">
               <!-- Guest View -->
               <button id="header-login-btn-desktop"
-                class="hidden px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md transition-colors flex items-center gap-2">
+                class="hidden flex-shrink-0 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md transition-colors flex items-center gap-2">
                 <span class="material-symbols-outlined text-sm">login</span> Đăng nhập
               </button>
 
@@ -317,6 +294,64 @@
                       <span class="material-symbols-outlined text-lg">logout</span>
                       Đăng xuất
                     </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Settings Button (desktop) -->
+            <div class="relative" id="settings-menu-wrapper">
+              <button id="settings-menu-btn"
+                class="size-10 flex-shrink-0 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-105 active:scale-95 transition-all"
+                title="Cài đặt">
+                <span class="material-symbols-outlined text-base">settings</span>
+              </button>
+
+              <!-- Settings Context Menu -->
+              <div id="settings-context-menu"
+                class="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 overflow-hidden transform transition-all duration-200 opacity-0 scale-95 pointer-events-none z-[60]">
+
+                <!-- Header -->
+                <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Cài đặt
+                    hiển thị</p>
+                </div>
+
+                <!-- Hiragana Toggle -->
+                <div
+                  class="px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group"
+                  id="settings-hiragana-row">
+                  <div class="flex items-center gap-2.5">
+                    <span class="material-symbols-outlined text-base text-indigo-500">translate</span>
+                    <div>
+                      <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Hiragana</p>
+                      <p class="text-[10px] text-slate-400 dark:text-slate-500">Hiện cách đọc</p>
+                    </div>
+                  </div>
+                  <div class="relative flex-shrink-0">
+                    <input type="checkbox" id="toggle-hiragana-desktop" class="sr-only peer" checked>
+                    <div
+                      class="block bg-slate-200 dark:bg-slate-700 w-9 h-5 rounded-full transition-colors peer-checked:bg-indigo-500">
+                    </div>
+                    <div
+                      class="dot absolute left-1 top-0.5 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-4">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <div
+                  class="px-4 py-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                  id="settings-darkmode-row">
+                  <div class="flex items-center gap-2.5">
+                    <span class="material-symbols-outlined text-base text-slate-500 dark:text-slate-400"
+                      id="settings-darkmode-icon">dark_mode</span>
+                    <div>
+                      <p class="text-sm font-semibold text-slate-700 dark:text-slate-200" id="settings-darkmode-label">
+                        Chế độ tối</p>
+                      <p class="text-[10px] text-slate-400 dark:text-slate-500" id="settings-darkmode-sub">Bật dark mode
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
