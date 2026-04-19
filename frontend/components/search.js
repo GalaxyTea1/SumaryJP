@@ -2,6 +2,21 @@ import { state } from "../state.js";
 import { vocabTable } from "./vocabTable.js";
 import { utils } from "./utils.js";
 
+let _tesseractLoaded = false;
+function _loadTesseract() {
+    if (_tesseractLoaded || typeof Tesseract !== 'undefined') {
+        _tesseractLoaded = true;
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        script.onload = () => { _tesseractLoaded = true; resolve(); };
+        script.onerror = () => reject(new Error('Không tải được Tesseract.js'));
+        document.head.appendChild(script);
+    });
+}
+
 export const search = {
     init() {
         const searchInput = document.getElementById("global-search-input");
@@ -30,11 +45,13 @@ export const search = {
                 searchInput.disabled = true;
 
                 try {
+                    await _loadTesseract();
+
                     const imageUrl = URL.createObjectURL(file);
 
                     const result = await Tesseract.recognize(
                         imageUrl,
-                        'jpn+eng', // Japanese and English language
+                        'jpn+eng',
                         { logger: m => console.log("OCR Progress:", m) }
                     );
 

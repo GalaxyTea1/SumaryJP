@@ -201,7 +201,7 @@ export const ui = {
             const sub = document.getElementById("settings-darkmode-sub");
             if (icon) icon.textContent = dark ? "light_mode" : "dark_mode";
             if (label) label.textContent = dark ? "Chế độ sáng" : "Chế độ tối";
-            if (sub) sub.textContent = dark ? "Tắt dark mode" : "Bật dark mode";
+            if (sub) sub.textContent = dark ? "Tắt" : "Bật";
         };
         syncDarkModeUI();
 

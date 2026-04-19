@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 
 <head>
@@ -39,9 +39,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="dns-prefetch" href="https://jp-backend-api.onrender.com" />
+  <link rel="preconnect" href="https://jp-backend-api.onrender.com" crossorigin />
 
   <!-- Stylesheets -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="stylesheet" href="tailwind.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -50,8 +52,6 @@
 
   <!-- Scripts -->
   <script type="module" src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -72,50 +72,6 @@
   }
   </script>
 
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#6366f1",
-            "off-white": "#f8fafc",
-            "sky-blue": "#0ea5e9",
-            "gold": "#eab308",
-            "emerald": "#10b981",
-            "soft-purple": "#8b5cf6",
-            "vibrant-orange": "#f97316"
-          },
-          fontFamily: {
-            "display": ["Inter", "sans-serif"]
-          },
-          borderRadius: {
-            "DEFAULT": "0.5rem",
-            "lg": "1rem",
-            "xl": "1.5rem",
-            "2xl": "2rem",
-            "3xl": "2.5rem"
-          },
-        },
-      },
-    }
-  </script>
-  <style type="text/tailwindcss">
-    @layer components {
-      .glass-table {
-        @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white dark:border-slate-700 shadow-xl;
-      }
-      .action-card-white {
-        @apply flex flex-col items-center justify-center p-4 rounded-3xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 transition-all active:scale-95;
-      }
-      .action-card-white > .font-bold.text-slate-800 {
-        @apply dark:text-slate-100;
-      }
-      .jlpt-nav-item {
-        @apply flex items-center justify-center w-11 h-11 rounded-2xl transition-all font-bold text-sm border;
-      }
-    }
-  </style>
 </head>
 
 <body
@@ -371,7 +327,7 @@
               <span class="material-symbols-outlined text-2xl font-bold">bolt</span>
             </div>
             <span class="font-bold text-slate-800 text-sm">Bắt đầu ôn tập</span>
-            <span class="text-[10px] text-indigo-500 font-bold mt-1 uppercase tracking-wider">42 Đang chờ</span>
+            <span class="text-[10px] text-indigo-500 font-bold mt-1 uppercase tracking-wider">Đang chờ</span>
           </button>
 
           <button id="start-flashcard" class="action-card-white group">

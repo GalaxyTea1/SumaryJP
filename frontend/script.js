@@ -9,6 +9,7 @@ import { wordDetailsModal } from "./components/wordDetailsModal.js";
 import { auth } from "./components/auth.js";
 import { testConfigModal } from "./components/testConfigModal.js";
 import { flashcardConfigModal } from "./components/flashcardConfigModal.js";
+import { warmupBackend } from "./api.js";
 
 const PARTIALS = [
     "partials/modal-stats.html",
@@ -32,9 +33,13 @@ async function loadPartials() {
 }
 
 window.onload = async function () {
+    warmupBackend();
+
     try {
-        await loadPartials();
-        await state.loadFromServer();
+        await Promise.all([
+            loadPartials(),
+            state.loadFromServer(),
+        ]);
 
         ui.initSidebar();
         dashboardStats.initGoalSetting();

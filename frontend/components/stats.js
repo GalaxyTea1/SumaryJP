@@ -1,10 +1,25 @@
 import { state } from "../state.js";
 
+let _chartLoaded = false;
+function _loadChartJs() {
+    if (_chartLoaded || typeof Chart !== 'undefined') {
+        _chartLoaded = true;
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => { _chartLoaded = true; resolve(); };
+        script.onerror = () => reject(new Error('Không tải được Chart.js'));
+        document.head.appendChild(script);
+    });
+}
+
 export const stats = {
     progressChart: null,
     eventsBound: false,
 
-    show() {
+    async show() {
         const overlay = document.getElementById("stats-overlay");
         const modal = document.getElementById("stats-modal-content");
         
@@ -15,6 +30,7 @@ export const stats = {
             modal.classList.add("scale-100", "opacity-100");
         }, 10);
 
+        await _loadChartJs();
         this.update();
         this.bindEvents();
     },

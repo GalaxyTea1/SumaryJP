@@ -1,0 +1,20 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "admin.js",
+  "scripts": {
+    "build:css": "node_modules/.bin/tailwindcss -i tailwind-input.css -o tailwind.css --minify",
+    "watch:css": "node_modules/.bin/tailwindcss -i tailwind-input.css -o tailwind.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.2.2",
+    "@tailwindcss/forms": "^0.5.11",
+    "tailwindcss": "^4.2.2"
+  }
+}

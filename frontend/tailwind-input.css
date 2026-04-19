@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Plugin forms */
+@plugin "@tailwindcss/forms";
+
+/* Scan content */
+@source "./*.html";
+@source "./partials/**/*.html";
+@source "./components/**/*.js";
+@source "./admin.js";
+@source "./script.js";
+@source "./state.js";
+@source "./api.js";
+
+/* Custom theme tokens (maps sang tailwind.config theme.extend) */
+@theme {
+  --color-primary: #6366f1;
+  --color-off-white: #f8fafc;
+  --color-sky-blue: #0ea5e9;
+  --color-gold: #eab308;
+  --color-emerald: #10b981;
+  --color-soft-purple: #8b5cf6;
+  --color-vibrant-orange: #f97316;
+
+  --font-display: "Inter", sans-serif;
+
+  --radius: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+@layer components {
+  .glass-table {
+    @apply bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-white dark:border-slate-700 shadow-xl;
+  }
+  .action-card-white {
+    @apply flex flex-col items-center justify-center p-4 rounded-3xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 transition-all active:scale-95;
+  }
+  .action-card-white > .font-bold.text-slate-800 {
+    @apply dark:text-slate-100;
+  }
+  .jlpt-nav-item {
+    @apply flex items-center justify-center w-11 h-11 rounded-2xl transition-all font-bold text-sm border;
+  }
+}

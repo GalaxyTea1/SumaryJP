@@ -1,7 +1,8 @@
 import apiManager from "./api.js";
 
 const CACHE_KEY = "sumary_jp_vocab_cache";
-const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_TTL = 2 * 60 * 60 * 1000;   
+const STALE_TTL = 10 * 60 * 1000;        
 
 export const state = {
     currentLesson: null,
@@ -10,57 +11,100 @@ export const state = {
 
     async loadFromServer(forceRefresh = false) {
         try {
-            let allVocab = null;
-
             if (!forceRefresh) {
-                allVocab = this._getFromCache();
+                const cached = this._getFromCache(true); 
+                if (cached) {
+                    this.vocabulary = cached.data;
+                    this._rebuildLessonsMap();
+
+                    if (cached.isStale) {
+                        this._revalidateInBackground();
+                    }
+                    return;
+                }
             }
 
-            if (!allVocab) {
-                allVocab = await apiManager.getAllVocabulary();
-                this._saveToCache(allVocab);
-            }
-
+            const allVocab = await apiManager.getAllVocabulary();
+            this._saveToCache(allVocab);
             this.vocabulary = allVocab;
             this._rebuildLessonsMap();
+
         } catch (error) {
             console.error("Error loading vocabulary:", error);
-            alert("Có lỗi khi tải dữ liệu. Vui lòng thử lại.");
+
+            const staleData = this._getStaleCache();
+            if (staleData) {
+                this.vocabulary = staleData;
+                this._rebuildLessonsMap();
+                return;
+            }
+
+            alert("Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.");
             throw error;
         }
     },
 
-    _getFromCache() {
+    async _revalidateInBackground() {
         try {
-            const raw = sessionStorage.getItem(CACHE_KEY);
+            const allVocab = await apiManager.getAllVocabulary();
+            this._saveToCache(allVocab);
+            this.vocabulary = allVocab;
+            this._rebuildLessonsMap();
+            console.info('[Cache] Stale-while-revalidate: data refreshed in background');
+        } catch (e) {
+            console.warn('[Cache] Background revalidation failed:', e);
+        }
+    },
+
+    _getFromCache(withMeta = false) {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
             if (!raw) return null;
 
             const cached = JSON.parse(raw);
-            if (Date.now() - cached.timestamp > CACHE_TTL) {
-                sessionStorage.removeItem(CACHE_KEY);
+            const age = Date.now() - cached.timestamp;
+
+            if (age > CACHE_TTL) {
+                localStorage.removeItem(CACHE_KEY);
                 return null;
             }
 
+            if (withMeta) return { data: cached.data, isStale: age > STALE_TTL };
             return cached.data;
         } catch {
-            sessionStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(CACHE_KEY);
+            return null;
+        }
+    },
+
+    _getStaleCache() {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (!raw) return null;
+            const cached = JSON.parse(raw);
+            return cached.data || null;
+        } catch {
             return null;
         }
     },
 
     _saveToCache(data) {
         try {
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
                 timestamp: Date.now(),
                 data
             }));
         } catch (e) {
-            console.warn("Could not save vocab cache:", e);
+            console.warn("Could not save vocab cache (storage full?), clearing old:", e);
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+            } catch { /* bỏ qua */ }
         }
     },
 
     _invalidateCache() {
-        sessionStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_KEY);
     },
 
     _rebuildLessonsMap() {
