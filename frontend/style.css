@@ -16,6 +16,10 @@ body {
   margin-block: 16px;
 }
 
+#stats-modal-content::-webkit-scrollbar-track {
+  margin-block: 12px;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;

@@ -65,14 +65,7 @@ export const dashboardStats = {
     },
 
     async updateStats() {
-        let pendingReviewCount = 0;
         let diffCount = 0;
-
-        for (const item of state.vocabulary) {
-            if (item.status === 'learning' || item.status === 'not-learned') pendingReviewCount++;
-            if (item.is_difficult) diffCount++;
-        }
-
         const totalGoal = getWeeklyGoalTarget();
 
         if (!weeklyGoalFetched) {
@@ -89,9 +82,6 @@ export const dashboardStats = {
 
         const masteredCount = cachedWeeklyGoalCount;
         const progressPercent = Math.min((masteredCount / totalGoal) * 100, 100);
-
-        const startReviewBadge = document.querySelector('#start-review span.tracking-wider');
-        if (startReviewBadge) startReviewBadge.textContent = `${pendingReviewCount} Đang chờ`;
 
         const diffBadge = document.querySelector('#show-difficult span.tracking-wider');
         if (diffBadge) diffBadge.textContent = `${diffCount} Từ`;
