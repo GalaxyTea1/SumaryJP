@@ -40,8 +40,8 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Strategy: Network First, then Cache
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
+  // Only handle GET requests and http/https schemes
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) return;
 
   event.respondWith(
     fetch(event.request)
