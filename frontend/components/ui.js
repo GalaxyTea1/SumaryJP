@@ -76,11 +76,7 @@ export const ui = {
                         await adminTable.render(lesson, level);
                         if (window.updateAdminStats) window.updateAdminStats();
                     } else {
-                        vocabTable.renderSkeleton();
-                        const { dashboardStats } = await import("./dashboardStats.js");
-                        dashboardStats.renderSkeleton();
-                        await vocabTable.render(lesson, level);
-                        dashboardStats.updateStats();
+                        state.setCurrentLesson(lesson, level);
                     }
                 });
                 lessonContainer.appendChild(lessonBtn);
@@ -141,9 +137,7 @@ export const ui = {
                         const levelSpan = wrapper ? wrapper.querySelector("button > span") : null;
                         const level = levelSpan ? levelSpan.textContent.trim() : "N5";
 
-                        vocabTable.renderSkeleton();
-                        await vocabTable.render(lesson, level);
-                        dashboardStats.updateStats();
+                        state.setCurrentLesson(lesson, level);
                     });
                 });
 

@@ -1,6 +1,7 @@
 import { state } from "../state.js";
 import { tts } from "./tts.js";
-import { viewManager } from "./viewManager.js";
+import { utils } from "./utils.js";
+import { router } from "./router.js";
 
 let cleanupFns = [];
 
@@ -157,15 +158,15 @@ export const reviewView = {
                     renderNextCard();
                 }, 1800);
             } catch (error) {
-                alert("Có lỗi khi lưu trạng thái ôn tập.");
+                utils.showToast("Có lỗi khi lưu trạng thái ôn tập.", "error");
                 isProcessing = false;
             }
         }
 
         const onSubmitClick = () => processAnswer();
         const onEnter = (e) => { if (e.key === "Enter") { e.preventDefault(); processAnswer(); } };
-        const onExit = () => viewManager.back();
-        const onEmptyBack = () => viewManager.back();
+        const onExit = () => router.back();
+        const onEmptyBack = () => router.back();
 
         btnSubmit.addEventListener("click", onSubmitClick);
         elAnswerInput.addEventListener("keypress", onEnter);

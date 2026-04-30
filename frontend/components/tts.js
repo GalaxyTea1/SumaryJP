@@ -1,10 +1,12 @@
+import { utils } from "./utils.js";
+
 export const tts = {
     initContextMenu() {
         // Feature not currently implemented
     },
     speak(text) {
         if (!('speechSynthesis' in window)) {
-            alert("Trình duyệt của bạn không hỗ trợ tính năng đọc văn bản.");
+            utils.showToast("Trình duyệt của bạn không hỗ trợ tính năng đọc văn bản.", "error");
             return;
         }
 

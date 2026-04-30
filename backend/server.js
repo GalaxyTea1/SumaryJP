@@ -32,6 +32,7 @@ app.use(cors({
 app.use(express.json({ limit: '10kb' }));
 
 // Routes
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/vocab', vocabRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/auth', authRoutes);
@@ -47,7 +48,11 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, _next) => {
     console.error('Unhandled error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+        error: 'Internal server error',
+        message: err.message, // Send message to help debugging (can be removed in production)
+        stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    });
 });
 
 app.listen(PORT, () => {

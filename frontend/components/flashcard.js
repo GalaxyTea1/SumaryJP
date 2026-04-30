@@ -1,6 +1,6 @@
 import { state } from "../state.js";
 import { tts } from "./tts.js";
-import { viewManager } from "./viewManager.js";
+import { router } from "./router.js";
 
 let cleanupFns = [];
 
@@ -13,6 +13,12 @@ export const flashcardView = {
         const controls = document.getElementById("fc-controls");
         const progressEl = document.getElementById("fc-progress");
         const headerTitle = document.getElementById("fc-header-title");
+        const backBtn = document.getElementById("flashcard-back-btn");
+        if (backBtn) {
+            backBtn.onclick = () => {
+                router.back();
+            };
+        }
 
         cleanupFns = [];
 
@@ -97,7 +103,7 @@ export const flashcardView = {
         const onFlipBtn = () => flipCard();
         const onNext = () => nextCard();
         const onPrev = () => prevCard();
-        const onExit = () => viewManager.back();
+        const onExit = () => router.back();
 
         innerCard.addEventListener("click", onFlipInner);
         document.getElementById("fc-flip-btn").addEventListener("click", onFlipBtn);

@@ -1,6 +1,7 @@
 import { state } from "../state.js";
+import { ui } from "./ui.js";
 import { utils } from "./utils.js";
-import { viewManager } from "./viewManager.js";
+import { router } from "./router.js";
 
 let cleanupFns = [];
 let testTimer = null;
@@ -42,8 +43,8 @@ export const testView = {
         let selectedOptionValue = null;
 
         if (!wordCount) {
-            alert("Thiếu cấu hình bài kiểm tra.");
-            viewManager.back();
+            utils.showToast("Thiếu cấu hình bài kiểm tra.", "warning");
+            router.back();
             return;
         }
 
@@ -309,7 +310,7 @@ export const testView = {
 
         function onQuit() {
             if (confirm("Bạn có chắc chắn muốn thoát khi bài thi chưa kết thúc?")) {
-                viewManager.back();
+                router.back();
             }
         }
 
@@ -317,7 +318,7 @@ export const testView = {
             if (e.key === "Enter") onJump();
         }
 
-        const onBackFromResults = () => viewManager.back();
+        const onBackFromResults = () => router.back();
 
         btnNext.addEventListener("click", onNextClick);
         btnPrev.addEventListener("click", onPrevClick);

@@ -1,5 +1,6 @@
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
 const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
+import { utils } from "./utils.js";
 
 export const auth = {
     API_URL: `${BASE_URL}/auth`,
@@ -294,7 +295,7 @@ export const auth = {
             if (this.currentTab === 'register') {
                 const confirmPassword = this.confirmPasswordInput.value.trim();
                 if (password !== confirmPassword) {
-                    alert('Mật khẩu xác nhận không khớp!');
+                    utils.showToast('Mật khẩu xác nhận không khớp!', 'warning');
                     return;
                 }
                 endpoint = `${this.API_URL}/register`;
@@ -309,7 +310,7 @@ export const auth = {
             const data = await response.json();
 
             if (!response.ok) {
-                alert(data.error || 'Đã có lỗi xảy ra');
+                utils.showToast(data.error || 'Đã có lỗi xảy ra', 'error');
                 return;
             }
 
@@ -322,7 +323,7 @@ export const auth = {
 
         } catch (error) {
             console.error('Lỗi khi đăng nhập/đăng ký:', error);
-            alert('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
+            utils.showToast('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.', 'error');
         } finally {
             this.submitText.textContent = originalText;
             submitBtn.disabled = false;

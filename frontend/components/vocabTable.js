@@ -13,7 +13,27 @@ function isMobile() {
     return window.innerWidth < 768;
 }
 
+import { EVENTS } from "../state.js";
+
 export const vocabTable = {
+    init() {
+        state.subscribe(EVENTS.LESSON_CHANGED, async (currentLesson) => {
+            if (currentLesson) {
+                this.renderSkeleton();
+                await this.render(currentLesson.lesson, currentLesson.level);
+            }
+        });
+
+        state.subscribe(EVENTS.VOCAB_UPDATED, async (payload) => {
+            if (payload && payload.action === "inline_update") {
+                return;
+            }
+            if (state.currentLesson) {
+                await this.render(state.currentLesson.lesson, state.currentLesson.level);
+            }
+        });
+    },
+
     renderSkeleton(rowCount = 5) {
         const tbody = document.getElementById("vocab-list");
         const mobileList = document.getElementById("vocab-list-mobile");
@@ -72,14 +92,20 @@ export const vocabTable = {
     },
 
     async render(lesson, level, customVocabList = null, customTitle = null) {
-        if (lesson && level) {
-            state.currentLesson = { lesson, level };
-        }
 
         const emptyState = document.getElementById("vocab-empty-state");
         const tableWrapper = document.getElementById("vocab-table-wrapper");
         if (emptyState) emptyState.classList.add("hidden");
         if (tableWrapper) tableWrapper.classList.remove("hidden");
+
+        const thStatus = document.getElementById("th-status");
+        const thDifficulty = document.getElementById("th-difficulty");
+        if (thStatus) {
+            thStatus.textContent = "Trạng thái";
+            thStatus.classList.remove("text-left");
+            thStatus.classList.add("text-center");
+        }
+        if (thDifficulty) thDifficulty.classList.remove("hidden");
 
         const titleEl = document.getElementById("current-lesson-title");
         if (titleEl) {
@@ -192,20 +218,42 @@ export const vocabTable = {
         selectEl.addEventListener("change", async (e) => {
             e.stopPropagation();
             const newStatus = e.target.value;
-            await state.updateVocabularyStatus(vocab.id, newStatus);
+            const prevStatus = vocab.status;
+            
+            // Optimistic UI update
+            vocab.status = newStatus;
             const newInfo = STATUS_CONFIG[newStatus] || STATUS_CONFIG["not-learned"];
             pillEl.className = `status-pill px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${newInfo.classes}`;
             pillEl.textContent = newInfo.text;
-            const { dashboardStats } = await import("./dashboardStats.js");
-            dashboardStats.updateStats();
+
+            try {
+                await state.updateVocabularyStatus(vocab.id, newStatus);
+            } catch (error) {
+                vocab.status = prevStatus;
+                selectEl.value = prevStatus;
+                const prevInfo = STATUS_CONFIG[prevStatus] || STATUS_CONFIG["not-learned"];
+                pillEl.className = `status-pill px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${prevInfo.classes}`;
+                pillEl.textContent = prevInfo.text;
+                utils.showToast(error.message || "Lỗi đồng bộ dữ liệu", "error");
+            }
         });
 
         const starToggle = card.querySelector(".star-toggle");
         starToggle.addEventListener("click", async (e) => {
             e.stopPropagation();
-            const isDifficult = await state.toggleDifficulty(vocab.id);
-            if (isDifficult !== null) {
-                starToggle.className = `star-toggle cursor-pointer material-symbols-outlined text-lg ${isDifficult ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`;
+            const prevDifficult = vocab.is_difficult;
+            const newDifficult = !prevDifficult;
+            
+            // Optimistic UI update
+            vocab.is_difficult = newDifficult;
+            starToggle.className = `star-toggle cursor-pointer material-symbols-outlined text-lg ${newDifficult ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`;
+            
+            try {
+                await state.toggleDifficulty(vocab.id);
+            } catch (error) {
+                vocab.is_difficult = prevDifficult;
+                starToggle.className = `star-toggle cursor-pointer material-symbols-outlined text-lg ${prevDifficult ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`;
+                utils.showToast(error.message || "Lỗi đồng bộ dữ liệu", "error");
             }
         });
 
@@ -231,23 +279,47 @@ export const vocabTable = {
 
         selectEl.addEventListener("change", async (e) => {
             const newStatus = e.target.value;
-            await state.updateVocabularyStatus(vocab.id, newStatus);
+            const prevStatus = vocab.status;
+            
+            // Optimistic UI update
+            vocab.status = newStatus;
             const newInfo = STATUS_CONFIG[newStatus] || STATUS_CONFIG["not-learned"];
             pillEl.className = `status-pill px-3 py-1.5 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border ${newInfo.classes}`;
             pillEl.textContent = newInfo.text;
-            const { dashboardStats } = await import("./dashboardStats.js");
-            dashboardStats.updateStats();
+
+            try {
+                await state.updateVocabularyStatus(vocab.id, newStatus);
+            } catch (error) {
+                vocab.status = prevStatus;
+                selectEl.value = prevStatus;
+                const prevInfo = STATUS_CONFIG[prevStatus] || STATUS_CONFIG["not-learned"];
+                pillEl.className = `status-pill px-3 py-1.5 md:px-4 md:py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest border ${prevInfo.classes}`;
+                pillEl.textContent = prevInfo.text;
+                utils.showToast(error.message || "Lỗi đồng bộ dữ liệu", "error");
+            }
         });
 
         const starContainer = row.querySelector(".star-container");
         starContainer.addEventListener("click", async () => {
-            const isDifficult = await state.toggleDifficulty(vocab.id);
+            const prevDifficult = vocab.is_difficult;
+            const newDifficult = !prevDifficult;
+            
+            // Optimistic UI update
+            vocab.is_difficult = newDifficult;
             const stars = starContainer.querySelectorAll(".difficulty-star");
             stars.forEach(star => {
-                if (isDifficult !== null) {
-                    star.className = `material-symbols-outlined text-[18px] ${isDifficult ? "text-amber-400 fill-[1]" : "text-slate-200 dark:text-slate-600"} difficulty-star`;
-                }
+                star.className = `material-symbols-outlined text-[18px] ${newDifficult ? "text-amber-400 fill-[1]" : "text-slate-200 dark:text-slate-600"} difficulty-star`;
             });
+
+            try {
+                await state.toggleDifficulty(vocab.id);
+            } catch (error) {
+                vocab.is_difficult = prevDifficult;
+                stars.forEach(star => {
+                    star.className = `material-symbols-outlined text-[18px] ${prevDifficult ? "text-amber-400 fill-[1]" : "text-slate-200 dark:text-slate-600"} difficulty-star`;
+                });
+                utils.showToast(error.message || "Lỗi đồng bộ dữ liệu", "error");
+            }
         });
 
         row.addEventListener("click", (e) => {

@@ -186,7 +186,7 @@
             <span
               class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
             <input id="global-search-input-mobile"
-              class="w-full h-12 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+              class="w-full h-12 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all outline-none"
               placeholder="Tìm kiếm từ vựng..." type="text" autocomplete="off" />
             <ul id="search-results-dropdown-mobile"
               class="absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-slate-100 hidden z-50 max-h-60 overflow-y-auto">
@@ -203,7 +203,7 @@
             <span
               class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">search</span>
             <input id="global-search-input"
-              class="w-full h-14 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all"
+              class="w-full h-14 pl-12 pr-14 rounded-2xl bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 border shadow-sm focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/20 focus:border-indigo-200 dark:focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all outline-none"
               placeholder="Tìm kiếm từ vựng (Kanji, Kana...)" type="text" autocomplete="off" />
 
             <button id="ocr-upload-btn"
@@ -416,10 +416,10 @@
                       <th
                         class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
                         Nghĩa</th>
-                      <th
+                      <th id="th-status"
                         class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-center">
                         Trạng thái</th>
-                      <th
+                      <th id="th-difficulty"
                         class="px-4 py-3 md:px-8 md:py-5 text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-right">
                         Độ khó</th>
                     </tr>
@@ -446,7 +446,7 @@
               <button id="edit-weekly-goal-btn"
                 class="size-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
                 title="Thiết lập mục tiêu">
-                <span class="material-symbols-outlined text-[14px] text-indigo-300">edit</span>
+                <span class="material-symbols-outlined !text-[14px] text-indigo-300">edit</span>
               </button>
             </div>
             <h3 class="text-3xl font-black">120/200 <span class="text-lg font-medium opacity-60">Từ thuộc</span></h3>

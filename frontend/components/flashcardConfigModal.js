@@ -1,5 +1,6 @@
 import { state } from "../state.js";
-import { viewManager } from "./viewManager.js";
+import { router } from "./router.js";
+import { utils } from "./utils.js";
 
 export const flashcardConfigModal = {
     init() {
@@ -57,7 +58,7 @@ export const flashcardConfigModal = {
             const selectedLesson = this.selectedLesson;
 
             if (selectedLevel === "all" || selectedLesson === "all") {
-                alert("Vui lòng chọn cụ thể cấp độ và bài học để ôn tập.");
+                utils.showToast("Vui lòng chọn cụ thể cấp độ và bài học để ôn tập.", "warning");
                 return;
             }
 
@@ -68,7 +69,7 @@ export const flashcardConfigModal = {
             }
 
             if (count === 0) {
-                alert("Bài học này chưa có từ vựng nào. Vui lòng chọn bài khác.");
+                utils.showToast("Bài học này chưa có từ vựng nào. Vui lòng chọn bài khác.", "warning");
                 return;
             }
 
@@ -78,7 +79,7 @@ export const flashcardConfigModal = {
             });
 
             this.hide();
-            viewManager.show('flashcard', { level: selectedLevel, lesson: selectedLesson });
+            router.navigate('flashcard', { level: selectedLevel, lesson: selectedLesson });
         });
     },
 

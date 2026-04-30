@@ -9,6 +9,8 @@ import { wordDetailsModal } from "./components/wordDetailsModal.js";
 import { auth } from "./components/auth.js";
 import { testConfigModal } from "./components/testConfigModal.js";
 import { flashcardConfigModal } from "./components/flashcardConfigModal.js";
+import { utils } from "./components/utils.js";
+import { router } from "./components/router.js";
 import { warmupBackend } from "./api.js";
 
 const PARTIALS = [
@@ -36,13 +38,15 @@ window.onload = async function () {
     warmupBackend();
 
     try {
+        vocabTable.init();
+        dashboardStats.init();
+
         await Promise.all([
             loadPartials(),
             state.loadFromServer(),
         ]);
 
         ui.initSidebar();
-        dashboardStats.initGoalSetting();
 
         search.init();
         actions.init();
@@ -52,8 +56,11 @@ window.onload = async function () {
         testConfigModal.init();
         flashcardConfigModal.init();
 
+        // Khởi tạo router cuối cùng để tự động load màn hình nếu có query param
+        router.init();
+
     } catch (error) {
         console.error("Initialization error:", error);
-        alert("Có lỗi khi khởi tạo giao diện. Vui lòng tải lại trang.");
+        utils.showToast("Có lỗi khi khởi tạo giao diện. Vui lòng tải lại trang.", "error");
     }
 };

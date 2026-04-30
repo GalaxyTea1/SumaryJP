@@ -4,7 +4,8 @@ import { stats } from "./stats.js";
 import { historyModal } from "./historyModal.js";
 import { testConfigModal } from "./testConfigModal.js";
 import { flashcardConfigModal } from "./flashcardConfigModal.js";
-import { viewManager } from "./viewManager.js";
+import { router } from "./router.js";
+import { utils } from "./utils.js";
 
 export const actions = {
     init() {
@@ -17,8 +18,8 @@ export const actions = {
 
         if (startReviewBtn) {
             startReviewBtn.addEventListener("click", () => {
-                if (!state.currentLesson) return alert("Vui lòng chọn một bài học trước!");
-                viewManager.show('review', { lesson: state.currentLesson.lesson, level: state.currentLesson.level });
+                if (!state.currentLesson) return utils.showToast("Vui lòng chọn một bài học trước!", "warning");
+                router.navigate('review', { lesson: state.currentLesson.lesson, level: state.currentLesson.level });
             });
         }
 

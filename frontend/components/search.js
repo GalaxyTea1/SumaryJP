@@ -1,5 +1,6 @@
 import { state } from "../state.js";
 import { vocabTable } from "./vocabTable.js";
+import { wordDetailsModal } from "./wordDetailsModal.js";
 import { utils } from "./utils.js";
 
 let _tesseractLoaded = false;
@@ -66,7 +67,7 @@ export const search = {
 
                 } catch (error) {
                     console.error("OCR Error:", error);
-                    alert("Có lỗi xảy ra khi quét ảnh. Vui lòng thử lại.");
+                    utils.showToast("Có lỗi xảy ra khi quét ảnh. Vui lòng thử lại.", "error");
                 } finally {
                     ocrIcon.classList.remove("hidden");
                     ocrSpinner.classList.add("hidden");
@@ -84,7 +85,7 @@ export const search = {
             if (query.length === 0) {
                 dropdown.classList.add("hidden");
                 if (state.currentLesson) {
-                    vocabTable.render(state.currentLesson.lesson, state.currentLesson.level);
+                    state.setCurrentLesson(state.currentLesson.lesson, state.currentLesson.level);
                 }
                 return;
             }
@@ -107,21 +108,35 @@ export const search = {
                         </div>
                         <span class="text-[10px] text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">Bài ${utils.escapeHtml(vocab.lesson)}</span>
                     `;
-                    
+
                     li.addEventListener("click", () => {
                         inputEl.value = "";
                         dropdown.classList.add("hidden");
 
-                        const sidebarItems = document.querySelectorAll('#lesson-sidebar .lesson-nav-active, #lesson-sidebar button');
-                        let targetLessonBtn = Array.from(sidebarItems).find(btn => btn.textContent === `Bài ${vocab.lesson}` && btn.closest('.flex-col').previousElementSibling.textContent.includes(vocab.level));
-                        
-                        if (targetLessonBtn) {
-                            targetLessonBtn.click();
+                        const sidebarItems = document.querySelectorAll('#lesson-sidebar button, #mobile-lesson-nav-container button');
+                        let targetBtns = Array.from(sidebarItems).filter(btn => {
+                            if (btn.textContent.trim() !== `Bài ${vocab.lesson}`) return false;
+                            const wrapper = btn.closest(".flex-col");
+                            if (!wrapper) return false;
+                            const levelSpan = wrapper.querySelector("button > span");
+                            return levelSpan && levelSpan.textContent.trim() === vocab.level;
+                        });
+
+                        if (targetBtns.length > 0) {
+                            targetBtns.forEach(btn => {
+                                btn.click();
+                                const wrapper = btn.closest(".flex-col");
+                                const levelBtn = wrapper.querySelector("button");
+                                const lessonContainer = btn.parentElement;
+                                if (lessonContainer && (lessonContainer.style.maxHeight === "0px" || !lessonContainer.style.maxHeight)) {
+                                    if (levelBtn) levelBtn.click();
+                                }
+                            });
                         } else {
-                            vocabTable.render(vocab.lesson, vocab.level);
+                            state.setCurrentLesson(vocab.lesson, vocab.level);
                         }
                     });
-                    
+
                     dropdown.appendChild(li);
                 });
             } else {
@@ -164,6 +179,15 @@ export const search = {
         const titleEl = document.getElementById("current-lesson-title");
         if (titleEl) titleEl.textContent = `Kết quả tìm kiếm (${results.length})`;
         
+        const thStatus = document.getElementById("th-status");
+        const thDifficulty = document.getElementById("th-difficulty");
+        if (thStatus) {
+            thStatus.textContent = "Loại từ";
+            thStatus.classList.remove("text-center");
+            thStatus.classList.add("text-left");
+        }
+        if (thDifficulty) thDifficulty.classList.add("hidden");
+
         const tbody = document.getElementById("vocab-list");
         const mobileList = document.getElementById("vocab-list-mobile");
 
@@ -178,8 +202,7 @@ export const search = {
                     row.innerHTML = `
                         <td class="px-8 py-6">
                             <div class="flex items-center gap-4">
-                                <div class="size-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-2xl">${utils.escapeHtml(vocab.japanese.charAt(0) || "あ")}</div>
-                                <div class="font-bold text-lg text-slate-900 dark:text-white">${utils.escapeHtml(vocab.japanese)} <span class="text-xs text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full ml-2">Bài ${utils.escapeHtml(vocab.lesson)}-${utils.escapeHtml(vocab.level)}</span></div>
+                                <div class="font-bold text-lg text-slate-900 dark:text-white">${utils.escapeHtml(vocab.japanese)}</div>
                             </div>
                         </td>
                         <td class="px-8 py-6 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">${utils.escapeHtml(vocab.hiragana)}</td>
@@ -188,12 +211,6 @@ export const search = {
                         </td>
                         <td class="px-8 py-6">
                             <span class="text-[10px] text-slate-500 dark:text-slate-400 font-bold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-lg uppercase tracking-wider">${utils.escapeHtml(vocab.type || "Từ vựng")}</span>
-                        </td>
-                        <td class="px-8 py-6 text-center whitespace-nowrap">
-                           <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50">View Only</span>
-                        </td>
-                        <td class="px-8 py-6 text-right whitespace-nowrap">
-                           <div class="flex justify-end gap-0.5"><span class="material-symbols-outlined text-[18px] text-slate-200 dark:text-slate-600">star</span></div>
                         </td>
                     `;
                     tbody.appendChild(row);

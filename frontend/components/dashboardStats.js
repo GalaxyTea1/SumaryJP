@@ -16,7 +16,19 @@ function setWeeklyGoalTarget(value) {
     return clamped;
 }
 
+import { EVENTS } from "../state.js";
+
 export const dashboardStats = {
+    init() {
+        this.initGoalSetting();
+        state.subscribe(EVENTS.VOCAB_UPDATED, () => {
+            this.updateStats();
+        });
+        state.subscribe(EVENTS.VOCAB_LOADED, () => {
+            this.updateStats();
+        });
+    },
+
     renderSkeleton() {
         const startReviewBadge = document.querySelector('#start-review span.tracking-wider');
         if (startReviewBadge) startReviewBadge.innerHTML = `<div class="h-3 w-12 bg-indigo-200 dark:bg-indigo-900/50 rounded animate-pulse mt-0.5 inline-block"></div>`;

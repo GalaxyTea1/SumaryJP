@@ -1,13 +1,40 @@
 import apiManager from "./api.js";
+import { utils } from "./components/utils.js";
 
 const CACHE_KEY = "sumary_jp_vocab_cache";
 const CACHE_TTL = 2 * 60 * 60 * 1000;   
 const STALE_TTL = 10 * 60 * 1000;        
 
+export const EVENTS = {
+    VOCAB_LOADED: 'VOCAB_LOADED',
+    VOCAB_UPDATED: 'VOCAB_UPDATED',
+    LESSON_CHANGED: 'LESSON_CHANGED'
+};
+
 export const state = {
+    _listeners: {},
     currentLesson: null,
     vocabulary: [],
     lessons: {},
+
+    subscribe(event, callback) {
+        if (!this._listeners[event]) this._listeners[event] = [];
+        this._listeners[event].push(callback);
+        return () => {
+            this._listeners[event] = this._listeners[event].filter(cb => cb !== callback);
+        };
+    },
+
+    publish(event, data) {
+        if (this._listeners[event]) {
+            this._listeners[event].forEach(cb => cb(data));
+        }
+    },
+
+    setCurrentLesson(lesson, level) {
+        this.currentLesson = { lesson, level };
+        this.publish(EVENTS.LESSON_CHANGED, this.currentLesson);
+    },
 
     async loadFromServer(forceRefresh = false) {
         try {
@@ -20,6 +47,7 @@ export const state = {
                     if (cached.isStale) {
                         this._revalidateInBackground();
                     }
+                    this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
                     return;
                 }
             }
@@ -28,6 +56,7 @@ export const state = {
             this._saveToCache(allVocab);
             this.vocabulary = allVocab;
             this._rebuildLessonsMap();
+            this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
 
         } catch (error) {
             console.error("Error loading vocabulary:", error);
@@ -36,10 +65,11 @@ export const state = {
             if (staleData) {
                 this.vocabulary = staleData;
                 this._rebuildLessonsMap();
+                this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
                 return;
             }
 
-            alert("Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.");
+            utils.showToast("Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại.", "error");
             throw error;
         }
     },
@@ -50,6 +80,7 @@ export const state = {
             this._saveToCache(allVocab);
             this.vocabulary = allVocab;
             this._rebuildLessonsMap();
+            this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
             console.info('[Cache] Stale-while-revalidate: data refreshed in background');
         } catch (e) {
             console.warn('[Cache] Background revalidation failed:', e);
@@ -115,7 +146,7 @@ export const state = {
         }
     },
 
-    _updateLocalCache(updatedVocab) {
+    _updateLocalCache(updatedVocab, action = "update") {
         const idx = this.vocabulary.findIndex(v => v.id === updatedVocab.id);
         if (idx !== -1) {
             this.vocabulary[idx] = { ...this.vocabulary[idx], ...updatedVocab };
@@ -127,10 +158,15 @@ export const state = {
             }
         }
         this._saveToCache(this.vocabulary);
+        this.publish(EVENTS.VOCAB_UPDATED, { vocab: updatedVocab, action });
     },
 
     _findLocalById(id) {
         return this.vocabulary.find(v => v.id === id) || null;
+    },
+
+    _isLoggedIn() {
+        return !!localStorage.getItem("sumary_jp_token");
     },
 
     async addVocabulary(lesson, level, vocab) {
@@ -145,17 +181,32 @@ export const state = {
         await apiManager.saveVocabulary(vocab);
         this._invalidateCache();
         await this.loadFromServer(true);
+        this.publish(EVENTS.VOCAB_UPDATED, { vocab, action: "add" });
     },
 
     async updateVocabularyStatus(id, newStatus) {
         const vocab = this._findLocalById(id);
         if (!vocab) return null;
 
+        const prevStatus = vocab.status;
+        const prevReviewed = vocab.last_reviewed;
+        const prevCount = vocab.review_count;
+
         vocab.status = newStatus;
         vocab.last_reviewed = new Date().toISOString();
         vocab.review_count = (vocab.review_count || 0) + 1;
-        await apiManager.updateVocabulary(vocab);
-        this._updateLocalCache(vocab);
+        
+        if (this._isLoggedIn()) {
+            try {
+                await apiManager.updateVocabulary(vocab);
+            } catch (e) {
+                vocab.status = prevStatus;
+                vocab.last_reviewed = prevReviewed;
+                vocab.review_count = prevCount;
+                throw new Error("Lỗi cập nhật máy chủ");
+            }
+        }
+        this._updateLocalCache(vocab, "inline_update");
         return vocab.status;
     },
 
@@ -167,6 +218,7 @@ export const state = {
         await apiManager.deleteVocabulary(id);
         this._invalidateCache();
         await this.loadFromServer(true);
+        this.publish(EVENTS.VOCAB_UPDATED, { id, deleted: true, action: "delete" });
         return { lesson, level };
     },
 
@@ -174,9 +226,18 @@ export const state = {
         const vocab = this._findLocalById(id);
         if (!vocab) return null;
 
+        const prevDifficult = vocab.is_difficult;
         vocab.is_difficult = !vocab.is_difficult;
-        await apiManager.updateVocabulary(vocab);
-        this._updateLocalCache(vocab);
+
+        if (this._isLoggedIn()) {
+            try {
+                await apiManager.updateVocabulary(vocab);
+            } catch (e) {
+                vocab.is_difficult = prevDifficult;
+                throw new Error("Lỗi cập nhật máy chủ");
+            }
+        }
+        this._updateLocalCache(vocab, "inline_update");
         return vocab.is_difficult;
     },
 
@@ -203,7 +264,13 @@ export const state = {
     },
 
     async updateVocabulary(vocab) {
-        await apiManager.updateVocabulary(vocab);
+        if (this._isLoggedIn()) {
+            try {
+                await apiManager.updateVocabulary(vocab);
+            } catch (e) {
+                console.warn("Guest mode or network error, skipping backend sync");
+            }
+        }
         this._updateLocalCache(vocab);
     }
 };

@@ -1,6 +1,7 @@
 import { state } from "./state.js";
 import { ui } from "./components/ui.js";
 import { adminTable } from "./components/adminTable.js";
+import { utils } from "./components/utils.js";
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
 const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
@@ -117,6 +118,7 @@ async function showAdminContent() {
     document.body.classList.add('admin-view');
 
     try {
+        adminTable.init();
         await state.loadFromServer();
         ui.initSidebar();
         updateAdminStats();
@@ -153,8 +155,8 @@ async function showAdminContent() {
                 const level = document.getElementById("level-select").value;
                 const csvData = document.getElementById("csv-input").value.trim();
 
-                if (!lesson) return alert("Vui lòng nhập Bài học trước khi tải CSV!");
-                if (!csvData) return alert("Vui lòng nhập nội dung CSV!");
+                if (!lesson) return utils.showToast("Vui lòng nhập Bài học trước khi tải CSV!", "warning");
+                if (!csvData) return utils.showToast("Vui lòng nhập nội dung CSV!", "warning");
 
                 const lines = csvData.split("\n");
                 let successCount = 0;
@@ -180,7 +182,7 @@ async function showAdminContent() {
                     }
                 }
 
-                alert(`Đã nhập thành công ${successCount} từ vựng!`);
+                utils.showToast(`Đã nhập thành công ${successCount} từ vựng!`, "success");
                 document.getElementById("csv-input").value = "";
                 importCsvBtn.textContent = "Thêm CSV";
                 importCsvBtn.disabled = false;
@@ -196,9 +198,7 @@ async function showAdminContent() {
 function refreshUI(lesson, level) {
     ui.initSidebar();
     updateAdminStats();
-    if (state.currentLesson && state.currentLesson.lesson === lesson && state.currentLesson.level === level) {
-        adminTable.render(lesson, level);
-    }
+    state.setCurrentLesson(lesson, level);
 }
 
 window.updateAdminStats = function () {

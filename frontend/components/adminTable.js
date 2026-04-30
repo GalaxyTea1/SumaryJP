@@ -1,8 +1,26 @@
 import { state } from "../state.js";
 import { utils } from "./utils.js";
 
+import { EVENTS } from "../state.js";
+
 export const adminTable = {
     selectedIds: new Set(),
+
+    init() {
+        state.subscribe(EVENTS.LESSON_CHANGED, async (currentLesson) => {
+            if (currentLesson) {
+                await this.render(currentLesson.lesson, currentLesson.level);
+            }
+        });
+        state.subscribe(EVENTS.VOCAB_UPDATED, async (payload) => {
+            if (payload && payload.action === "inline_update") {
+                return;
+            }
+            if (state.currentLesson) {
+                await this.render(state.currentLesson.lesson, state.currentLesson.level);
+            }
+        });
+    },
 
     renderSkeleton(rowCount = 5) {
         const tbody = document.getElementById("vocab-list");
@@ -86,8 +104,6 @@ export const adminTable = {
             delBtn.addEventListener("click", async () => {
                 if (confirm(`Bạn có chắc muốn xóa từ "${vocab.japanese}" không?`)) {
                     await state.removeVocabulary(vocab.id);
-                    this.render(lesson, level);
-                    if (window.updateAdminStats) window.updateAdminStats();
                 }
             });
 
@@ -107,7 +123,6 @@ export const adminTable = {
                         hiragana: newHg.trim(),
                         meaning: newMn.trim()
                     });
-                    this.render(lesson, level);
                 }
             });
 
@@ -181,11 +196,6 @@ export const adminTable = {
                     await Promise.all(deletePromises);
                     
                     this.selectedIds.clear();
-                    
-                    if (state.currentLesson) {
-                        this.render(state.currentLesson.lesson, state.currentLesson.level);
-                    }
-                    if (window.updateAdminStats) window.updateAdminStats();
                     
                     bulkBtn.disabled = false;
                     bulkBtn.innerHTML = '<span class="material-symbols-outlined text-sm">delete</span> Xóa (<span id="selected-count">0</span>)';

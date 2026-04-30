@@ -1,5 +1,6 @@
 import { state } from "../state.js";
-import { viewManager } from "./viewManager.js";
+import { router } from "./router.js";
+import { utils } from "./utils.js";
 
 export const testConfigModal = {
     init() {
@@ -63,7 +64,7 @@ export const testConfigModal = {
             const showHiragana = this.checkHiragana.checked;
 
             if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
-                alert("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)");
+                utils.showToast("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)", "warning");
                 return;
             }
 
@@ -77,7 +78,7 @@ export const testConfigModal = {
             });
 
             if (count < 5) {
-                alert("Số lượng từ vựng trong phạm vi này quá ít (dưới 5 từ). Vui lòng chọn bài học khác.");
+                utils.showToast("Số lượng từ vựng trong phạm vi này quá ít (dưới 5 từ). Vui lòng chọn bài học khác.", "warning");
                 return;
             }
 
@@ -90,8 +91,8 @@ export const testConfigModal = {
             });
 
             this.hide();
-            viewManager.show('test', {
-                level: selectedLevel,
+            router.navigate('test', { 
+                level: selectedLevel, 
                 lesson: selectedLesson,
                 count: wordCount,
                 time: testTime,
