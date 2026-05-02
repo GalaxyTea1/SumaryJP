@@ -3,6 +3,8 @@ import { vocabTable } from "./vocabTable.js";
 import { wordDetailsModal } from "./wordDetailsModal.js";
 import { utils } from "./utils.js";
 
+import { EVENTS } from "../state.js";
+
 let _tesseractLoaded = false;
 function _loadTesseract() {
     if (_tesseractLoaded || typeof Tesseract !== 'undefined') {
@@ -19,11 +21,52 @@ function _loadTesseract() {
 }
 
 export const search = {
+    worker: null,
+    currentRequestId: 0,
+    searchCallbacks: new Map(),
+
     init() {
+        // Initialize Web Worker
+        this.worker = new Worker('workers/searchWorker.js');
+        
+        // Handle worker messages
+        this.worker.onmessage = (e) => {
+            if (e.data.type === 'SEARCH_RESULTS') {
+                const { results, requestId } = e.data.payload;
+                const callback = this.searchCallbacks.get(requestId);
+                if (callback) {
+                    callback(results);
+                    this.searchCallbacks.delete(requestId);
+                }
+            }
+        };
+
+        // Subscribe to state updates to sync worker
+        state.subscribe(EVENTS.VOCAB_LOADED, () => {
+            this.worker.postMessage({ type: 'INIT_DATA', payload: state.vocabulary });
+        });
+
+        state.subscribe(EVENTS.VOCAB_UPDATED, (data) => {
+            if (data.action === 'inline_update') {
+                this.worker.postMessage({ type: 'UPDATE_ITEM', payload: data.vocab });
+            } else {
+                this.worker.postMessage({ type: 'INIT_DATA', payload: state.vocabulary });
+            }
+        });
+
+        // In case state is already loaded before init
+        if (state.vocabulary && state.vocabulary.length > 0) {
+            this.worker.postMessage({ type: 'INIT_DATA', payload: state.vocabulary });
+        }
+
         const searchInput = document.getElementById("global-search-input");
         const mobileSearchInput = document.getElementById("global-search-input-mobile");
         const resultsDropdown = document.getElementById("search-results-dropdown");
         const mobileResultsDropdown = document.getElementById("search-results-dropdown-mobile");
+        const searchIcon = document.getElementById("search-icon");
+        const searchSpinner = document.getElementById("search-spinner");
+        const searchIconMobile = document.getElementById("search-icon-mobile");
+        const searchSpinnerMobile = document.getElementById("search-spinner-mobile");
         const ocrUploadBtn = document.getElementById("ocr-upload-btn");
         const ocrFileInput = document.getElementById("ocr-file-input");
         const ocrIcon = document.getElementById("ocr-icon");
@@ -79,80 +122,100 @@ export const search = {
             });
         }
 
-        const performSearch = (query, dropdown, inputEl) => {
+        const toggleLoading = (isLoading, isMobile) => {
+            if (isMobile) {
+                if (searchIconMobile && searchSpinnerMobile) {
+                    searchIconMobile.classList.toggle("hidden", isLoading);
+                    searchSpinnerMobile.classList.toggle("hidden", !isLoading);
+                }
+            } else {
+                if (searchIcon && searchSpinner) {
+                    searchIcon.classList.toggle("hidden", isLoading);
+                    searchSpinner.classList.toggle("hidden", !isLoading);
+                }
+            }
+        };
+
+        const performSearch = (query, dropdown, inputEl, isMobile) => {
             dropdown.innerHTML = "";
 
             if (query.length === 0) {
                 dropdown.classList.add("hidden");
+                toggleLoading(false, isMobile);
                 if (state.currentLesson) {
                     state.setCurrentLesson(state.currentLesson.lesson, state.currentLesson.level);
                 }
                 return;
             }
 
-            const results = state.vocabulary.filter(v =>
-                v.japanese.toLowerCase().includes(query) ||
-                v.hiragana.toLowerCase().includes(query) ||
-                v.meaning.toLowerCase().includes(query)
-            );
+            toggleLoading(true, isMobile);
+            
+            const requestId = ++this.currentRequestId;
+            
+            this.searchCallbacks.set(requestId, (results) => {
+                toggleLoading(false, isMobile);
+                
+                if (results.length > 0) {
+                    dropdown.classList.remove("hidden");
+                    results.slice(0, 5).forEach((vocab) => {
+                        const li = document.createElement("li");
+                        li.className = "px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex justify-between items-center";
+                        li.innerHTML = `
+                            <div>
+                                <span class="font-bold text-slate-800 dark:text-white block">${utils.escapeHtml(vocab.japanese)}</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">${utils.escapeHtml(vocab.hiragana)} - ${utils.escapeHtml(vocab.meaning)}</span>
+                            </div>
+                            <span class="text-[10px] text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">Bài ${utils.escapeHtml(vocab.lesson)}</span>
+                        `;
 
-            if (results.length > 0) {
-                dropdown.classList.remove("hidden");
-                results.slice(0, 5).forEach((vocab) => {
-                    const li = document.createElement("li");
-                    li.className = "px-4 py-3 border-b border-slate-100 dark:border-slate-700/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex justify-between items-center";
-                    li.innerHTML = `
-                        <div>
-                            <span class="font-bold text-slate-800 dark:text-white block">${utils.escapeHtml(vocab.japanese)}</span>
-                            <span class="text-xs text-slate-500 dark:text-slate-400">${utils.escapeHtml(vocab.hiragana)} - ${utils.escapeHtml(vocab.meaning)}</span>
-                        </div>
-                        <span class="text-[10px] text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">Bài ${utils.escapeHtml(vocab.lesson)}</span>
-                    `;
+                        li.addEventListener("click", () => {
+                            inputEl.value = "";
+                            dropdown.classList.add("hidden");
 
-                    li.addEventListener("click", () => {
-                        inputEl.value = "";
-                        dropdown.classList.add("hidden");
+                            const sidebarItems = document.querySelectorAll('#lesson-sidebar button, #mobile-lesson-nav-container button');
+                            let targetBtns = Array.from(sidebarItems).filter(btn => {
+                                if (btn.textContent.trim() !== `Bài ${vocab.lesson}`) return false;
+                                const wrapper = btn.closest(".flex-col");
+                                if (!wrapper) return false;
+                                const levelSpan = wrapper.querySelector("button > span");
+                                return levelSpan && levelSpan.textContent.trim() === vocab.level;
+                            });
 
-                        const sidebarItems = document.querySelectorAll('#lesson-sidebar button, #mobile-lesson-nav-container button');
-                        let targetBtns = Array.from(sidebarItems).filter(btn => {
-                            if (btn.textContent.trim() !== `Bài ${vocab.lesson}`) return false;
-                            const wrapper = btn.closest(".flex-col");
-                            if (!wrapper) return false;
-                            const levelSpan = wrapper.querySelector("button > span");
-                            return levelSpan && levelSpan.textContent.trim() === vocab.level;
+                            if (targetBtns.length > 0) {
+                                targetBtns.forEach(btn => {
+                                    btn.click();
+                                    const wrapper = btn.closest(".flex-col");
+                                    const levelBtn = wrapper.querySelector("button");
+                                    const lessonContainer = btn.parentElement;
+                                    if (lessonContainer && (lessonContainer.style.maxHeight === "0px" || !lessonContainer.style.maxHeight)) {
+                                        if (levelBtn) levelBtn.click();
+                                    }
+                                });
+                            } else {
+                                state.setCurrentLesson(vocab.lesson, vocab.level);
+                            }
                         });
 
-                        if (targetBtns.length > 0) {
-                            targetBtns.forEach(btn => {
-                                btn.click();
-                                const wrapper = btn.closest(".flex-col");
-                                const levelBtn = wrapper.querySelector("button");
-                                const lessonContainer = btn.parentElement;
-                                if (lessonContainer && (lessonContainer.style.maxHeight === "0px" || !lessonContainer.style.maxHeight)) {
-                                    if (levelBtn) levelBtn.click();
-                                }
-                            });
-                        } else {
-                            state.setCurrentLesson(vocab.lesson, vocab.level);
-                        }
+                        dropdown.appendChild(li);
                     });
+                } else {
+                    dropdown.classList.remove("hidden");
+                    const noResultLi = document.createElement("li");
+                    noResultLi.className = "px-4 py-3 text-sm text-slate-500 dark:text-slate-400";
+                    noResultLi.textContent = `Không tìm thấy "${query}"`;
+                    dropdown.appendChild(noResultLi);
+                }
 
-                    dropdown.appendChild(li);
-                });
-            } else {
-                dropdown.classList.remove("hidden");
-                const noResultLi = document.createElement("li");
-                noResultLi.className = "px-4 py-3 text-sm text-slate-500 dark:text-slate-400";
-                noResultLi.textContent = `Không tìm thấy "${query}"`;
-                dropdown.appendChild(noResultLi);
-            }
+                this.renderSearchResultsTable(results);
+            });
 
-            this.renderSearchResultsTable(results);
+            // Send search request to worker
+            this.worker.postMessage({ type: 'SEARCH', payload: { query, requestId } });
         };
 
         searchInput.addEventListener("input", (e) => {
             const query = e.target.value.toLowerCase().trim();
-            performSearch(query, resultsDropdown, searchInput);
+            performSearch(query, resultsDropdown, searchInput, false);
         });
 
         document.addEventListener("click", (e) => {
@@ -164,7 +227,7 @@ export const search = {
         if (mobileSearchInput && mobileResultsDropdown) {
             mobileSearchInput.addEventListener("input", (e) => {
                 const query = e.target.value.toLowerCase().trim();
-                performSearch(query, mobileResultsDropdown, mobileSearchInput);
+                performSearch(query, mobileResultsDropdown, mobileSearchInput, true);
             });
 
             document.addEventListener("click", (e) => {

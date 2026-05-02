@@ -12,6 +12,7 @@ import { flashcardConfigModal } from "./components/flashcardConfigModal.js";
 import { utils } from "./components/utils.js";
 import { router } from "./components/router.js";
 import { warmupBackend } from "./api.js";
+import { syncManager } from "./syncManager.js";
 
 const PARTIALS = [
     "partials/modal-stats.html",
@@ -36,6 +37,7 @@ async function loadPartials() {
 
 window.onload = async function () {
     warmupBackend();
+    syncManager.init();
 
     try {
         vocabTable.init();

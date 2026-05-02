@@ -1,3 +1,5 @@
+import { syncManager } from "./syncManager.js";
+
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
 
 const BASE_URL = isLocalhost
@@ -121,7 +123,12 @@ const request = async (url, options = {}, _attempt = 0) => {
         }
 
         _hideColdStartToast();
-        if (isNetworkDown) {
+        if (isNetworkDown || !navigator.onLine) {
+            // Nếu lỗi mạng hoặc mất mạng, đưa vào hàng đợi nếu là PUT hoặc DELETE (các lệnh có thể chờ)
+            if (options.method === 'PUT' || options.method === 'DELETE') {
+                syncManager.enqueue(url, options);
+                return { queued: true };
+            }
             console.warn('API: Server không phản hồi (offline hoặc chưa khởi động):', url);
         } else {
             console.error('API Error:', isAborted ? 'Timeout' : error);
