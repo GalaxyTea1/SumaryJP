@@ -337,7 +337,7 @@ export const ui = {
 
         allNavBtns[0] && allNavBtns[0].addEventListener("click", () => setActive(allNavBtns[0]));
         allNavBtns[1] && allNavBtns[1].addEventListener("click", () => setActive(allNavBtns[1]));
-        allNavBtns[2] && allNavBtns[2].addEventListener("click", () => setActive(allNavBtns[0])); // keep dashboard active
+        allNavBtns[2] && allNavBtns[2].addEventListener("click", () => setActive(allNavBtns[2]));
         allNavBtns[3] && allNavBtns[3].addEventListener("click", () => setActive(allNavBtns[3]));
     }
 };
