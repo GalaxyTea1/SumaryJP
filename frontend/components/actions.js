@@ -40,6 +40,7 @@ export const actions = {
                 const difficultVocabs = state.getDifficultVocabulary();
                 vocabTable.render(null, null, difficultVocabs, "Những từ vựng khó (đánh dấu sao)");
                 
+                state.currentLesson = null;
 
                 document.querySelectorAll('.lesson-nav-active').forEach(el => {
                     el.classList.remove('lesson-nav-active', 'bg-indigo-500', 'text-white', 'border-indigo-600', 'shadow-md');
