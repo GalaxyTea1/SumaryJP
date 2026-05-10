@@ -21,7 +21,7 @@ export const testConfigModal = {
 
         this.inputCount = document.getElementById("test-config-count");
         this.inputTime = document.getElementById("test-config-time");
-        this.checkHiragana = document.getElementById("test-config-hiragana");
+
         this.btnStart = document.getElementById("test-start-btn");
         this.btnClose = document.getElementById("test-close-btn");
 
@@ -61,7 +61,7 @@ export const testConfigModal = {
             const testTime = parseInt(this.inputTime.value);
             const selectedLevel = this.selectedLevel;
             const selectedLesson = this.selectedLesson;
-            const showHiragana = this.checkHiragana.checked;
+            const showHiragana = localStorage.getItem("showHiragana") !== "false";
 
             if (isNaN(wordCount) || isNaN(testTime) || wordCount < 5 || testTime < 1) {
                 utils.showToast("Vui lòng nhập số lượng từ (ít nhất 5) và thời gian (ít nhất 1 phút)", "warning");
