@@ -7,6 +7,7 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
 const AUTH_URL = `${BASE_URL}/auth`;
 const ADMIN_TOKEN_KEY = "sumary_jp_admin_token";
+const AUTH_TOKEN_KEY = "sumary_jp_token";
 
 window.onload = function () {
     const loginSection = document.getElementById("login-section");
@@ -22,10 +23,14 @@ window.onload = function () {
     if (savedToken) {
         verifyAdminToken(savedToken).then(isValid => {
             if (isValid) {
+                localStorage.setItem(AUTH_TOKEN_KEY, savedToken);
                 loginSection.classList.add("hidden");
                 showAdminContent();
             } else {
                 sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+                if (localStorage.getItem(AUTH_TOKEN_KEY) === savedToken) {
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                }
                 loginSection.classList.remove("hidden");
             }
         });
@@ -71,6 +76,7 @@ window.onload = function () {
 
             // Lưu token và hiển thị admin content
             sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token);
+            localStorage.setItem(AUTH_TOKEN_KEY, data.token);
             errorMsg.classList.add("hidden");
             loginSection.classList.add("hidden");
             showAdminContent();
@@ -86,7 +92,11 @@ window.onload = function () {
     });
 
     logoutBtn.addEventListener("click", () => {
+        const adminToken = sessionStorage.getItem(ADMIN_TOKEN_KEY);
         sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+        if (!adminToken || localStorage.getItem(AUTH_TOKEN_KEY) === adminToken) {
+            localStorage.removeItem(AUTH_TOKEN_KEY);
+        }
         adminContent.classList.add("hidden");
         loginSection.classList.remove("hidden");
         usernameInput.value = "";

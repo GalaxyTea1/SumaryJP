@@ -68,7 +68,8 @@ export const syncManager = {
             
             // Re-inject the latest auth token just in case it changed
             const AUTH_TOKEN_KEY = 'sumary_jp_token';
-            const token = localStorage.getItem(AUTH_TOKEN_KEY);
+            const ADMIN_TOKEN_KEY = 'sumary_jp_admin_token';
+            const token = localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(ADMIN_TOKEN_KEY);
             if (token) {
                 item.options.headers = {
                     ...item.options.headers,

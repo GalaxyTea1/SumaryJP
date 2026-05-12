@@ -9,6 +9,7 @@ const BASE_URL = isLocalhost
 const API_URL = `${BASE_URL}/vocab`;
 const HISTORY_URL = `${BASE_URL}/history`;
 const AUTH_TOKEN_KEY = 'sumary_jp_token';
+const ADMIN_TOKEN_KEY = 'sumary_jp_admin_token';
 
 const REQUEST_TIMEOUT_MS = 20000;   // 20s timeout mỗi lần thử
 const MAX_RETRIES = 2;              // Thử lại tối đa 2 lần
@@ -17,6 +18,10 @@ const RETRY_BASE_DELAY_MS = 1500;   // Delay cơ bản giữa các lần retry
 let activeRequests = 0;
 
 let _toastTimeout = null;
+
+function getAuthToken() {
+    return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(ADMIN_TOKEN_KEY);
+}
 
 function _showColdStartToast() {
     let toast = document.getElementById('_cold-start-toast');
@@ -69,7 +74,7 @@ const request = async (url, options = {}, _attempt = 0) => {
     const overlay = document.getElementById('api-loading-overlay');
 
     if (isMutative) {
-        const token = localStorage.getItem(AUTH_TOKEN_KEY);
+        const token = getAuthToken();
         if (token) {
             options.headers = {
                 ...options.headers,

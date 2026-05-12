@@ -166,7 +166,7 @@ export const state = {
     },
 
     _isLoggedIn() {
-        return !!localStorage.getItem("sumary_jp_token");
+        return !!(localStorage.getItem("sumary_jp_token") || sessionStorage.getItem("sumary_jp_admin_token"));
     },
 
     async addVocabulary(lesson, level, vocab) {
