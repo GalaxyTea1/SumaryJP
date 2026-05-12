@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* ============================================
+   Design System — SumaryJP
+   Primary: #6caba0 (soft sage teal)
+   ============================================ */
+
+@theme {
+  /* Primary palette */
+  --color-primary:     #6caba0;
+  --color-primary-light: #8fc4bb;
+  --color-primary-dark:  #4d8a80;
+  --color-primary-50:  #f0f7f6;
+  --color-primary-100: #d9edea;
+  --color-primary-200: #b3dbd5;
+  --color-primary-300: #8fc4bb;
+  --color-primary-400: #6caba0;
+  --color-primary-500: #4d8a80;
+  --color-primary-600: #3d6e66;
+  --color-primary-700: #2d524d;
+
+  /* Secondary */
+  --color-secondary:       #f0a868;
+  --color-secondary-light: #f5c28e;
+  --color-secondary-dark:  #d98b42;
+
+  /* Semantic */
+  --color-success:       #4caf50;
+  --color-success-light: #e8f5e9;
+  --color-error:         #ef5350;
+  --color-error-light:   #ffebee;
+  --color-warning:       #ff9800;
+  --color-warning-light: #fff3e0;
+
+  /* Surface */
+  --color-surface:           #ffffff;
+  --color-surface-dim:       #f8fafb;
+  --color-surface-container: #f1f4f6;
+  --color-surface-variant:   #e8ebee;
+  --color-background:        #f8fafb;
+
+  /* Text */
+  --color-on-surface:         #1a2332;
+  --color-on-surface-variant: #5f6b7a;
+  --color-on-primary:         #ffffff;
+
+  /* Borders */
+  --color-outline:         #d1d5db;
+  --color-outline-variant: #e5e7eb;
+
+  /* Typography */
+  --font-headline: "Plus Jakarta Sans", sans-serif;
+  --font-body:     "Be Vietnam Pro", sans-serif;
+  --font-japanese: "Noto Sans JP", sans-serif;
+
+  /* Shadows */
+  --shadow-card:       0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-elevated:   0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* ---- Base ---- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-background);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ---- Keyframes ---- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastSlide {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(20px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Utility classes ---- */
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s ease both;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-surface-variant);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
