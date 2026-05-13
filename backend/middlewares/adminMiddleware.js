@@ -1,9 +1,5 @@
 const User = require('../models/userModel');
 
-/**
- * Admin middleware — kiểm tra user có role 'admin' hay không.
- * Phải dùng SAU authMiddleware (cần req.user từ JWT).
- */
 const adminMiddleware = async (req, res, next) => {
     if (!req.user || !req.user.id) {
         return res.status(403).json({ error: 'Truy cập bị từ chối. Bạn không có quyền Admin.' });

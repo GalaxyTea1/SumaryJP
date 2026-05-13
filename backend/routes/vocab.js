@@ -4,12 +4,12 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const adminMiddleware = require('../middlewares/adminMiddleware');
 const router = express.Router();
 
-// Public routes — GET (ai cũng xem được từ vựng)
+// Public routes — GET 
 router.get('/', vocabController.getAll);
 router.get('/:level/:lesson', vocabController.getByLevelAndLesson);
 router.get('/:id', vocabController.getById);
 
-// Admin routes — cần đăng nhập và có quyền admin để thêm/sửa/xóa dữ liệu học
+// Admin routes 
 router.post('/', authMiddleware, adminMiddleware, vocabController.create);
 router.put('/:id', authMiddleware, adminMiddleware, vocabController.update);
 router.delete('/:id', authMiddleware, adminMiddleware, vocabController.delete);
