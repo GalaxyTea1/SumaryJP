@@ -20,20 +20,62 @@ const Vocabulary = {
     },
 
     create: async (data) => {
-        const { lesson, level, japanese, hiragana, meaning, type } = data;
+        const {
+            lesson,
+            level,
+            japanese,
+            hiragana,
+            meaning,
+            type,
+            status = 'not-learned',
+            last_reviewed = null,
+            review_count = 0,
+            interval = 0,
+            ease_factor = 2.5,
+            next_review = new Date().toISOString(),
+            is_difficult = false
+        } = data;
         const result = await pool.query(
-            'INSERT INTO vocabulary (lesson, level, japanese, hiragana, meaning, type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [lesson, level, japanese, hiragana, meaning, type]
+            `INSERT INTO vocabulary
+             (lesson, level, japanese, hiragana, meaning, type, status, last_reviewed, review_count, "interval", ease_factor, next_review, is_difficult)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+             RETURNING *`,
+            [lesson, level, japanese, hiragana, meaning, type, status, last_reviewed, review_count, interval, ease_factor, next_review, is_difficult]
         );
         return result.rows[0];
     },
 
     update: async (id, data) => {
-        const { status, last_reviewed, review_count, is_difficult, japanese, hiragana, meaning, type } = data;
+        const {
+            status,
+            last_reviewed,
+            review_count,
+            interval,
+            ease_factor,
+            next_review,
+            is_difficult,
+            japanese,
+            hiragana,
+            meaning,
+            type
+        } = data;
 
         const result = await pool.query(
-            'UPDATE vocabulary SET status = $1, last_reviewed = $2, review_count = $3, is_difficult = $4, japanese = $5, hiragana = $6, meaning = $7, type = $8 WHERE id = $9 RETURNING *',
-            [status, last_reviewed, review_count, is_difficult, japanese, hiragana, meaning, type, id]
+            `UPDATE vocabulary
+             SET status = $1,
+                 last_reviewed = $2,
+                 review_count = $3,
+                 "interval" = $4,
+                 ease_factor = $5,
+                 next_review = $6,
+                 is_difficult = $7,
+                 japanese = $8,
+                 hiragana = $9,
+                 meaning = $10,
+                 type = $11
+             WHERE id = $12
+             RETURNING *`,
+            [status, last_reviewed, review_count, interval, ease_factor, next_review, is_difficult, japanese, hiragana, meaning, type, id]
         );
         return result.rows[0];
     },

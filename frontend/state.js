@@ -41,7 +41,7 @@ export const state = {
             if (!forceRefresh) {
                 const cached = this._getFromCache(true); 
                 if (cached) {
-                    this.vocabulary = cached.data;
+                    this.vocabulary = this._normalizeVocabularyList(cached.data);
                     this._rebuildLessonsMap();
 
                     if (cached.isStale) {
@@ -53,8 +53,9 @@ export const state = {
             }
 
             const allVocab = await apiManager.getAllVocabulary();
-            this._saveToCache(allVocab);
-            this.vocabulary = allVocab;
+            const normalizedVocab = this._normalizeVocabularyList(allVocab);
+            this._saveToCache(normalizedVocab);
+            this.vocabulary = normalizedVocab;
             this._rebuildLessonsMap();
             this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
 
@@ -63,7 +64,7 @@ export const state = {
 
             const staleData = this._getStaleCache();
             if (staleData) {
-                this.vocabulary = staleData;
+                this.vocabulary = this._normalizeVocabularyList(staleData);
                 this._rebuildLessonsMap();
                 this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
                 return;
@@ -77,8 +78,9 @@ export const state = {
     async _revalidateInBackground() {
         try {
             const allVocab = await apiManager.getAllVocabulary();
-            this._saveToCache(allVocab);
-            this.vocabulary = allVocab;
+            const normalizedVocab = this._normalizeVocabularyList(allVocab);
+            this._saveToCache(normalizedVocab);
+            this.vocabulary = normalizedVocab;
             this._rebuildLessonsMap();
             this.publish(EVENTS.VOCAB_LOADED, this.vocabulary);
             console.info('[Cache] Stale-while-revalidate: data refreshed in background');
@@ -138,6 +140,21 @@ export const state = {
         localStorage.removeItem(CACHE_KEY);
     },
 
+    _normalizeVocabularyList(items) {
+        return Array.isArray(items) ? items.map(item => this._normalizeVocabularyItem(item)) : [];
+    },
+
+    _normalizeVocabularyItem(vocab) {
+        return {
+            ...vocab,
+            review_count: Number.isFinite(Number(vocab.review_count)) ? Number(vocab.review_count) : 0,
+            interval: Number.isFinite(Number(vocab.interval)) ? Number(vocab.interval) : 0,
+            ease_factor: Number.isFinite(Number(vocab.ease_factor)) ? Number(vocab.ease_factor) : 2.5,
+            next_review: vocab.next_review || new Date().toISOString(),
+            is_difficult: vocab.is_difficult === true || vocab.is_difficult === "true"
+        };
+    },
+
     _rebuildLessonsMap() {
         this.lessons = {};
         for (const vocab of this.vocabulary) {
@@ -147,6 +164,7 @@ export const state = {
     },
 
     _updateLocalCache(updatedVocab, action = "update") {
+        updatedVocab = this._normalizeVocabularyItem(updatedVocab);
         const idx = this.vocabulary.findIndex(v => v.id === updatedVocab.id);
         if (idx !== -1) {
             this.vocabulary[idx] = { ...this.vocabulary[idx], ...updatedVocab };
