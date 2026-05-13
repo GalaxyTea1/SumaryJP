@@ -26,6 +26,21 @@ function validateUpdateBody(body) {
     if (body.japanese && body.japanese.length > MAX_STRING_LENGTH) {
         return `Content exceeds ${MAX_STRING_LENGTH} characters`;
     }
+    if (body.review_count !== undefined && (!Number.isInteger(Number(body.review_count)) || Number(body.review_count) < 0)) {
+        return 'Invalid review_count. It must be a non-negative integer';
+    }
+    if (body.interval !== undefined && (!Number.isInteger(Number(body.interval)) || Number(body.interval) < 0)) {
+        return 'Invalid interval. It must be a non-negative integer';
+    }
+    if (body.ease_factor !== undefined && (!Number.isFinite(Number(body.ease_factor)) || Number(body.ease_factor) < 1.3)) {
+        return 'Invalid ease_factor. It must be at least 1.3';
+    }
+    if (body.next_review !== undefined && Number.isNaN(Date.parse(body.next_review))) {
+        return 'Invalid next_review. It must be a valid date';
+    }
+    if (body.last_reviewed !== undefined && body.last_reviewed !== null && Number.isNaN(Date.parse(body.last_reviewed))) {
+        return 'Invalid last_reviewed. It must be a valid date';
+    }
     return null;
 }
 
@@ -94,7 +109,7 @@ const vocabController = {
                 return res.status(404).json({ error: 'Vocabulary not found' });
             }
 
-            const updatedVocab = await Vocabulary.update(id, req.body);
+            const updatedVocab = await Vocabulary.update(id, { ...oldVocab, ...req.body });
             
             // Log status change to learning_history
             if (req.body.status && oldVocab.status !== req.body.status) {

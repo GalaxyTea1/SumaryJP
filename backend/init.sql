@@ -9,6 +9,9 @@ CREATE TABLE vocabulary (
     status VARCHAR(20) DEFAULT 'not-learned',
     last_reviewed TIMESTAMP,
     review_count INTEGER DEFAULT 0,
+    "interval" INTEGER DEFAULT 0,
+    ease_factor NUMERIC(4, 2) DEFAULT 2.50,
+    next_review TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_difficult BOOLEAN DEFAULT false
 );
 
