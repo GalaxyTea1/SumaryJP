@@ -2,6 +2,7 @@ import { state } from "../state.js";
 import { ui } from "./ui.js";
 import { utils } from "./utils.js";
 import { router } from "./router.js";
+import apiManager from "../api.js";
 
 let cleanupFns = [];
 let testTimer = null;
@@ -39,6 +40,7 @@ export const testView = {
         let testAnswers = [];
         let testStartTime = null;
         let testTimeLimit = 0;
+        let testFinished = false;
         // Lưu đáp án đang chọn ở câu hiện tại (có thể là đáp án cũ khi quay lại)
         let selectedOptionValue = null;
 
@@ -60,12 +62,19 @@ export const testView = {
         utils.shuffleArray(allWords);
         testWords = allWords.slice(0, parseInt(wordCount));
 
+        if (testWords.length === 0) {
+            utils.showToast("Khong co tu vung phu hop voi cau hinh bai kiem tra.", "warning");
+            router.back();
+            return;
+        }
+
         testAnswers = new Array(testWords.length).fill(null);
 
         function startTestEngine(timeMinutes) {
             currentTestIndex = 0;
             testAnswers = new Array(testWords.length).fill(null);
             selectedOptionValue = null;
+            testFinished = false;
             testTimeLimit = parseInt(timeMinutes) * 60;
             testStartTime = new Date();
             renderQuestion();
@@ -248,7 +257,52 @@ export const testView = {
             renderQuestion();
         }
 
+        function isLoggedIn() {
+            return !!(localStorage.getItem("sumary_jp_token") || sessionStorage.getItem("sumary_jp_admin_token"));
+        }
+
+        async function saveTestResult(score, correctCountNum, timeTaken) {
+            if (!isLoggedIn()) {
+                utils.showToast("Dang nhap de luu lich su bai kiem tra.", "info");
+                return;
+            }
+
+            const details = testAnswers.map((answer, index) => {
+                const word = answer?.word || testWords[index];
+                return {
+                    vocabulary_id: word.id,
+                    japanese: word.japanese,
+                    hiragana: word.hiragana,
+                    meaning: word.meaning,
+                    level: word.level,
+                    lesson: word.lesson,
+                    user_answer: answer?.userAnswer || null,
+                    correct: !!answer?.correct
+                };
+            });
+
+            try {
+                await apiManager.submitTestResult({
+                    test_type: "vocab",
+                    level: selectedLevel,
+                    lesson: selectedLesson,
+                    total_questions: testWords.length,
+                    correct_answers: correctCountNum,
+                    score,
+                    time_taken: timeTaken,
+                    mode: "practice",
+                    details
+                });
+                utils.showToast("Da luu ket qua bai kiem tra.", "success");
+            } catch (error) {
+                console.error("Could not save test result:", error);
+                utils.showToast("Khong the luu ket qua bai kiem tra.", "warning");
+            }
+        }
+
         function finishTest() {
+            if (testFinished) return;
+            testFinished = true;
             clearInterval(testTimer);
             testTimer = null;
 
@@ -265,6 +319,7 @@ export const testView = {
             document.getElementById("ts-correct-count").textContent = correctCountNum;
             document.getElementById("ts-wrong-count").textContent = testWords.length - correctCountNum;
             document.getElementById("ts-time-taken").textContent = `${Math.floor(timeTaken / 60).toString().padStart(2, "0")}:${(timeTaken % 60).toString().padStart(2, "0")}`;
+            saveTestResult(score, correctCountNum, timeTaken);
 
             const reviewListContainer = document.getElementById("ts-answers-list");
             reviewListContainer.innerHTML = testAnswers.map((a, i) => {

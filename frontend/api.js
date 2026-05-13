@@ -8,6 +8,7 @@ const BASE_URL = isLocalhost
 
 const API_URL = `${BASE_URL}/vocab`;
 const HISTORY_URL = `${BASE_URL}/history`;
+const TEST_URL = `${BASE_URL}/test`;
 const AUTH_TOKEN_KEY = 'sumary_jp_token';
 const ADMIN_TOKEN_KEY = 'sumary_jp_admin_token';
 
@@ -70,14 +71,16 @@ function _hideColdStartToast() {
  */
 const request = async (url, options = {}, _attempt = 0) => {
     const isMutative = ['POST', 'PUT', 'DELETE'].includes(options.method);
+    const requiresAuth = isMutative || options.auth === true;
     const shouldShowOverlay = options.showOverlay !== undefined ? options.showOverlay : isMutative;
     const overlay = document.getElementById('api-loading-overlay');
+    const { auth, showOverlay, ...fetchOptions } = options;
 
-    if (isMutative) {
+    if (requiresAuth) {
         const token = getAuthToken();
         if (token) {
-            options.headers = {
-                ...options.headers,
+            fetchOptions.headers = {
+                ...fetchOptions.headers,
                 'Authorization': `Bearer ${token}`
             };
         }
@@ -97,7 +100,7 @@ const request = async (url, options = {}, _attempt = 0) => {
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     try {
-        const response = await fetch(url, { ...options, signal: controller.signal });
+        const response = await fetch(url, { ...fetchOptions, signal: controller.signal });
         clearTimeout(timeoutId);
         clearTimeout(coldStartTimer);
         _hideColdStartToast();
@@ -106,7 +109,7 @@ const request = async (url, options = {}, _attempt = 0) => {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        if (options.method === 'DELETE') return;
+        if (fetchOptions.method === 'DELETE') return;
         return await response.json();
 
     } catch (error) {
@@ -130,8 +133,8 @@ const request = async (url, options = {}, _attempt = 0) => {
         _hideColdStartToast();
         if (isNetworkDown || !navigator.onLine) {
             // Nếu lỗi mạng hoặc mất mạng, đưa vào hàng đợi nếu là PUT hoặc DELETE (các lệnh có thể chờ)
-            if (options.method === 'PUT' || options.method === 'DELETE') {
-                syncManager.enqueue(url, options);
+            if (fetchOptions.method === 'PUT' || fetchOptions.method === 'DELETE') {
+                syncManager.enqueue(url, fetchOptions);
                 return { queued: true };
             }
             console.warn('API: Server không phản hồi (offline hoặc chưa khởi động):', url);
@@ -200,6 +203,29 @@ const apiManager = {
 
     async getWeeklyGoal() {
         return request(`${HISTORY_URL}/weekly-goal`);
+    },
+
+    async submitTestResult(result) {
+        return request(`${TEST_URL}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result),
+            showOverlay: false,
+        });
+    },
+
+    async getTestHistory(limit = 10) {
+        return request(`${TEST_URL}/history?limit=${encodeURIComponent(limit)}`, {
+            auth: true,
+            showOverlay: false,
+        });
+    },
+
+    async getTestResult(id) {
+        return request(`${TEST_URL}/${encodeURIComponent(id)}`, {
+            auth: true,
+            showOverlay: false,
+        });
     }
 };
 
