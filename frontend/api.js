@@ -164,15 +164,15 @@ export function warmupBackend() {
 
 const apiManager = {
     async getAllVocabulary() {
-        return request(API_URL);
+        return request(API_URL, { auth: true });
     },
 
     async getVocabularyByLesson(level, lesson) {
-        return request(`${API_URL}/${encodeURIComponent(level)}/${encodeURIComponent(lesson)}`);
+        return request(`${API_URL}/${encodeURIComponent(level)}/${encodeURIComponent(lesson)}`, { auth: true });
     },
 
     async getVocabularyById(id) {
-        return request(`${API_URL}/${encodeURIComponent(id)}`);
+        return request(`${API_URL}/${encodeURIComponent(id)}`, { auth: true });
     },
 
     async saveVocabulary(vocab) {
@@ -191,6 +191,22 @@ const apiManager = {
         });
     },
 
+    async updateVocabularyProgress(vocab) {
+        return request(`${API_URL}/${encodeURIComponent(vocab.id)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: vocab.status,
+                last_reviewed: vocab.last_reviewed,
+                review_count: vocab.review_count,
+                interval: vocab.interval,
+                ease_factor: vocab.ease_factor,
+                next_review: vocab.next_review,
+                is_difficult: vocab.is_difficult,
+            }),
+        });
+    },
+
     async deleteVocabulary(id) {
         return request(`${API_URL}/${encodeURIComponent(id)}`, {
             method: 'DELETE',
@@ -198,11 +214,11 @@ const apiManager = {
     },
 
     async getLearningHistory(limit = 20) {
-        return request(`${HISTORY_URL}?limit=${limit}`);
+        return request(`${HISTORY_URL}?limit=${limit}`, { auth: true });
     },
 
     async getWeeklyGoal() {
-        return request(`${HISTORY_URL}/weekly-goal`);
+        return request(`${HISTORY_URL}/weekly-goal`, { auth: true });
     },
 
     async submitTestResult(result) {

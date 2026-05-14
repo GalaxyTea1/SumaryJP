@@ -1,9 +1,15 @@
 const Vocabulary = require('../models/vocabulary');
 const History = require('../models/history');
+const User = require('../models/userModel');
 
-// Validation helpers
 const VALID_STATUSES = ['not-learned', 'learning', 'mastered'];
 const MAX_STRING_LENGTH = 500;
+const BASE_FIELDS = ['lesson', 'level', 'japanese', 'hiragana', 'meaning', 'type'];
+const PROGRESS_FIELDS = ['status', 'last_reviewed', 'review_count', 'interval', 'ease_factor', 'next_review', 'is_difficult'];
+
+function hasAnyField(body, fields) {
+    return fields.some(field => Object.prototype.hasOwnProperty.call(body, field));
+}
 
 function validateCreateBody(body) {
     const { lesson, level, japanese, hiragana, meaning } = body;
@@ -12,6 +18,17 @@ function validateCreateBody(body) {
     }
     if (!lesson || !level) {
         return 'Missing required fields: lesson, level';
+    }
+    if (japanese.length > MAX_STRING_LENGTH || hiragana.length > MAX_STRING_LENGTH || meaning.length > MAX_STRING_LENGTH) {
+        return `Content exceeds ${MAX_STRING_LENGTH} characters`;
+    }
+    return null;
+}
+
+function validateBaseUpdateBody(body) {
+    const { lesson, level, japanese, hiragana, meaning } = body;
+    if (!japanese || !hiragana || !meaning || !lesson || !level) {
+        return 'Missing required fields: lesson, level, japanese, hiragana, meaning';
     }
     if (japanese.length > MAX_STRING_LENGTH || hiragana.length > MAX_STRING_LENGTH || meaning.length > MAX_STRING_LENGTH) {
         return `Content exceeds ${MAX_STRING_LENGTH} characters`;
@@ -47,7 +64,7 @@ function validateUpdateBody(body) {
 const vocabController = {
     getAll: async (req, res) => {
         try {
-            const vocabularies = await Vocabulary.getAll();
+            const vocabularies = await Vocabulary.getAll(req.user?.id || null);
             res.json(vocabularies);
         } catch (error) {
             console.error(error);
@@ -58,7 +75,7 @@ const vocabController = {
     getById: async (req, res) => {
         const { id } = req.params;
         try {
-            const vocab = await Vocabulary.getById(id);
+            const vocab = await Vocabulary.getById(id, req.user?.id || null);
             if (!vocab) {
                 return res.status(404).json({ error: 'Vocabulary not found' });
             }
@@ -72,7 +89,7 @@ const vocabController = {
     getByLevelAndLesson: async (req, res) => {
         const { level, lesson } = req.params;
         try {
-            const vocabularies = await Vocabulary.getByLevelAndLesson(level, lesson);
+            const vocabularies = await Vocabulary.getByLevelAndLesson(level, lesson, req.user?.id || null);
             res.json(vocabularies);
         } catch (error) {
             console.error(error);
@@ -98,24 +115,37 @@ const vocabController = {
     update: async (req, res) => {
         const { id } = req.params;
 
-        const validationError = validateUpdateBody(req.body);
-        if (validationError) {
-            return res.status(400).json({ error: validationError });
-        }
-
         try {
-            const oldVocab = await Vocabulary.getById(id);
+            const oldVocab = await Vocabulary.getById(id, req.user.id);
             if (!oldVocab) {
                 return res.status(404).json({ error: 'Vocabulary not found' });
             }
 
-            const updatedVocab = await Vocabulary.update(id, { ...oldVocab, ...req.body });
-            
-            // Log status change to learning_history
-            if (req.body.status && oldVocab.status !== req.body.status) {
-                await History.logAction(id, 'status_changed', oldVocab.status, req.body.status);
+            if (hasAnyField(req.body, BASE_FIELDS)) {
+                const user = await User.findById(req.user.id);
+                if (!user || user.role !== 'admin') {
+                    return res.status(403).json({ error: 'Only admins can edit vocabulary content' });
+                }
+
+                const validationError = validateBaseUpdateBody({ ...oldVocab, ...req.body });
+                if (validationError) return res.status(400).json({ error: validationError });
+
+                const updatedVocab = await Vocabulary.updateBase(id, { ...oldVocab, ...req.body });
+                return res.json(updatedVocab);
             }
 
+            if (!hasAnyField(req.body, PROGRESS_FIELDS)) {
+                return res.status(400).json({ error: 'No supported vocabulary progress fields provided' });
+            }
+
+            const validationError = validateUpdateBody(req.body);
+            if (validationError) return res.status(400).json({ error: validationError });
+
+            const updatedVocab = await Vocabulary.upsertProgress(req.user.id, id, { ...oldVocab, ...req.body });
+
+            if (req.body.status && oldVocab.status !== req.body.status) {
+                await History.logAction(id, 'status_changed', oldVocab.status, req.body.status, req.user.id);
+            }
             res.json(updatedVocab);
         } catch (error) {
             console.error(error);

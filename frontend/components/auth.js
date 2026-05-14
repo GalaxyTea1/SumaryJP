@@ -1,6 +1,7 @@
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '';
 const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
 import { utils } from "./utils.js";
+import { state } from "../state.js";
 
 export const auth = {
     API_URL: `${BASE_URL}/auth`,
@@ -318,6 +319,7 @@ export const auth = {
 
             this.closeModal();
             this.updateUIToLoggedIn(data.user);
+            state.loadFromServer(true).catch(error => console.warn("Could not refresh vocabulary after login:", error));
             
             console.log("Xác thực thành công cho user:", data.user.username);
 
@@ -333,5 +335,6 @@ export const auth = {
     logout() {
         localStorage.removeItem(this.STORAGE_KEY);
         this.updateUIToGuest();
+        state.loadFromServer(true).catch(error => console.warn("Could not refresh vocabulary after logout:", error));
     }
 };
