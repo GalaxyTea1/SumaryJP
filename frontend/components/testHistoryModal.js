@@ -131,7 +131,7 @@ export const testHistoryModal = {
 
     renderData(data) {
         if (!data || data.length === 0) {
-            this.renderEmpty("Chua co bai kiem tra nao duoc luu.");
+            this.renderEmpty("Chưa có bài kiểm tra nào được lưu.");
             return;
         }
 
