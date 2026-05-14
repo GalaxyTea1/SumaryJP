@@ -1,0 +1,11 @@
+# Local legacy database/scripts not used by the tracked app flow.
+/backend/insert_minna_full.sql
+/backend/migrate_add_role.js
+/backend/migrate_history.js
+/backend/migrate_users.js
+/backend/migrations/001_create_grammar_kanji.sql
+/backend/migrations/002_seed_grammar_n5.sql
+/backend/migrations/003_seed_kanji_n5.sql
+/backend/migrations/run.js
+/convert_sql.js
+

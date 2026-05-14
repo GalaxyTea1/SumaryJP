@@ -2,6 +2,7 @@ import { state } from "../state.js";
 import { vocabTable } from "./vocabTable.js";
 import { stats } from "./stats.js";
 import { historyModal } from "./historyModal.js";
+import { testHistoryModal } from "./testHistoryModal.js";
 import { testConfigModal } from "./testConfigModal.js";
 import { flashcardConfigModal } from "./flashcardConfigModal.js";
 import { router } from "./router.js";
@@ -59,6 +60,13 @@ export const actions = {
         if (viewHistoryBtn) {
             viewHistoryBtn.addEventListener("click", () => {
                 historyModal.show();
+            });
+        }
+
+        const testHistoryBtn = document.getElementById("test-history-btn");
+        if (testHistoryBtn) {
+            testHistoryBtn.addEventListener("click", () => {
+                testHistoryModal.show();
             });
         }
     }
