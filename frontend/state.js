@@ -91,28 +91,28 @@ export const state = {
 
     _getFromCache(withMeta = false) {
         try {
-            const raw = localStorage.getItem(CACHE_KEY);
+            const raw = localStorage.getItem(this._cacheKey());
             if (!raw) return null;
 
             const cached = JSON.parse(raw);
             const age = Date.now() - cached.timestamp;
 
             if (age > CACHE_TTL) {
-                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(this._cacheKey());
                 return null;
             }
 
             if (withMeta) return { data: cached.data, isStale: age > STALE_TTL };
             return cached.data;
         } catch {
-            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(this._cacheKey());
             return null;
         }
     },
 
     _getStaleCache() {
         try {
-            const raw = localStorage.getItem(CACHE_KEY);
+            const raw = localStorage.getItem(this._cacheKey());
             if (!raw) return null;
             const cached = JSON.parse(raw);
             return cached.data || null;
@@ -123,21 +123,26 @@ export const state = {
 
     _saveToCache(data) {
         try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({
+            localStorage.setItem(this._cacheKey(), JSON.stringify({
                 timestamp: Date.now(),
                 data
             }));
         } catch (e) {
             console.warn("Could not save vocab cache (storage full?), clearing old:", e);
             try {
-                localStorage.removeItem(CACHE_KEY);
-                localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+                localStorage.removeItem(this._cacheKey());
+                localStorage.setItem(this._cacheKey(), JSON.stringify({ timestamp: Date.now(), data }));
             } catch { /* bỏ qua */ }
         }
     },
 
     _invalidateCache() {
-        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(this._cacheKey());
+    },
+
+    _cacheKey() {
+        const token = localStorage.getItem("sumary_jp_token") || sessionStorage.getItem("sumary_jp_admin_token");
+        return token ? `${CACHE_KEY}:${token.slice(-16)}` : `${CACHE_KEY}:guest`;
     },
 
     _normalizeVocabularyList(items) {
@@ -216,7 +221,7 @@ export const state = {
         
         if (this._isLoggedIn()) {
             try {
-                await apiManager.updateVocabulary(vocab);
+                await apiManager.updateVocabularyProgress(vocab);
             } catch (e) {
                 vocab.status = prevStatus;
                 vocab.last_reviewed = prevReviewed;
@@ -249,7 +254,7 @@ export const state = {
 
         if (this._isLoggedIn()) {
             try {
-                await apiManager.updateVocabulary(vocab);
+                await apiManager.updateVocabularyProgress(vocab);
             } catch (e) {
                 vocab.is_difficult = prevDifficult;
                 throw new Error("Lỗi cập nhật máy chủ");
@@ -284,7 +289,7 @@ export const state = {
     async updateVocabulary(vocab) {
         if (this._isLoggedIn()) {
             try {
-                await apiManager.updateVocabulary(vocab);
+                await apiManager.updateVocabularyProgress(vocab);
             } catch (e) {
                 console.warn("Guest mode or network error, skipping backend sync");
             }
