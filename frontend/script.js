@@ -5,6 +5,7 @@ import { dashboardStats } from "./components/dashboardStats.js";
 import { search } from "./components/search.js";
 import { actions } from "./components/actions.js";
 import { historyModal } from "./components/historyModal.js";
+import { testHistoryModal } from "./components/testHistoryModal.js";
 import { wordDetailsModal } from "./components/wordDetailsModal.js";
 import { auth } from "./components/auth.js";
 import { testConfigModal } from "./components/testConfigModal.js";
@@ -18,6 +19,7 @@ const PARTIALS = [
     "partials/modal-stats.html",
     "partials/mobile-nav.html",
     "partials/modal-history.html",
+    "partials/modal-test-history.html",
     "partials/modal-overlays.html",
     "partials/modal-config.html",
     "partials/view-flashcard.html",
@@ -53,6 +55,7 @@ window.onload = async function () {
         search.init();
         actions.init();
         historyModal.init();
+        testHistoryModal.init();
         wordDetailsModal.init();
         auth.init();
         testConfigModal.init();
