@@ -10,11 +10,11 @@ let baseUrl;
 
 async function request(path, options = {}) {
     const response = await fetch(`${baseUrl}${path}`, {
+        ...options,
         headers: {
             'Content-Type': 'application/json',
-            ...options.headers
+            ...(options.headers || {})
         },
-        ...options,
         body: options.body ? JSON.stringify(options.body) : undefined
     });
 
@@ -72,7 +72,7 @@ test('auth, vocabulary progress, and test history work against PostgreSQL', asyn
             is_difficult: true
         }
     });
-    assert.equal(progress.response.status, 200);
+    assert.equal(progress.response.status, 200, JSON.stringify(progress.body));
     assert.equal(progress.body.status, 'mastered');
     assert.equal(progress.body.review_count, 1);
     assert.equal(progress.body.is_difficult, true);
@@ -100,7 +100,7 @@ test('auth, vocabulary progress, and test history work against PostgreSQL', asyn
             details: [{ vocab_id: vocabId, correct: true }]
         }
     });
-    assert.equal(submit.response.status, 201);
+    assert.equal(submit.response.status, 201, JSON.stringify(submit.body));
     assert.equal(submit.body.user_id, register.body.user.id);
 
     const history = await request('/api/test/history?limit=5', { headers: authHeaders });
