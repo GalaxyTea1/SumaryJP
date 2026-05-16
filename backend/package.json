@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
+    "migrate": "node scripts/migrate.js",
     "start": "node server.js",
-    "test": "node --test test/*.test.js"
+    "test": "npm run test:unit",
+    "test:ci": "npm run test:unit && npm run test:integration",
+    "test:integration": "node --test test/integration/*.test.js",
+    "test:unit": "node --test test/*.test.js"
   },
   "keywords": [],
   "author": "",
