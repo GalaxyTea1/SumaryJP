@@ -1,11 +1,14 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+const useSslForDatabaseUrl = process.env.DB_SSL === 'true'
+    || (process.env.DB_SSL !== 'false' && process.env.NODE_ENV !== 'test');
+
 const pool = new Pool(
     process.env.DATABASE_URL
         ? {
             connectionString: process.env.DATABASE_URL,
-            ssl: { rejectUnauthorized: false }
+            ssl: useSslForDatabaseUrl ? { rejectUnauthorized: false } : false
         }
         : {
             user: process.env.DB_USER,
@@ -16,12 +19,8 @@ const pool = new Pool(
         }
 );
 
-pool.connect((err) => {
-    if (err) {
-        console.error('Database connection error:', err.stack);
-    } else {
-        console.log('Connected to PostgreSQL');
-    }
+pool.on('error', (err) => {
+    console.error('Unexpected PostgreSQL pool error:', err.stack);
 });
 
 module.exports = pool;
