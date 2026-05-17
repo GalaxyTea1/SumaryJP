@@ -1,101 +1,147 @@
-# 🇯🇵 SumaryJP - Japanese Vocabulary Learning Platform
+# SumaryJP
 
-SumaryJP is a modern, feature-rich web application designed to help learners master Japanese vocabulary through scientifically proven methods like **Spaced Repetition System (SRS)** and interactive learning tools.
+SumaryJP is a Japanese learning web app focused on vocabulary review, flashcards, test practice, and personal learning progress. The app uses a vanilla JavaScript frontend with an Express/PostgreSQL backend, JWT authentication, admin-only vocabulary management, spaced repetition progress, test history, and automated backend CI.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
-![PWA](https://img.shields.io/badge/PWA-Ready-orange.svg)
+![SumaryJP preview](frontend/images/og-preview.png)
 
----
+## Features
 
-## 🚀 Key Features
+- JWT authentication with protected user routes.
+- Admin-only vocabulary create, update, and delete operations.
+- User-specific vocabulary progress and SRS scheduling.
+- Flashcard, review, and test practice flows.
+- Test result submission and test history.
+- Learning history and weekly goal tracking.
+- PWA-ready frontend with offline-aware request queueing.
+- Backend unit tests, PostgreSQL integration tests, and GitHub Actions CI.
 
-- **Spaced Repetition System (SRS)**: Optimized review schedules based on your memory performance.
-- **Interactive Flashcards**: 3D flip-card experience for traditional memorization.
-- **OCR Search**: Upload images to scan and search for Japanese characters instantly.
-- **JLPT Focused**: Comprehensive vocabulary lists covering N5 to N1 levels.
-- **Gamification**: Stay motivated with streaks, weekly goals, experience points (XP), and league rankings.
-- **Dark Mode**: Sleek, modern interface with glassmorphism aesthetics, easy on the eyes.
-- **Offline Support**: PWA-ready for learning on the go without a constant internet connection.
+## Tech Stack
 
----
+**Frontend**
 
-## 🛠️ Tech Stack
+- HTML, CSS, and vanilla JavaScript modules.
+- Tailwind CSS build output.
+- Chart.js for statistics.
+- Service worker and web manifest for PWA support.
 
-### Frontend
-- **HTML5 & Vanilla JavaScript**: Modular MPA architecture for high performance.
-- **Tailwind CSS**: Modern styling with glassmorphism effects.
-- **Chart.js**: Visual progress tracking and statistics.
-- **PWA**: Service Workers and Manifest for a native app-like experience.
+**Backend**
 
-### Backend
-- **Node.js & Express**: Robust and scalable API server.
-- **SQLite**: Lightweight, file-based database for efficient data management.
-- **JWT Authentication**: Secure user sessions and role-based access control.
+- Node.js and Express.
+- PostgreSQL via `pg`.
+- JWT authentication.
+- SQL migrations with a lightweight migration runner.
+- Node.js built-in test runner.
 
----
-
-## 📦 Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v16 or higher)
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/SumaryJapanese.git
-   cd SumaryJapanese
-   ```
-
-2. **Setup Backend**
-   ```bash
-   cd backend
-   npm install
-   # Create a .env file based on .env.example
-   npm start
-   ```
-
-3. **Setup Frontend**
-   ```bash
-   cd ../frontend
-   # Simply serve index.html using Live Server or any static host
-   ```
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```text
-├── frontend/             # Client-side application
-│   ├── components/       # Reusable UI components
-│   ├── partials/         # HTML snippets loaded dynamically
-│   ├── images/           # Assets and icons
-│   └── script.js         # Core frontend logic
-├── backend/              # API Server
-    ├── controllers/      # Business logic
-    ├── models/           # Database interactions (SQL)
-    ├── routes/           # API Endpoints
-    └── server.js         # Server entry point
-
+.
+├── backend/
+│   ├── controllers/      # Request handlers
+│   ├── middlewares/      # Auth and admin guards
+│   ├── migrations/       # SQL migrations
+│   ├── models/           # PostgreSQL queries
+│   ├── routes/           # Express routes
+│   ├── scripts/          # Migration runner
+│   ├── test/             # Unit and integration tests
+│   └── server.js         # Express app entry point
+├── frontend/
+│   ├── components/       # Frontend modules
+│   ├── partials/         # HTML partials
+│   ├── workers/          # Web worker scripts
+│   └── index.html        # Main app shell
+├── frontend-v2/          # Legacy/experimental frontend
+└── frontend-v3/          # Legacy/experimental frontend
 ```
 
----
+## Getting Started
 
-## 🗺️ Roadmap
+### Prerequisites
 
-- [ ] **TypeScript Migration**: Refactoring both frontend and backend for better maintainability.
-- [ ] **AI Sensei**: Integration with Gemini/GPT for contextual grammar explanations.
-- [ ] **Mobile App**: Developing a dedicated mobile version using Flutter or React Native.
-- [ ] **Community Features**: Shared decks and collaborative learning rooms.
+- Node.js 20 or newer.
+- PostgreSQL 16 or compatible PostgreSQL database.
+- npm.
 
----
+### Backend Setup
 
-## 📄 License
+```bash
+cd backend
+npm install
+copy .env.example .env
+npm run migrate
+npm start
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The backend runs on `http://localhost:3000` by default.
 
----
+For Supabase or another hosted PostgreSQL provider, set `DATABASE_URL` in `backend/.env`. For local PostgreSQL, use the `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `DB_PORT` variables.
 
-Developed with ❤️ for Japanese learners.
+### Frontend Setup
+
+The main frontend is a static app in `frontend/`.
+
+```bash
+cd frontend
+npm install
+npm run build:css
+```
+
+Serve `frontend/index.html` with a static server such as VS Code Live Server. Local frontend requests use `http://localhost:3000/api`.
+
+## Environment Variables
+
+See [backend/.env.example](backend/.env.example).
+
+Important backend variables:
+
+- `JWT_SECRET`: secret used to sign authentication tokens.
+- `DATABASE_URL`: full PostgreSQL connection string, useful for Supabase/hosted DB.
+- `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT`: local PostgreSQL settings.
+- `DB_SSL`: set to `true` for hosted databases that require SSL, `false` for local/CI Postgres.
+- `FRONTEND_URL`: allowed frontend origin for CORS.
+
+## Database Migrations
+
+Run migrations from the backend directory:
+
+```bash
+npm run migrate
+```
+
+The migration runner initializes the base schema and applies `backend/migrations/*.sql` in filename order. Applied migrations are recorded in `schema_migrations`.
+
+## Tests
+
+Run fast unit tests:
+
+```bash
+cd backend
+npm test
+```
+
+Run the full CI test command after configuring a test PostgreSQL database:
+
+```bash
+npm run migrate
+npm run test:ci
+```
+
+GitHub Actions runs backend CI automatically for backend changes. The CI workflow starts a temporary PostgreSQL service, runs migrations, then runs unit and integration tests.
+
+## API Overview
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET /api/vocab`
+- `GET /api/vocab/:id`
+- `PUT /api/vocab/:id`
+- `POST /api/test/submit`
+- `GET /api/test/history`
+- `GET /api/history`
+- `GET /api/history/weekly-goal`
+
+## Notes
+
+- The primary frontend for this repository is `frontend/`.
+- `frontend-v2/` and `frontend-v3/` are kept as legacy or experimental versions.
