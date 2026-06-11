@@ -2,18 +2,16 @@
 // Test Results Page Logic — Sumary Japanese
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    // --- Get result from localStorage ---
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
+    // --- Get result from backend ---
     const params = new URLSearchParams(window.location.search);
     const resultId = parseInt(params.get('id'));
-    const allResults = utils.getTestResults();
 
     let result = null;
     if (resultId) {
-        result = allResults.find(r => r.id === resultId);
-    }
-    if (!result && allResults.length > 0) {
-        result = allResults[0]; // Fallback to latest
+        result = utils.normalizeTestResult(await api.getTestResultById(resultId).catch(() => null));
     }
 
     if (!result) {
@@ -72,6 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
         avgTimeEl.textContent = `${avg}s`;
     }
 
+    function getAnswerPrompt(answer) {
+        return answer.prompt || answer.japanese || '';
+    }
+
+    function getAnswerSubPrompt(answer) {
+        return answer.subPrompt || answer.hiragana || '';
+    }
+
     // --- Weak Points ---
     const weakPointsEl = document.getElementById('weak-points');
     if (weakPointsEl && result.answers) {
@@ -88,10 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex items-center gap-4 p-3 bg-[#ffebee] rounded-lg">
                     <span class="text-[#ef5350] font-bold">❌</span>
                     <div class="flex-1">
-                        <div class="font-semibold text-sm font-['Noto_Sans_JP']">${utils.escapeHtml(a.japanese)} <span class="text-[#5f6b7a] font-['Be_Vietnam_Pro'] font-normal">(${utils.escapeHtml(a.hiragana)})</span></div>
+                        <div class="font-semibold text-sm font-['Noto_Sans_JP']">${utils.escapeHtml(getAnswerPrompt(a))} <span class="text-[#5f6b7a] font-['Be_Vietnam_Pro'] font-normal">${getAnswerSubPrompt(a) ? '(' + utils.escapeHtml(getAnswerSubPrompt(a)) + ')' : ''}</span></div>
                         <div class="text-xs text-[#5f6b7a]">Bạn chọn: <span class="text-[#ef5350]">${utils.escapeHtml(a.userAnswer)}</span> → Đáp án: <span class="text-[#4caf50] font-semibold">${utils.escapeHtml(a.meaning)}</span></div>
                     </div>
-                    <button class="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-[#6caba0] font-semibold hover:bg-[#f0f7f6] btn-tts-review" data-text="${utils.escapeHtml(a.japanese)}">🔊 Nghe</button>
+                    <button class="text-xs bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-[#6caba0] font-semibold hover:bg-[#f0f7f6] btn-tts-review" data-text="${utils.escapeHtml(getAnswerPrompt(a))}">🔊 Nghe</button>
                 </div>
             `).join('');
 

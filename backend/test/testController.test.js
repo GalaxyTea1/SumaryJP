@@ -73,6 +73,34 @@ test('testController.submit saves a normalized result for the authenticated user
     assert.equal(res.body.id, 9);
 });
 
+test('testController.submit accepts mixed test results', async () => {
+    let savedPayload;
+    const controller = loadController({
+        save: async (payload) => {
+            savedPayload = payload;
+            return { id: 10, ...payload };
+        }
+    });
+    const res = createRes();
+
+    await controller.submit({
+        user: { id: 3 },
+        body: {
+            test_type: 'mixed',
+            total_questions: 12,
+            correct_answers: 9,
+            score: 75,
+            mode: 'practice',
+            details: [{ type: 'kanji', correct: true }]
+        }
+    }, res);
+
+    assertStatus(res, 201);
+    assert.equal(savedPayload.test_type, 'mixed');
+    assert.equal(res.body.id, 10);
+});
+
+
 test('testController.getHistory clamps history limit to 100', async () => {
     let receivedLimit;
     const controller = loadController({

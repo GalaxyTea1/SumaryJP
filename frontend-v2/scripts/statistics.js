@@ -4,6 +4,8 @@
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
     let allVocab = [];
     let allGrammar = [];
     let allKanji = [];
@@ -17,11 +19,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             api.getAllKanji(),
         ]);
     } catch (e) {
-        console.warn('Statistics: Không thể tải data:', e);
+        console.error('Statistics: Không thể tải data:', e);
+        alert('Khong the tai du lieu thong ke. Vui long kiem tra ket noi va thu lai.');
+        window.location.href = 'dashboard.html';
+        return;
     }
 
-    // Test results from localStorage
-    testResults = utils.getTestResults();
+    try {
+        testResults = utils.normalizeTestResults(await api.getTestHistory(50));
+    } catch (e) {
+        console.warn('Statistics: Khong the tai lich su test:', e);
+        alert('Khong the tai lich su test. Vui long kiem tra ket noi va thu lai.');
+        window.location.href = 'dashboard.html';
+        return;
+    }
 
     // --- Summary Cards ---
     const masteredVocab = allVocab.filter(v => v.status === 'mastered').length;

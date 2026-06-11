@@ -4,6 +4,8 @@
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
     // --- State ---
     let allData = [];
     let cards = [];
@@ -109,8 +111,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 allData = await api.getAllGrammar();
             }
         } catch (e) {
-            console.warn('Flashcard: Không thể tải data:', e);
-            allData = [];
+            console.error('Flashcard: Không thể tải data:', e);
+            alert('Khong the tai du lieu flashcard. Vui long kiem tra ket noi va thu lai.');
+            window.location.href = 'dashboard.html';
+            throw e;
         }
     }
 
@@ -252,20 +256,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Gamification
         if (typeof gamification !== 'undefined') {
-            gamification.trackEvent('flashcard_complete');
-            if (selectedType === 'vocab') gamification.trackEvent('vocab_review', { count: knownCount });
-            if (selectedType === 'kanji') gamification.trackEvent('kanji_review', { count: knownCount });
+            gamification.trackEvent('flashcard_complete').catch(() => null);
+            if (selectedType === 'vocab') gamification.trackEvent('vocab_review', { count: knownCount }).catch(() => null);
+            if (selectedType === 'kanji') gamification.trackEvent('kanji_review', { count: knownCount }).catch(() => null);
         }
     }
 
     // --- Actions ---
     function flipCard() {
         cardInner.classList.toggle('flipped');
-        if (typeof gamification !== 'undefined') gamification.trackEvent('flashcard_flip');
+        if (typeof gamification !== 'undefined') gamification.trackEvent('flashcard_flip').catch(() => null);
     }
 
-    function markKnown() {
+    async function saveCardReview(card, known) {
+        if (!card) return;
+        const quality = known ? 3 : 1;
+        await api.reviewSrsItem(selectedType, card.id, quality);
+
+        if (selectedType === 'vocab') {
+            const updated = await api.updateVocabularyProgress(card.id, {
+                status: known ? 'mastered' : 'learning',
+                review_count: (card.review_count || 0) + 1,
+                interval: card.interval || 0,
+                ease_factor: card.ease_factor || 2.5,
+                next_review: card.next_review || new Date().toISOString(),
+                last_reviewed: new Date().toISOString(),
+                is_difficult: card.is_difficult || false,
+            });
+            Object.assign(card, updated);
+        }
+    }
+
+    async function markKnown() {
         const card = cards[currentIndex];
+        try {
+            await saveCardReview(card, true);
+        } catch (error) {
+            console.error('Flashcard known save failed:', error);
+            alert('Khong the luu tien do flashcard. Vui long thu lai.');
+            return;
+        }
         if (card && !knownSet.has(card.id)) {
             knownSet.add(card.id);
             unknownSet.delete(card.id);
@@ -275,8 +305,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         goNext();
     }
 
-    function markUnknown() {
+    async function markUnknown() {
         const card = cards[currentIndex];
+        try {
+            await saveCardReview(card, false);
+        } catch (error) {
+            console.error('Flashcard unknown save failed:', error);
+            alert('Khong the luu tien do flashcard. Vui long thu lai.');
+            return;
+        }
         if (card && !unknownSet.has(card.id)) {
             unknownSet.add(card.id);
             knownSet.delete(card.id);

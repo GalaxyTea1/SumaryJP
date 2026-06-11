@@ -103,8 +103,8 @@
         <a class="text-[#5f6b7a] hover:text-[#6caba0] transition-colors" href="test-center.html">Bài Test</a>
       </div>
       <div class="flex items-center gap-3">
-        <a href="dashboard.html" class="btn-outline px-5 py-2 text-sm">Đăng nhập</a>
-        <a href="dashboard.html" class="btn-primary px-5 py-2 text-sm">Bắt đầu miễn phí</a>
+        <a href="dashboard.html" class="js-auth-login btn-outline px-5 py-2 text-sm">Đăng nhập</a>
+        <a href="dashboard.html" class="js-auth-register btn-primary px-5 py-2 text-sm">Bắt đầu miễn phí</a>
       </div>
     </div>
   </nav>
@@ -122,7 +122,7 @@
           Từ vựng - Ngữ pháp - Kanji - Trắc nghiệm <br> Tất cả trong một nền tảng học tập được tối ưu hóa.
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
-          <a href="dashboard.html" class="btn-primary px-8 py-3.5 text-base text-center">Bắt Đầu Miễn Phí →</a>
+          <a href="dashboard.html" class="js-auth-register btn-primary px-8 py-3.5 text-base text-center">Bắt Đầu Miễn Phí →</a>
           <a href="#features" class="btn-outline px-8 py-3.5 text-base text-center">Tìm Hiểu Thêm</a>
         </div>
         <div class="flex items-center gap-6 mt-8 text-sm text-[#5f6b7a]">
@@ -314,6 +314,10 @@
     </div>
   </footer>
 
+  <script src="scripts/api.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/landing.js"></script>
 </body>
 
 </html>

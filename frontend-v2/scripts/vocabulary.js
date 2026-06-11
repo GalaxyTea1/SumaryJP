@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
     let allVocab = [];
     let filteredVocab = [];
     let currentPage = 1;
@@ -15,11 +17,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         allVocab = await api.getAllVocabulary();
         filteredVocab = [...allVocab];
     } catch (e) {
-        console.warn('Vocabulary: Không thể tải từ API.', e);
+        console.error('Vocabulary: Không thể tải từ API.', e);
+        alert('Khong the tai du lieu tu vung. Vui long kiem tra ket noi va thu lai.');
+        window.location.href = 'dashboard.html';
+        return;
     }
 
     // --- DOM Elements ---
     const tableBody = document.getElementById('vocab-table-body');
+    const tableScrollEl = document.getElementById('vocab-table-scroll');
+    const mobileListEl = document.getElementById('vocab-mobile-list');
     const paginationEl = document.getElementById('vocab-pagination');
     const searchInput = document.getElementById('vocab-search');
     const lessonDropdown = document.getElementById('vocab-lesson-dropdown');
@@ -122,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Filter & Render ---
-    function applyFilters() {
+    function applyFilters(options = {}) {
         filteredVocab = allVocab.filter(v => {
             if (activeLevel !== 'all' && v.level !== activeLevel) return false;
             if (activeLesson !== 'all' && String(v.lesson) !== activeLesson) return false;
@@ -139,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable();
         renderPagination();
         renderSummary();
+        if (options.scrollToTop !== false) scrollTableToTop('auto');
     }
 
     function renderTable() {
@@ -148,6 +156,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pageItems = filteredVocab.slice(start, start + ITEMS_PER_PAGE);
 
         if (pageItems.length === 0) {
+            if (mobileListEl) {
+                mobileListEl.innerHTML = '<div class="vocab-mobile-card text-center text-sm text-[#5f6b7a]">Khong tim thay tu vung nao.</div>';
+            }
             tableBody.innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-[#5f6b7a]">Không tìm thấy từ vựng nào.</td></tr>`;
             return;
         }
@@ -187,20 +198,73 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         }).join('');
 
-        // Bind events
-        tableBody.querySelectorAll('.btn-tts').forEach(btn => {
+        if (mobileListEl) {
+            mobileListEl.innerHTML = pageItems.map((v, i) => renderMobileCard(v, start + i + 1)).join('');
+        }
+
+        bindVocabActions(tableBody);
+        if (mobileListEl) bindVocabActions(mobileListEl);
+    }
+
+    function renderMobileCard(vocab, index) {
+        const statusInfo = utils.getStatusInfo(vocab.status);
+        const isDifficult = vocab.is_difficult;
+        const starFill = isDifficult ? "font-variation-settings: 'FILL' 1;" : '';
+        const starColor = isDifficult ? 'text-[#f0a868]' : 'text-[#5f6b7a]';
+        const wordType = getWordType(vocab);
+        const typeColor = getTypeColor(wordType);
+
+        return `
+            <article class="vocab-mobile-card" data-id="${vocab.id}">
+                <div class="vocab-mobile-main">
+                    <div class="vocab-mobile-word">
+                        <div class="text-xs text-[#5f6b7a] mb-1">#${index}</div>
+                        <div class="vocab-mobile-word-ja">${utils.escapeHtml(vocab.japanese)}</div>
+                        <div class="vocab-mobile-word-kana">${utils.escapeHtml(vocab.hiragana || '')}</div>
+                    </div>
+                    <div class="vocab-mobile-actions">
+                        <button class="p-1 hover:bg-[#f0f7f6] rounded btn-toggle-difficult" data-id="${vocab.id}" title="Danh dau kho">
+                            <span class="material-symbols-outlined text-lg ${starColor}" style="${starFill}">star</span>
+                        </button>
+                        <button class="p-1 hover:bg-[#f0f7f6] rounded btn-tts" data-text="${utils.escapeHtml(vocab.japanese)}" title="Phat am">
+                            <span class="material-symbols-outlined text-lg text-[#5f6b7a]">volume_up</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="vocab-mobile-meaning">${utils.escapeHtml(vocab.meaning)}</div>
+                <div class="vocab-mobile-meta">
+                    <span class="text-xs ${typeColor} px-2 py-0.5 rounded-full">${utils.escapeHtml(wordType)}</span>
+                    <span class="inline-flex items-center gap-1.5" style="color: ${statusInfo.color}">
+                        <span class="w-2 h-2 rounded-full" style="background: ${statusInfo.color}"></span>
+                        ${statusInfo.text}
+                    </span>
+                </div>
+            </article>
+        `;
+    }
+
+    function bindVocabActions(container) {
+        container.querySelectorAll('.btn-tts').forEach(btn => {
             btn.addEventListener('click', () => tts.speak(btn.dataset.text));
         });
 
-        tableBody.querySelectorAll('.btn-toggle-difficult').forEach(btn => {
+        container.querySelectorAll('.btn-toggle-difficult').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const id = parseInt(btn.dataset.id);
+                const id = parseInt(btn.dataset.id, 10);
                 try {
                     const vocab = allVocab.find(v => v.id === id);
                     if (vocab) {
                         vocab.is_difficult = !vocab.is_difficult;
-                        await api.updateVocabulary(vocab);
-                        applyFilters();
+                        const updated = await api.updateVocabularyProgress(vocab.id, {
+                            status: vocab.status,
+                            review_count: vocab.review_count || 0,
+                            interval: vocab.interval || 0,
+                            ease_factor: vocab.ease_factor || 2.5,
+                            next_review: vocab.next_review || new Date().toISOString(),
+                            is_difficult: vocab.is_difficult,
+                        });
+                        Object.assign(vocab, updated);
+                        applyFilters({ scrollToTop: false });
                     }
                 } catch (e) {
                     console.error('Toggle difficult failed:', e);
@@ -240,9 +304,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentPage = parseInt(btn.dataset.page);
                 renderTable();
                 renderPagination();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                scrollTableToTop('smooth');
             });
         });
+    }
+
+    function scrollTableToTop(behavior = 'smooth') {
+        if (!tableScrollEl) return;
+        tableScrollEl.scrollTo({ top: 0, left: 0, behavior });
     }
 
     function renderSummary() {

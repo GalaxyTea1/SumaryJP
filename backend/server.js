@@ -7,6 +7,8 @@ const authRoutes = require('./routes/auth');
 const grammarRoutes = require('./routes/grammar');
 const kanjiRoutes = require('./routes/kanji');
 const testRoutes = require('./routes/test');
+const gamificationRoutes = require('./routes/gamification');
+const srsRoutes = require('./routes/srs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +41,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/grammar', grammarRoutes);
 app.use('/api/kanji', kanjiRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/gamification', gamificationRoutes);
+app.use('/api/srs', srsRoutes);
 
 // 404 handler
 app.use((req, res) => {

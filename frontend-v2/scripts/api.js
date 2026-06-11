@@ -2,52 +2,9 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://jp-backend-api.onrender.com/api';
 
 const AUTH_TOKEN_KEY = 'sumary_jp_token';
-const SESSION_CACHE_TTL = 30 * 60 * 1000;
-
-const sessionCache = {
-    KEYS: {
-        vocab: 'sj_cache_vocab',
-        kanji: 'sj_cache_kanji',
-        grammar: 'sj_cache_grammar',
-    },
-
-    get(key) {
-        try {
-            const raw = sessionStorage.getItem(key);
-            if (!raw) return null;
-            const { data, ts } = JSON.parse(raw);
-            if (Date.now() - ts > SESSION_CACHE_TTL) {
-                sessionStorage.removeItem(key);
-                return null;
-            }
-            return data;
-        } catch {
-            return null;
-        }
-    },
-
-    set(key, data) {
-        try {
-            sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
-        } catch (e) {
-            console.warn('sessionCache: Không thể lưu cache:', e);
-        }
-    },
-
-    invalidate(...keys) {
-        keys.forEach(k => sessionStorage.removeItem(k));
-    },
-
-    invalidateAll() {
-        Object.values(this.KEYS).forEach(k => sessionStorage.removeItem(k));
-    },
-};
-
 // --- Core request function ---
 async function request(url, options = {}) {
-    const isMutative = ['POST', 'PUT', 'DELETE'].includes(options.method);
-
-    // Auto attach auth token for mutative requests
+    // Auto attach auth token when available.
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (token) {
         options.headers = {
@@ -61,6 +18,12 @@ async function request(url, options = {}) {
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
+            if (response.status === 401) {
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                if (!window.location.pathname.endsWith('landing.html')) {
+                    window.location.href = 'landing.html';
+                }
+            }
             throw new Error(errData.error || `HTTP ${response.status}: ${response.statusText}`);
         }
 
@@ -76,11 +39,7 @@ async function request(url, options = {}) {
 const api = {
     // === VOCABULARY ===
     async getAllVocabulary() {
-        const cached = sessionCache.get(sessionCache.KEYS.vocab);
-        if (cached) return cached;
-        const data = await request(`${BASE_URL}/vocab`);
-        sessionCache.set(sessionCache.KEYS.vocab, data);
-        return data;
+        return request(`${BASE_URL}/vocab`);
     },
 
     async getVocabularyByLesson(level, lesson) {
@@ -107,6 +66,14 @@ const api = {
         });
     },
 
+    async updateVocabularyProgress(id, progress) {
+        return request(`${BASE_URL}/vocab/${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(progress),
+        });
+    },
+
     async deleteVocabulary(id) {
         return request(`${BASE_URL}/vocab/${encodeURIComponent(id)}`, {
             method: 'DELETE',
@@ -120,6 +87,14 @@ const api = {
 
     async getWeeklyGoal() {
         return request(`${BASE_URL}/history/weekly-goal`);
+    },
+
+    async updateWeeklyGoal(goalTarget) {
+        return request(`${BASE_URL}/history/weekly-goal`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ goalTarget }),
+        });
     },
 
     // === AUTH ===
@@ -152,11 +127,7 @@ const api = {
         const qs = params.toString();
 
         if (!qs) {
-            const cached = sessionCache.get(sessionCache.KEYS.grammar);
-            if (cached) return cached;
-            const data = await request(`${BASE_URL}/grammar`);
-            sessionCache.set(sessionCache.KEYS.grammar, data);
-            return data;
+            return request(`${BASE_URL}/grammar`);
         }
         return request(`${BASE_URL}/grammar?${qs}`);
     },
@@ -193,11 +164,7 @@ const api = {
         const qs = params.toString();
 
         if (!qs) {
-            const cached = sessionCache.get(sessionCache.KEYS.kanji);
-            if (cached) return cached;
-            const data = await request(`${BASE_URL}/kanji`);
-            sessionCache.set(sessionCache.KEYS.kanji, data);
-            return data;
+            return request(`${BASE_URL}/kanji`);
         }
         return request(`${BASE_URL}/kanji?${qs}`);
     },
@@ -242,10 +209,38 @@ const api = {
     async getTestResultById(id) {
         return request(`${BASE_URL}/test/${encodeURIComponent(id)}`);
     },
+
+    // === GAMIFICATION ===
+    async getGamification() {
+        return request(`${BASE_URL}/gamification/me`);
+    },
+
+    async trackGamificationEvent(eventType, extra = {}) {
+        return request(`${BASE_URL}/gamification/events`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_type: eventType, extra }),
+        });
+    },
+
+    // === SRS ===
+    async getSrsProgress() {
+        return request(`${BASE_URL}/srs/progress`);
+    },
+
+    async reviewSrsItem(itemType, itemId, quality) {
+        return request(`${BASE_URL}/srs/review`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                item_type: itemType,
+                item_id: itemId,
+                quality,
+            }),
+        });
+    },
 };
 
 // Export for use in other scripts
 window.api = api;
 window.AUTH_TOKEN_KEY = AUTH_TOKEN_KEY;
-window.sessionCache = sessionCache;
-

@@ -3,59 +3,94 @@
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
     // --- Load data ---
     let vocabulary = [];
     let grammar = [];
     let kanji = [];
+    let srsProgress = [];
     let weeklyGoalData = { goalCount: 0 };
     let historyData = [];
 
     try {
-        [vocabulary, grammar, kanji, weeklyGoalData, historyData] = await Promise.all([
-            api.getAllVocabulary().catch(() => []),
-            api.getAllGrammar().catch(() => []),
-            api.getAllKanji().catch(() => []),
-            api.getWeeklyGoal().catch(() => ({ goalCount: 0 })),
-            api.getLearningHistory(10).catch(() => []),
+        [vocabulary, grammar, kanji, srsProgress, weeklyGoalData, historyData] = await Promise.all([
+            api.getAllVocabulary(),
+            api.getAllGrammar(),
+            api.getAllKanji(),
+            api.getSrsProgress(),
+            api.getWeeklyGoal(),
+            api.getLearningHistory(10),
         ]);
     } catch (e) {
-        console.warn('Dashboard: Không thể tải data từ API, dùng dữ liệu mặc định.', e);
+        console.error('Dashboard: Không thể tải data từ API.', e);
+        alert('Khong the tai du lieu dashboard. Vui long kiem tra ket noi va thu lai.');
+        return;
     }
 
     // --- Stats Cards ---
     const totalVocab = vocabulary.length || 0;
     const masteredVocab = vocabulary.filter(v => v.status === 'mastered').length;
-    const learningVocab = vocabulary.filter(v => v.status === 'learning').length;
     const totalGrammar = grammar.length || 0;
     const totalKanji = kanji.length || 0;
+    const grammarIds = new Set(grammar.map(item => Number(item.id)));
+    const kanjiIds = new Set(kanji.map(item => Number(item.id)));
+    const masteredGrammar = getSrsMasteredCount(srsProgress, 'grammar', grammarIds);
+    const masteredKanji = getSrsMasteredCount(srsProgress, 'kanji', kanjiIds);
 
     // Update Vocab stats
     updateStatCard('stat-vocab-count', masteredVocab, totalVocab);
-    updateStatCard('stat-grammar-count', totalGrammar, totalGrammar);
-    updateStatCard('stat-kanji-count', totalKanji, totalKanji);
+    updateStatCard('stat-grammar-count', masteredGrammar, totalGrammar);
+    updateStatCard('stat-kanji-count', masteredKanji, totalKanji);
 
     // Update progress bars
     updateProgressBar('stat-vocab-bar', masteredVocab, totalVocab || 1);
-    updateProgressBar('stat-grammar-bar', totalGrammar, totalGrammar || 1);
-    updateProgressBar('stat-kanji-bar', totalKanji, totalKanji || 1);
+    updateProgressBar('stat-grammar-bar', masteredGrammar, totalGrammar || 1);
+    updateProgressBar('stat-kanji-bar', masteredKanji, totalKanji || 1);
 
     // Update percentages
     updatePercent('stat-vocab-pct', masteredVocab, totalVocab || 1);
-    updatePercent('stat-grammar-pct', totalGrammar, totalGrammar || 1);
-    updatePercent('stat-kanji-pct', totalKanji, totalKanji || 1);
+    updatePercent('stat-grammar-pct', masteredGrammar, totalGrammar || 1);
+    updatePercent('stat-kanji-pct', masteredKanji, totalKanji || 1);
 
     // --- Weekly Goal ---
-    const weeklyGoalTarget = parseInt(localStorage.getItem('weeklyGoalTarget') || '20');
+    let weeklyGoalTarget = weeklyGoalData.goalTarget || 20;
     const weeklyCount = weeklyGoalData.goalCount || 0;
     const goalEl = document.getElementById('weekly-goal-progress');
     const goalCountEl = document.getElementById('weekly-goal-count');
+    const goalTargetInput = document.getElementById('weekly-goal-target-input');
+    const goalSaveBtn = document.getElementById('weekly-goal-save-btn');
 
-    if (goalCountEl) {
-        goalCountEl.innerHTML = `${weeklyCount}<span class="text-sm font-normal text-[#5f6b7a]">/${weeklyGoalTarget}</span>`;
-    }
-    if (goalEl) {
+    function renderWeeklyGoal() {
+        if (goalCountEl) {
+            goalCountEl.innerHTML = `${weeklyCount}<span class="text-sm font-normal text-[#5f6b7a]">/${weeklyGoalTarget}</span>`;
+        }
         const pct = Math.min((weeklyCount / weeklyGoalTarget) * 100, 100);
-        goalEl.style.width = `${pct}%`;
+        if (goalEl) goalEl.style.width = `${pct}%`;
+        if (goalTargetInput) goalTargetInput.value = weeklyGoalTarget;
+    }
+    renderWeeklyGoal();
+
+    if (goalSaveBtn && goalTargetInput) {
+        goalSaveBtn.addEventListener('click', async () => {
+            const nextTarget = Number(goalTargetInput.value);
+            if (!Number.isInteger(nextTarget) || nextTarget < 1 || nextTarget > 500) {
+                alert('Muc tieu tuan phai nam trong khoang 1-500.');
+                return;
+            }
+
+            goalSaveBtn.disabled = true;
+            try {
+                const updatedGoal = await api.updateWeeklyGoal(nextTarget);
+                weeklyGoalTarget = updatedGoal.goalTarget || nextTarget;
+                renderWeeklyGoal();
+            } catch (error) {
+                console.error('Update weekly goal failed:', error);
+                alert('Khong the luu muc tieu tuan. Vui long thu lai.');
+            } finally {
+                goalSaveBtn.disabled = false;
+            }
+        });
     }
 
     // --- Recent Activity ---
@@ -90,24 +125,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const greetingEl = document.getElementById('dashboard-greeting');
     if (greetingEl) {
-        if (auth.isLoggedIn()) {
-            const userName = document.getElementById('sidebar-user-name')?.textContent || 'bạn';
-            greetingEl.innerHTML = `Chào buổi sáng, ${userName}! 🌸`;
-        } else {
-            greetingEl.innerHTML = `Chào buổi sáng! 🌸`;
-            // Show popup reminding to login
-            setTimeout(() => {
-                if (window.authModal) window.authModal.showLogin();
-            }, 800);
-        }
+        const userName = document.getElementById('sidebar-user-name')?.textContent || 'bạn';
+        greetingEl.innerHTML = `Chào buổi sáng, ${userName}! 🌸`;
     }
 
     // --- Gamification Widget ---
     if (typeof gamification !== 'undefined') {
+        await gamification.init().catch(() => null);
         const gm = gamification.getData();
         const currentLvl = gamification.getCurrentLevel(gm.xp);
         const nextLvl = gamification.getNextLevel(gm.xp);
         const progress = gamification.getLevelProgress(gm.xp);
+        const dailyXp = gm.dailyXp || 0;
+        const dailyXpCap = gm.dailyXpCap || 150;
+
+        const dailyXpEl = document.getElementById('stat-daily-xp');
+        const dailyXpDesc = dailyXpEl?.nextElementSibling?.querySelector('span:not(.material-symbols-outlined)');
+        if (dailyXpEl) {
+            dailyXpEl.innerHTML = `${dailyXp} <span class="text-sm font-normal text-[#5f6b7a]">XP</span>`;
+        }
+        if (dailyXpDesc) {
+            dailyXpDesc.className = 'text-xs text-[#5f6b7a]';
+            dailyXpDesc.textContent = `${dailyXp}/${dailyXpCap} XP hom nay`;
+        }
 
         // Level & XP
         const lvlBadge = document.getElementById('gm-level-badge');
@@ -151,24 +191,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- Lock Gamification if not logged in ---
-    if (!auth.isLoggedIn()) {
-        const widgetCards = document.querySelectorAll('#gamification-widget .card');
-        widgetCards.forEach(card => {
-            card.classList.add('relative', 'overflow-hidden');
-            card.insertAdjacentHTML('beforeend', `
-                <div class="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-white/50 group">
-                    <span class="material-symbols-outlined text-3xl text-[#6caba0] mb-2 group-hover:scale-110 transition-transform">lock</span>
-                    <span class="text-sm font-semibold text-[#1a2332]">Đăng nhập để xem</span>
-                </div>
-            `);
-            card.lastElementChild.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (window.authModal) window.authModal.showLogin();
-            });
-        });
-    }
-
     // --- Helper Functions ---
     function updateStatCard(id, current, total) {
         const el = document.getElementById(id);
@@ -183,6 +205,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const pct = total > 0 ? Math.min((current / total) * 100, 100) : 0;
             el.style.width = `${pct}%`;
         }
+    }
+
+    function getSrsMasteredCount(progressItems, itemType, validIds) {
+        return (progressItems || []).filter(item => {
+            return item.itemType === itemType
+                && validIds.has(Number(item.itemId))
+                && Number(item.interval || 0) >= 7;
+        }).length;
     }
 
     function updatePercent(id, current, total) {

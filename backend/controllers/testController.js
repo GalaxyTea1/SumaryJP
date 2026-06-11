@@ -1,6 +1,6 @@
 const TestResult = require('../models/testResult');
 
-const VALID_TEST_TYPES = ['vocab', 'kanji', 'grammar'];
+const VALID_TEST_TYPES = ['vocab', 'kanji', 'grammar', 'mixed'];
 const VALID_MODES = ['practice', 'exam'];
 
 function validateSubmitBody(body) {
