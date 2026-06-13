@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Game Ghép Thẻ - Learning Japanese</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script src="shared-config.js"></script>
+  <style>
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      border-radius: 0.625rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #5f6b7a;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      background: #f0f7f6;
+      color: #6caba0;
+    }
+
+    .sidebar-link.active {
+      background: #f0f7f6;
+      color: #6caba0;
+      font-weight: 600;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.2s;
+    }
+
+    /* 3D Flip Card Styles */
+    .memory-card {
+      perspective: 1000px;
+      cursor: pointer;
+      aspect-ratio: 3 / 4;
+      user-select: none;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .memory-card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front,
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      border: 2px solid transparent;
+      transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    }
+
+    /* Mặt sau (chưa lật) */
+    .card-back {
+      background: linear-gradient(135deg, #6caba0 0%, #4d8a80 100%);
+      color: white;
+    }
+
+    .card-back-pattern {
+      font-size: 1.75rem;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    /* Mặt trước (đã lật) */
+    .card-front {
+      background: white;
+      color: #1a2332;
+      transform: rotateY(180deg);
+      border-color: #e5e7eb;
+    }
+
+    /* Trạng thái so khớp thành công */
+    .memory-card.matched .card-front {
+      border-color: #10b981 !important;
+      background-color: #ecfdf5 !important;
+      color: #047857 !important;
+    }
+
+    /* Trạng thái sai lệch */
+    .memory-card.mismatched .card-inner {
+      animation: shakeY 0.5s ease-in-out;
+    }
+
+    .memory-card.mismatched .card-front {
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+      color: #b91c1c !important;
+    }
+
+    /* Rung lắc khi ghép sai */
+    @keyframes shakeY {
+      0%, 100% { transform: rotateY(180deg) translateX(0); }
+      20%, 60% { transform: rotateY(180deg) translateX(-6px); }
+      40%, 80% { transform: rotateY(180deg) translateX(6px); }
+    }
+
+    /* Pháo hoa emoji container */
+    #confetti-container {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(105vh) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafb] text-[#1a2332] antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
+      <div class="p-5 border-b border-gray-50">
+        <a href="landing.html" class="text-lg font-bold text-[#6caba0] font-['Plus_Jakarta_Sans'] tracking-tight">🌸 Learning JP</a>
+      </div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="dashboard.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">dashboard</span> Dashboard
+        </a>
+        <a href="vocabulary.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">menu_book</span> Từ Vựng
+        </a>
+        <a href="grammar.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">edit_note</span> Ngữ Pháp
+        </a>
+        <a href="kanji.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">translate</span> Kanji
+        </a>
+        <a href="kana.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">abc</span> Kana
+        </a>
+        <a href="matching-game.html" class="sidebar-link active">
+          <span class="material-symbols-outlined text-xl">extension</span> Game Ghép Thẻ
+        </a>
+        <a href="test-center.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">quiz</span> Bài Test
+        </a>
+        <a href="flashcard.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">style</span> Flashcard
+        </a>
+        <a href="srs-review.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">replay</span> Ôn Tập SRS
+        </a>
+        <a href="statistics.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">bar_chart</span> Thống Kê
+        </a>
+      </nav>
+      <div class="p-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <div id="sidebar-user-initial"
+            class="w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm">
+            VA</div>
+          <div class="flex-1 min-w-0">
+            <div id="sidebar-user-name" class="text-sm font-semibold truncate">Khách</div>
+            <div id="sidebar-user-level" class="text-xs text-[#5f6b7a]">N5 Level</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 ml-[260px] flex flex-col min-h-screen">
+      <!-- Top Sticky Header -->
+      <header class="sticky top-0 bg-[#f8fafb]/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 z-20 flex justify-between items-center">
+        <div>
+          <h1 class="text-xl font-bold font-['Plus_Jakarta_Sans']">Trò chơi Ghép Thẻ</h1>
+          <p class="text-xs text-[#5f6b7a] mt-0.5">Rèn luyện phản xạ ghi nhớ Kana và Kanji siêu tốc</p>
+        </div>
+        <!-- Live XP Display -->
+        <div id="header-xp-badge" class="flex items-center gap-2 bg-[#f0f7f6] border border-[#6caba0]/20 px-3 py-1.5 rounded-full text-[#4d8a80] font-semibold text-xs transition-all">
+          <span class="material-symbols-outlined text-sm">workspace_premium</span>
+          <span id="header-xp-text">0 XP Hôm Nay</span>
+        </div>
+      </header>
+
+      <!-- Scrollable Container -->
+      <div class="flex-1 p-8 overflow-y-auto">
+        <!-- SCREEN 1: Setup / Setup Card -->
+        <div id="setup-screen" class="max-w-2xl mx-auto space-y-6">
+          <div class="card p-8 text-center space-y-4 bg-gradient-to-br from-white to-[#fdfefe]">
+            <div class="w-16 h-16 bg-[#f0f7f6] rounded-2xl flex items-center justify-center text-[#6caba0] mx-auto text-3xl">
+              <span class="material-symbols-outlined text-4xl">extension</span>
+            </div>
+            <h2 class="text-2xl font-bold font-['Plus_Jakarta_Sans']">Thử Thách Trí Nhớ</h2>
+            <p class="text-sm text-[#5f6b7a] max-w-md mx-auto">
+              Lật mở các tấm thẻ và tìm các cặp tương ứng để rèn luyện trí nhớ và tích lũy XP cực nhanh!
+            </p>
+          </div>
+
+          <!-- Configuration options card -->
+          <div class="card p-6 space-y-6">
+            <h3 class="text-base font-bold font-['Plus_Jakarta_Sans'] border-b border-gray-100 pb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#6caba0]">settings</span> Cấu Hình Trò Chơi
+            </h3>
+
+            <!-- Row 1: Card Type Selection -->
+            <div class="space-y-3">
+              <label class="text-xs font-bold text-[#5f6b7a] uppercase tracking-wider">1. Bộ Thẻ Học</label>
+              <div class="grid grid-cols-3 gap-3">
+                <button type="button" class="config-btn active border-2 border-[#6caba0] bg-[#f0f7f6] text-[#4d8a80] font-bold p-4 rounded-xl flex flex-col items-center gap-2 transition-all hover:bg-[#f0f7f6]/80 text-sm" data-type="hiragana">
+                  <span class="text-2xl">あ</span>
+                  <span>Hiragana</span>
+                </button>
+                <button type="button" class="config-btn border-2 border-gray-100 bg-white text-gray-600 font-bold p-4 rounded-xl flex flex-col items-center gap-2 transition-all hover:bg-gray-50 text-sm" data-type="katakana">
+                  <span class="text-2xl">ア</span>
+                  <span>Katakana</span>
+                </button>
+                <button type="button" class="config-btn border-2 border-gray-100 bg-white text-gray-600 font-bold p-4 rounded-xl flex flex-col items-center gap-2 transition-all hover:bg-gray-50 text-sm" data-type="kanji">
+                  <span class="text-2xl font-['Noto_Sans_JP']">漢</span>
+                  <span>Kanji / Từ vựng</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Row 2: Match Mode Selection -->
+            <div class="space-y-3">
+              <label class="text-xs font-bold text-[#5f6b7a] uppercase tracking-wider">2. Chế Độ Ghép</label>
+              <div class="grid grid-cols-2 gap-3" id="match-mode-container">
+                <button type="button" class="mode-btn active border-2 border-[#6caba0] bg-[#f0f7f6] text-[#4d8a80] font-bold p-3.5 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-[#f0f7f6]/80 text-sm" data-mode="reading">
+                  <span class="material-symbols-outlined">translate</span>
+                  <span>Chữ &rarr; Cách Đọc</span>
+                </button>
+                <button type="button" class="mode-btn border-2 border-gray-100 bg-white text-gray-600 font-bold p-3.5 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-gray-50 text-sm" data-mode="meaning">
+                  <span class="material-symbols-outlined">description</span>
+                  <span>Chữ &rarr; Nghĩa Việt</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Row 3: Difficulty (Card Count) Selection -->
+            <div class="space-y-3">
+              <label class="text-xs font-bold text-[#5f6b7a] uppercase tracking-wider">3. Độ Khó (Số Thẻ)</label>
+              <div class="grid grid-cols-3 gap-3">
+                <button type="button" class="diff-btn border-2 border-gray-100 bg-white text-gray-600 font-bold p-3.5 rounded-xl flex flex-col items-center justify-center transition-all hover:bg-gray-50 text-sm" data-count="8">
+                  <span class="text-base">Dễ</span>
+                  <span class="text-xs font-normal text-gray-400 mt-0.5">8 thẻ (4 cặp)</span>
+                </button>
+                <button type="button" class="diff-btn active border-2 border-[#6caba0] bg-[#f0f7f6] text-[#4d8a80] font-bold p-3.5 rounded-xl flex flex-col items-center justify-center transition-all hover:bg-[#f0f7f6]/80 text-sm" data-count="12">
+                  <span class="text-base">Trung bình</span>
+                  <span class="text-xs font-normal text-[#6caba0] mt-0.5">12 thẻ (6 cặp)</span>
+                </button>
+                <button type="button" class="diff-btn border-2 border-gray-100 bg-white text-gray-600 font-bold p-3.5 rounded-xl flex flex-col items-center justify-center transition-all hover:bg-gray-50 text-sm" data-count="16">
+                  <span class="text-base">Khó</span>
+                  <span class="text-xs font-normal text-gray-400 mt-0.5">16 thẻ (8 cặp)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Start Button -->
+            <button id="start-game-btn" type="button" class="w-full bg-[#6caba0] hover:bg-[#5da095] text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#6caba0]/20 hover:shadow-xl transition-all text-base">
+              <span class="material-symbols-outlined">play_circle</span> Bắt Đầu Chơi
+            </button>
+          </div>
+        </div>
+
+        <!-- SCREEN 2: Game Board -->
+        <div id="game-screen" class="hidden max-w-4xl mx-auto space-y-6">
+          <!-- Live Status Bar -->
+          <div class="card p-4 flex flex-wrap justify-between items-center gap-4 bg-white shadow-sm">
+            <div class="flex items-center gap-6">
+              <!-- Timer -->
+              <div class="flex items-center gap-2 text-gray-700">
+                <span class="material-symbols-outlined text-[#6caba0] text-xl">schedule</span>
+                <div class="text-left">
+                  <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Thời gian</div>
+                  <div id="game-timer" class="font-mono font-bold text-lg leading-tight">00:00</div>
+                </div>
+              </div>
+              <!-- Moves -->
+              <div class="flex items-center gap-2 text-gray-700">
+                <span class="material-symbols-outlined text-[#6caba0] text-xl">swap_horiz</span>
+                <div class="text-left">
+                  <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Lượt mở</div>
+                  <div id="game-moves" class="font-bold text-lg leading-tight">0</div>
+                </div>
+              </div>
+              <!-- Progress / Matches -->
+              <div class="flex items-center gap-2 text-gray-700">
+                <span class="material-symbols-outlined text-[#6caba0] text-xl">check_circle</span>
+                <div class="text-left">
+                  <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Ghép đúng</div>
+                  <div id="game-progress" class="font-bold text-lg leading-tight">0/6</div>
+                </div>
+              </div>
+              <!-- Current Session XP -->
+              <div class="flex items-center gap-2 text-[#4d8a80] bg-[#f0f7f6] px-3 py-1 rounded-full border border-[#6caba0]/10">
+                <span class="material-symbols-outlined text-base">workspace_premium</span>
+                <span id="session-xp" class="text-xs font-bold font-mono">0 XP tích lũy</span>
+              </div>
+            </div>
+
+            <!-- Stop game action -->
+            <button id="quit-game-btn" type="button" class="text-xs font-bold text-[#ef4444] border border-[#ef4444]/20 hover:bg-red-50/50 px-4 py-2 rounded-lg transition-all flex items-center gap-1">
+              <span class="material-symbols-outlined text-base">close</span> Thoát Game
+            </button>
+          </div>
+
+          <!-- Matching Card Grid Container -->
+          <div id="card-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-4 md:gap-5 max-w-3xl mx-auto">
+            <!-- Cards generated dynamically by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- SCREEN 3: Victory Modal Overlay -->
+  <div id="victory-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300">
+      <!-- Decorative top header -->
+      <div class="bg-gradient-to-br from-[#6caba0] to-[#4d8a80] p-8 text-center text-white relative">
+        <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto text-4xl mb-3 animate-bounce">
+          🏆
+        </div>
+        <h3 class="text-2xl font-bold font-['Plus_Jakarta_Sans']">Tuyệt Vời!</h3>
+        <p class="text-sm text-white/90 mt-1">Bạn đã hoàn thành thử thách ghép cặp!</p>
+      </div>
+
+      <!-- Result statistics body -->
+      <div class="p-6 space-y-6">
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="bg-[#f8fafb] rounded-2xl p-3">
+            <div class="text-[10px] text-[#5f6b7a] font-bold uppercase tracking-wider mb-1">Thời gian</div>
+            <div id="modal-time" class="font-mono font-bold text-base text-[#1a2332]">00:30</div>
+          </div>
+          <div class="bg-[#f8fafb] rounded-2xl p-3">
+            <div class="text-[10px] text-[#5f6b7a] font-bold uppercase tracking-wider mb-1">Lượt đi</div>
+            <div id="modal-moves" class="font-bold text-base text-[#1a2332]">12</div>
+          </div>
+          <div class="bg-[#f8fafb] rounded-2xl p-3">
+            <div class="text-[10px] text-[#5f6b7a] font-bold uppercase tracking-wider mb-1">Độ chính xác</div>
+            <div id="modal-accuracy" class="font-bold text-base text-[#1a2332]">83%</div>
+          </div>
+        </div>
+
+        <!-- Earned XP feedback box -->
+        <div class="bg-[#f0f7f6] rounded-2xl p-4 flex items-center gap-3 border border-[#6caba0]/10">
+          <div class="w-10 h-10 bg-[#6caba0]/10 rounded-xl flex items-center justify-center text-[#6caba0] text-xl font-bold">
+            ✨
+          </div>
+          <div class="flex-1">
+            <div class="text-xs text-[#4d8a80] font-bold">Điểm XP Nhận Được</div>
+            <div id="modal-xp-breakdown" class="text-xs text-gray-500 mt-0.5">Ghép đúng: 0 XP + Hoàn thành: 0 XP</div>
+          </div>
+          <div id="modal-xp-total" class="text-lg font-extrabold text-[#4d8a80] font-mono">+0 XP</div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-col gap-2">
+          <button id="modal-replay-btn" type="button" class="w-full bg-[#6caba0] hover:bg-[#5da095] text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-md">
+            <span class="material-symbols-outlined text-lg">replay</span> Chơi lại
+          </button>
+          <button id="modal-setup-btn" type="button" class="w-full bg-white hover:bg-gray-50 text-gray-600 border border-gray-200 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
+            <span class="material-symbols-outlined text-lg">settings</span> Đổi Cấu Hình
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="confetti-container"></div>
+
+  <!-- Shared Application Scripts -->
+  <script src="scripts/api.js"></script>
+  <script src="scripts/utils.js"></script>
+  <script src="scripts/auth.js"></script>
+  <script src="scripts/auth-modal.js"></script>
+  <script src="scripts/gamification.js"></script>
+  <script src="scripts/responsive.js"></script>
+  <!-- Main Game logic script -->
+  <script src="scripts/matching-game.js"></script>
+</body>
+
+</html>
