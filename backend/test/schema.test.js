@@ -60,3 +60,14 @@ test('learning settings migration stores weekly goal target per user', () => {
     assert.match(migration, /weekly_goal_target INTEGER NOT NULL DEFAULT 20/);
     assert.match(migration, /CHECK \(weekly_goal_target BETWEEN 1 AND 500\)/);
 });
+
+test('kana progress migration stores per-user kana learning state', () => {
+    const migration = fs.readFileSync(path.join(backendRoot, 'migrations', '010_create_user_kana_progress.sql'), 'utf8');
+
+    assert.match(migration, /CREATE TABLE IF NOT EXISTS user_kana_progress/);
+    assert.match(migration, /user_id INTEGER NOT NULL REFERENCES users\(id\) ON DELETE CASCADE/);
+    assert.match(migration, /kana_type VARCHAR\(20\) NOT NULL/);
+    assert.match(migration, /UNIQUE \(user_id, kana_type, character\)/);
+    assert.match(migration, /CHECK \(kana_type IN \('hiragana', 'katakana'\)\)/);
+    assert.match(migration, /CHECK \(status IN \('learning', 'mastered'\)\)/);
+});

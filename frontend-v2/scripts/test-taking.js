@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (questionText) {
             const typePrefix = config.type === 'mixed' ? `<span class="text-sm text-[#6caba0] mr-2">${TYPE_LABELS[question.type]}</span>` : '';
-            questionText.innerHTML = `${typePrefix}<span class="font-['Noto_Sans_JP'] text-2xl">${utils.escapeHtml(question.prompt)}</span> co nghia la gi?`;
+            questionText.innerHTML = `${typePrefix}<span class="font-['Noto_Sans_JP'] text-2xl">${utils.escapeHtml(question.prompt)}</span> có nghĩa là gì?`;
             if (question.subPrompt) {
                 questionText.innerHTML += `<div class="mt-2 text-sm font-normal text-[#5f6b7a]">${utils.escapeHtml(question.subPrompt)}</div>`;
             }
@@ -199,8 +199,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (prevBtn) prevBtn.style.visibility = currentIndex > 0 ? 'visible' : 'hidden';
         if (nextBtn) {
             nextBtn.innerHTML = currentIndex === questions.length - 1
-                ? `Hoan thanh <span class="material-symbols-outlined text-lg">check</span>`
-                : `Cau tiep theo <span class="material-symbols-outlined text-lg">arrow_forward</span>`;
+                ? `Hoàn thành <span class="material-symbols-outlined text-lg">check</span>`
+                : `Câu tiếp theo <span class="material-symbols-outlined text-lg">arrow_forward</span>`;
         }
 
         const existing = answers[currentIndex];
@@ -255,8 +255,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             feedbackEl.innerHTML = `
                 <span class="material-symbols-outlined text-[#4caf50] text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
                 <div>
-                    <div class="font-semibold text-[#2e7d32]">Chinh xac!</div>
-                    <div class="text-sm text-[#5f6b7a]">${utils.escapeHtml(question.prompt)} nghia la "${utils.escapeHtml(question.answer)}"</div>
+                    <div class="font-semibold text-[#2e7d32]">Chính xác!</div>
+                    <div class="text-sm text-[#5f6b7a]">${utils.escapeHtml(question.prompt)} nghĩa là "${utils.escapeHtml(question.answer)}"</div>
                 </div>
             `;
         } else {
@@ -264,8 +264,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             feedbackEl.innerHTML = `
                 <span class="material-symbols-outlined text-[#ef5350] text-2xl" style="font-variation-settings: 'FILL' 1;">cancel</span>
                 <div>
-                    <div class="font-semibold text-[#c62828]">Sai roi!</div>
-                    <div class="text-sm text-[#5f6b7a]">Dap an dung: <span class="font-semibold text-[#4caf50]">${utils.escapeHtml(question.answer)}</span></div>
+                    <div class="font-semibold text-[#c62828]">Sai rồi!</div>
+                    <div class="text-sm text-[#5f6b7a]">Đáp án đúng: <span class="font-semibold text-[#4caf50]">${utils.escapeHtml(question.answer)}</span></div>
                 </div>
             `;
         }

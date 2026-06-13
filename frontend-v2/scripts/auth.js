@@ -60,6 +60,7 @@ const auth = {
         const userLevelEl = document.getElementById('sidebar-user-level');
 
         if (!userInitialEl || !userNameEl) return;
+        this._injectKanaLink();
 
         const user = await this.getCurrentUser();
         if (user) {
@@ -85,6 +86,31 @@ const auth = {
                 userLevelEl.textContent = 'Chưa đăng nhập';
                 userLevelEl.style.display = 'block';
             }
+        }
+    },
+
+    /** Inject Kana link into sidebar (if not already present) */
+    _injectKanaLink() {
+        const nav = document.querySelector('aside nav');
+        if (!nav || nav.querySelector('.kana-sidebar-link')) return;
+
+        const link = document.createElement('a');
+        link.href = 'kana.html';
+        link.className = 'sidebar-link kana-sidebar-link';
+        link.innerHTML = '<span class="material-symbols-outlined text-xl">abc</span> Kana';
+
+        if (window.location.pathname.includes('kana.html')) {
+            link.classList.add('active');
+            nav.querySelectorAll('.sidebar-link.active').forEach(item => {
+                if (item !== link) item.classList.remove('active');
+            });
+        }
+
+        const kanjiLink = Array.from(nav.querySelectorAll('a')).find(item => item.getAttribute('href') === 'kanji.html');
+        if (kanjiLink) {
+            kanjiLink.insertAdjacentElement('afterend', link);
+        } else {
+            nav.appendChild(link);
         }
     },
 

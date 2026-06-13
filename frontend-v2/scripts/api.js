@@ -193,6 +193,23 @@ const api = {
         return request(`${BASE_URL}/kanji/${encodeURIComponent(id)}`, { method: 'DELETE' });
     },
 
+    // === KANA ===
+    async getKanaProgress() {
+        return request(`${BASE_URL}/kana/progress`);
+    },
+
+    async updateKanaProgress(kanaType, character, status) {
+        return request(`${BASE_URL}/kana/progress`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                kana_type: kanaType,
+                character,
+                status,
+            }),
+        });
+    },
+
     // === TEST RESULTS ===
     async submitTestResult(data) {
         return request(`${BASE_URL}/test/submit`, {
