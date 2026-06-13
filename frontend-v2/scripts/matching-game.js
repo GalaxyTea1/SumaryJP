@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headerXpText.textContent = `${currentXp} XP Hôm Nay`;
 
                 if (typeof auth !== 'undefined' && auth.isLoggedIn()) {
-                    const me = auth.getUser();
+                    const me = await auth.getCurrentUser();
                     if (me) {
                         const sidebarName = document.getElementById('sidebar-user-name');
                         const sidebarInitial = document.getElementById('sidebar-user-initial');
@@ -373,28 +373,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         cardsData.forEach(card => {
             const cardEl = document.createElement('div');
-            cardEl.className = 'memory-card';
+            cardEl.className = 'matching-card';
             cardEl.dataset.matchId = card.matchId;
             cardEl.id = card.id;
 
             // Extra stylings for size/font of text
             const isLongText = card.content.length > 5;
             const fontClass = card.isQuestion 
-                ? "text-3xl sm:text-4xl font-bold font-['Noto_Sans_JP']" 
-                : (isLongText ? "text-xs sm:text-sm font-semibold px-2" : "text-sm sm:text-base font-bold");
+                ? "text-2xl sm:text-3xl font-bold font-['Noto_Sans_JP']" 
+                : (isLongText ? "text-xs sm:text-sm font-semibold px-1" : "text-sm sm:text-base font-bold");
 
             cardEl.innerHTML = `
-                <div class="card-inner">
-                    <!-- Card Back (Hidden) -->
-                    <div class="card-back">
-                        <span class="card-back-pattern">🌸</span>
-                        <span class="text-[9px] uppercase tracking-wider opacity-60 mt-1 font-bold">Lật thẻ</span>
-                    </div>
-                    <!-- Card Front (Revealed) -->
-                    <div class="card-front">
-                        <span class="${fontClass} text-center select-all">${card.content}</span>
-                    </div>
-                </div>
+                <span class="${fontClass} text-center select-none pointer-events-none">${card.content}</span>
             `;
 
             cardEl.addEventListener('click', handleCardClick);
@@ -405,19 +395,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 6. Handle card interactions
     function handleCardClick() {
         if (lockBoard) return;
-        if (this === firstCard) return;
-        if (this.classList.contains('matched') || this.classList.contains('flipped')) return;
+        if (this.classList.contains('matched')) return;
 
-        // Reveal card
-        this.classList.add('flipped');
+        // If clicking the currently selected card, deselect it
+        if (this === firstCard) {
+            this.classList.remove('selected');
+            firstCard = null;
+            return;
+        }
+
+        this.classList.add('selected');
 
         if (!firstCard) {
-            // First card flipped
             firstCard = this;
             return;
         }
 
-        // Second card flipped
         secondCard = this;
         moves++;
         gameMoves.textContent = moves;
@@ -432,7 +425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isMatch) {
             disableCards();
         } else {
-            unflipCards();
+            deselectCards();
         }
     }
 
@@ -443,21 +436,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const card1 = firstCard;
         const card2 = secondCard;
 
+        card1.classList.remove('selected');
+        card2.classList.remove('selected');
         card1.classList.add('matched');
         card2.classList.add('matched');
 
-        // Play subtle sound/feedback if desired. In our case, let's trigger XP events
         let xpGranted = 0;
         try {
             if (typeof gamification !== 'undefined') {
-                // Kana matching gains +1 XP per match
                 if (gameConfig.type === 'hiragana' || gameConfig.type === 'katakana') {
-                    const res = await gamification.trackEvent('kana_quiz_correct');
+                    await gamification.trackEvent('kana_quiz_correct');
                     xpGranted = 1;
                 } else {
-                    // Kanji review events
                     await gamification.trackEvent('vocab_review');
-                    xpGranted = 1; // Award 1 XP for Kanji match as well
+                    xpGranted = 1;
                 }
             }
         } catch (err) {
@@ -467,30 +459,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         sessionXpEarned += xpGranted;
         sessionXpText.textContent = `${sessionXpEarned} XP tích lũy`;
 
-        // Update matches count
         matchesCount++;
         const totalPairs = gameConfig.cardCount / 2;
         gameProgress.textContent = `${matchesCount}/${totalPairs}`;
 
-        // Clear selection and unlock
         setTimeout(() => {
-            // Apply slight fade-out effect for premium feel
-            card1.style.opacity = '0.5';
-            card1.style.transition = 'opacity 0.4s';
-            card2.style.opacity = '0.5';
-            card2.style.transition = 'opacity 0.4s';
-
+            card1.classList.add('matched-hidden');
+            card2.classList.add('matched-hidden');
             resetBoard();
-
-            // Check if game complete
             if (matchesCount === totalPairs) {
                 endGameSession();
             }
-        }, 500);
+        }, 400);
     }
 
     // 9. Handle mismatched pairs
-    function unflipCards() {
+    function deselectCards() {
         lockBoard = true;
         const card1 = firstCard;
         const card2 = secondCard;
@@ -498,16 +482,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         card1.classList.add('mismatched');
         card2.classList.add('mismatched');
 
-        // Vibrate on mobile for tactile response if supported
         if (navigator.vibrate) {
             navigator.vibrate(100);
         }
 
         setTimeout(() => {
-            card1.classList.remove('flipped', 'mismatched');
-            card2.classList.remove('flipped', 'mismatched');
+            card1.classList.remove('selected', 'mismatched');
+            card2.classList.remove('selected', 'mismatched');
             resetBoard();
-        }, 900);
+        }, 600);
     }
 
     // Reset current active card selections
