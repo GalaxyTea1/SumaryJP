@@ -10,6 +10,8 @@ const VALID_EVENT_TYPES = new Set([
     'srs_card_good',
     'vocab_review',
     'kanji_review',
+    'kana_mastered',
+    'kana_quiz_correct',
 ]);
 
 const gamificationController = {

@@ -67,3 +67,17 @@ test('Gamification.applyEvent respects the daily xp cap', () => {
     assert.equal(row.daily_xp, Gamification.DAILY_XP_CAP);
     assert.equal(row.stats.testsCompleted, 1);
 });
+
+test('Gamification.applyEvent awards kana mastered and quiz correct xp', () => {
+    const row = createRow();
+
+    const resultMastered = Gamification.applyEvent(row, 'kana_mastered');
+    const resultCorrect = Gamification.applyEvent(row, 'kana_quiz_correct');
+
+    assert.equal(resultMastered.awardedXp, 2);
+    assert.equal(resultCorrect.awardedXp, 1);
+    assert.equal(row.xp, 3);
+    assert.equal(row.stats.kanaMastered, 1);
+    assert.equal(row.stats.kanaQuizCorrect, 1);
+});
+

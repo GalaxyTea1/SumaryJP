@@ -8,6 +8,8 @@ const DEFAULT_STATS = {
     vocabReviewed: 0,
     kanjiReviewed: 0,
     srsSessions: 0,
+    kanaMastered: 0,
+    kanaQuizCorrect: 0,
 };
 
 const LEVELS = [
@@ -31,6 +33,8 @@ const XP_REWARDS = {
     test_perfect: 30,
     srs_session: 10,
     srs_card_good: 3,
+    kana_mastered: 2,
+    kana_quiz_correct: 1,
 };
 
 function toDateKey(value) {
@@ -191,6 +195,14 @@ function applyEvent(row, eventType, extra = {}) {
             break;
         case 'kanji_review':
             stats.kanjiReviewed += Math.max(Number(extra.count || 1), 0);
+            break;
+        case 'kana_mastered':
+            stats.kanaMastered = Number(stats.kanaMastered || 0) + 1;
+            awardedXp += addXp(row, XP_REWARDS.kana_mastered);
+            break;
+        case 'kana_quiz_correct':
+            stats.kanaQuizCorrect = Number(stats.kanaQuizCorrect || 0) + 1;
+            awardedXp += addXp(row, XP_REWARDS.kana_quiz_correct);
             break;
         default:
             throw new Error('INVALID_EVENT_TYPE');

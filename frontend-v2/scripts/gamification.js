@@ -9,6 +9,8 @@ const gamification = (() => {
         vocabReviewed: 0,
         kanjiReviewed: 0,
         srsSessions: 0,
+        kanaMastered: 0,
+        kanaQuizCorrect: 0,
     };
 
     const LEVELS = [
@@ -49,6 +51,8 @@ const gamification = (() => {
         srs_session: 10,
         srs_card_good: 3,
         daily_login: 10,
+        kana_mastered: 2,
+        kana_quiz_correct: 1,
     };
 
     let state = createDefault();
