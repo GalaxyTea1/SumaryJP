@@ -18,12 +18,7 @@ import type { Vocabulary, Grammar, Kanji } from '@/types';
 // Đăng ký Chart.js components một lần
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController);
 
-// ---- Pre-fetch ----
-const dataPromise = Promise.all([
-  api.getAllVocabulary().catch(() => [] as Vocabulary[]),
-  api.getAllGrammar().catch(() => [] as Grammar[]),
-  api.getAllKanji().catch(() => [] as Kanji[]),
-]);
+import { useAuth } from '@/context/AuthContext';
 
 // ---- localStorage results ----
 const RESULTS_KEY = 'sumary_test_results';
@@ -200,7 +195,7 @@ function LevelDistChart({ data }: LevelDistProps) {
 // ============================================
 // Main stats content — uses use()
 // ============================================
-function StatsContent() {
+function StatsContent({ dataPromise }: { dataPromise: Promise<[Vocabulary[], Grammar[], Kanji[]]> }) {
   const [vocab, grammar, kanji] = use(dataPromise);
   const testResults = useMemo(() => loadTestResults(), []);
 
@@ -326,17 +321,24 @@ function StatsSkeleton() {
 // Page Export
 // ============================================
 export function StatisticsPage() {
+  const { user } = useAuth();
+  const dataPromise = useMemo(() => Promise.all([
+    api.getAllVocabulary().catch(() => [] as Vocabulary[]),
+    api.getAllGrammar().catch(() => [] as Grammar[]),
+    api.getAllKanji().catch(() => [] as Kanji[]),
+  ]), [user]);
+
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h1 className="text-2xl font-bold max-sm:text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Thống Kê
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Tổng quan tiến độ học tập</p>
       </div>
 
       <Suspense fallback={<StatsSkeleton />}>
-        <StatsContent />
+        <StatsContent dataPromise={dataPromise} />
       </Suspense>
     </div>
   );

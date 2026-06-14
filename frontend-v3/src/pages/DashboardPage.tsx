@@ -3,20 +3,7 @@
 // React 19: use() hook để fetch data
 // ============================================
 
-import { Suspense, use, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { api } from '@/api';
-import { useAuth } from '@/context/AuthContext';
-import { useGamification } from '@/context/GamificationContext';
-import { calcPercent, timeAgo } from '@/lib/utils';
-import type { Vocabulary, Grammar, Kanji, LearningHistory, WeeklyGoal } from '@/types';
-
-// ---- Pre-fetch promises (tạo ngoài component để không re-create khi re-render) ----
-const vocabPromise   = api.getAllVocabulary().catch(() => [] as Vocabulary[]);
-const grammarPromise = api.getAllGrammar().catch(() => [] as Grammar[]);
-const kanjiPromise   = api.getAllKanji().catch(() => [] as Kanji[]);
-const historyPromise = api.getLearningHistory(4).catch(() => [] as LearningHistory[]);
-const weeklyPromise  = api.getWeeklyGoal().catch(() => ({ goalCount: 0 } as WeeklyGoal));
+import { Suspense, use, useMemo, type ReactNode } from 'react';
 
 // ============================================
 // Skeleton
@@ -69,11 +56,22 @@ function StatCard({ label, current, total, color, icon, iconBg }: StatCardProps)
   );
 }
 
+import { Link } from 'react-router-dom';
+import { api } from '@/api';
+import { useAuth } from '@/context/AuthContext';
+import { useGamification } from '@/context/GamificationContext';
+import { calcPercent, timeAgo } from '@/lib/utils';
+import type { Vocabulary, Grammar, Kanji, LearningHistory, WeeklyGoal } from '@/types';
+
 // ============================================
 // Stats Section — dùng React 19 use()
 // ✨ use() có thể gọi trong điều kiện, loop — khác với useEffect
 // ============================================
-function StatsSection() {
+function StatsSection({ vocabPromise, grammarPromise, kanjiPromise }: {
+  vocabPromise: Promise<Vocabulary[]>;
+  grammarPromise: Promise<Grammar[]>;
+  kanjiPromise: Promise<Kanji[]>;
+}) {
   // React 19: use() unwrap Promise trực tiếp trong render
   const vocabulary = use(vocabPromise);
   const grammar    = use(grammarPromise);
@@ -132,7 +130,7 @@ function XPCard() {
 // ============================================
 // Weekly Goal
 // ============================================
-function WeeklyGoalSection() {
+function WeeklyGoalSection({ weeklyPromise }: { weeklyPromise: Promise<WeeklyGoal> }) {
   const weeklyData = use(weeklyPromise);
   const weeklyTarget = parseInt(localStorage.getItem('weeklyGoalTarget') ?? '20');
   const weeklyCount  = weeklyData.goalCount ?? 0;
@@ -190,7 +188,7 @@ function GamificationWidget() {
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Level & XP */}
       <div className="card p-5 relative overflow-hidden">
         {!isLoggedIn && <LockOverlay />}
@@ -294,7 +292,7 @@ function QuickActions() {
         <Link
           key={action.to}
           to={action.to}
-          className="flex items-center gap-4 card p-5 border border-outline-variant
+          className="flex items-center gap-4 card p-4 border border-outline-variant
                      hover:shadow-card-hover hover:-translate-y-0.5 hover:border-primary
                      transition-all duration-200 cursor-pointer block"
         >
@@ -307,7 +305,7 @@ function QuickActions() {
             <div className="font-semibold text-sm">{action.title}</div>
             <div className="text-xs text-on-surface-variant">{action.desc}</div>
           </div>
-          <span className="bg-primary text-white rounded-lg font-semibold text-[0.8125rem] px-4 py-2 hover:bg-primary-dark transition-colors">
+          <span className="bg-primary text-white rounded-lg font-semibold text-[0.8125rem] px-3 py-2 hover:bg-primary-dark transition-colors flex-shrink-0 max-sm:hidden">
             {action.btnText}
           </span>
         </Link>
@@ -325,7 +323,7 @@ const ICON_MAP: Record<string, { icon: string; bg: string; color: string }> = {
   'not-learned': { icon: 'school', bg: 'bg-blue-50',       color: 'text-[#42a5f5]' },
 };
 
-function RecentActivity() {
+function RecentActivity({ historyPromise }: { historyPromise: Promise<LearningHistory[]> }) {
   const history = use(historyPromise);
 
   return (
@@ -382,16 +380,24 @@ function Wrapper({ children }: { children: ReactNode }) {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+
+  const vocabPromise   = useMemo(() => api.getAllVocabulary().catch(() => [] as Vocabulary[]), [user]);
+  const grammarPromise = useMemo(() => api.getAllGrammar().catch(() => [] as Grammar[]), [user]);
+  const kanjiPromise   = useMemo(() => api.getAllKanji().catch(() => [] as Kanji[]), [user]);
+  const historyPromise = useMemo(() => api.getLearningHistory(4).catch(() => [] as LearningHistory[]), [user]);
+  const weeklyPromise  = useMemo(() => api.getWeeklyGoal().catch(() => ({ goalCount: 0 } as WeeklyGoal)), [user]);
+
   return (
     <Wrapper>
       {/* Stats - dùng Suspense riêng để mỗi section load độc lập */}
       <Suspense fallback={<SectionFallback count={4} />}>
-        <StatsSection />
+        <StatsSection vocabPromise={vocabPromise} grammarPromise={grammarPromise} kanjiPromise={kanjiPromise} />
       </Suspense>
 
       {/* Weekly Goal */}
       <Suspense fallback={<StatCardSkeleton />}>
-        <WeeklyGoalSection />
+        <WeeklyGoalSection weeklyPromise={weeklyPromise} />
       </Suspense>
 
       {/* Gamification */}
@@ -404,7 +410,7 @@ export default function DashboardPage() {
         </div>
         <div className="lg:col-span-2">
           <Suspense fallback={<StatCardSkeleton />}>
-            <RecentActivity />
+            <RecentActivity historyPromise={historyPromise} />
           </Suspense>
         </div>
       </div>

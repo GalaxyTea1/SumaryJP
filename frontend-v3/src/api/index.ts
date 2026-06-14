@@ -7,7 +7,7 @@ import type {
   Vocabulary, Grammar, Kanji,
   LearningHistory, WeeklyGoal,
   User, TestResult,
-  GrammarFilters, KanjiFilters,
+  GrammarFilters, KanjiFilters, GamificationData, KanaProgressItem,
 } from '@/types';
 
 const isLocalhost =
@@ -250,5 +250,31 @@ export const api = {
 
   async getTestResultById(id: number): Promise<TestResult> {
     return request(`${BASE_URL}/test/${encodeURIComponent(id)}`);
+  },
+
+  // === GAMIFICATION ===
+  async getGamification(): Promise<GamificationData> {
+    return request(`${BASE_URL}/gamification/me`);
+  },
+
+  async trackGamificationEvent(eventType: string, extra: Record<string, number> = {}): Promise<GamificationData & { awardedXp: number; capped: boolean; newBadges: string[] }> {
+    return request(`${BASE_URL}/gamification/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventType, extra }),
+    });
+  },
+
+  // === KANA ===
+  async getKanaProgress(): Promise<KanaProgressItem[]> {
+    return request(`${BASE_URL}/kana/progress`);
+  },
+
+  async updateKanaProgress(kanaType: 'hiragana' | 'katakana', character: string, status: 'new' | 'learning' | 'mastered'): Promise<KanaProgressItem> {
+    return request(`${BASE_URL}/kana/progress`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kanaType, character, status }),
+    });
   },
 };

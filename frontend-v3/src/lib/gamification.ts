@@ -49,19 +49,30 @@ export const XP_REWARDS = {
   srs_card_good:      3,
   daily_login:       10,
   vocab_mastered:     5,
+  kana_mastered:      2,
+  kana_quiz_correct:  1,
 } as const;
 
 export type XPRewardKey = keyof typeof XP_REWARDS;
 export type TrackEventType =
   | 'test_complete' | 'flashcard_flip' | 'flashcard_complete'
   | 'srs_session'   | 'srs_card_good'  | 'vocab_review'
-  | 'kanji_review'  | 'first_login';
+  | 'kanji_review'  | 'first_login'
+  | 'kana_mastered' | 'kana_quiz_correct';
 
 // ---- Load / Save ----
 function createDefault(): GamificationData {
   return {
     xp: 0, totalXpEarned: 0, badges: [], streak: 0, lastActiveDate: null,
-    stats: { testsCompleted: 0, flashcardsFlipped: 0, vocabReviewed: 0, kanjiReviewed: 0, srsSessions: 0 },
+    stats: {
+      testsCompleted: 0,
+      flashcardsFlipped: 0,
+      vocabReviewed: 0,
+      kanjiReviewed: 0,
+      srsSessions: 0,
+      kanaMastered: 0,
+      kanaQuizCorrect: 0,
+    },
   };
 }
 
@@ -221,6 +232,16 @@ export function trackEvent(eventType: TrackEventType, extra: Record<string, numb
       data.stats.kanjiReviewed += extra['count'] ?? 1;
       saveGamification(data);
       checkBadge('kanji_20', data);
+      break;
+    case 'kana_mastered':
+      data.stats.kanaMastered = (data.stats.kanaMastered ?? 0) + 1;
+      saveGamification(data);
+      addXP(XP_REWARDS.kana_mastered, 'Thuộc chữ cái Kana');
+      break;
+    case 'kana_quiz_correct':
+      data.stats.kanaQuizCorrect = (data.stats.kanaQuizCorrect ?? 0) + 1;
+      saveGamification(data);
+      addXP(XP_REWARDS.kana_quiz_correct, 'Trả lời đúng Kana');
       break;
   }
 

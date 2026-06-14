@@ -109,6 +109,8 @@ export interface GamificationStats {
   vocabReviewed: number;
   kanjiReviewed: number;
   srsSessions: number;
+  kanaMastered?: number;
+  kanaQuizCorrect?: number;
 }
 
 export interface GamificationData {
@@ -118,6 +120,15 @@ export interface GamificationData {
   streak: number;
   lastActiveDate: string | null;
   stats: GamificationStats;
+}
+
+export interface KanaProgressItem {
+  id?: number;
+  user_id?: number;
+  kana_type: 'hiragana' | 'katakana';
+  character: string;
+  status: 'new' | 'learning' | 'mastered';
+  updated_at?: string;
 }
 
 // --- API Generic ---

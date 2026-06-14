@@ -16,8 +16,7 @@ interface KanjiExtended extends Kanji {
   example_words?: string;
 }
 
-// ---- Pre-fetch ----
-const kanjiPromise = api.getAllKanji().catch(() => [] as KanjiExtended[]);
+import { useAuth } from '@/context/AuthContext';
 
 // ---- Level badge ----
 const LEVEL_STYLES: Record<string, { bg: string; text: string }> = {
@@ -39,7 +38,7 @@ interface LessonSelectProps {
 }
 function LessonSelect({ lessons, value, onChange }: LessonSelectProps) {
   return (
-    <div className="relative min-w-[150px]">
+    <div className="relative min-w-[150px] max-sm:flex-1">
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -68,7 +67,7 @@ function KanjiCard({ k, onClick }: { k: KanjiExtended; onClick: () => void }) {
     <button
       onClick={onClick}
       className="card p-5 text-center cursor-pointer hover:shadow-card-hover hover:-translate-y-0.5
-                 transition-all duration-200 relative w-full"
+                 transition-all duration-200 relative w-full bg-white border border-gray-100 flex flex-col items-center justify-between"
     >
       {k.stroke_count && (
         <div className="absolute top-2.5 right-2.5 text-[0.6875rem] text-on-surface-variant
@@ -82,20 +81,22 @@ function KanjiCard({ k, onClick }: { k: KanjiExtended; onClick: () => void }) {
       >
         {escapeHtml(char)}
       </div>
-      <div className="text-sm font-semibold mb-1">{escapeHtml(k.meaning)}</div>
-      <div
-        className="text-xs text-on-surface-variant mb-2"
-        style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
-      >
-        {[k.onyomi, k.kunyomi].filter(Boolean).join(' / ')}
-      </div>
-      <div className="flex items-center justify-center gap-1.5">
-        <span className={`text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full ${levelStyle.bg} ${levelStyle.text}`}>
-          {k.level}
-        </span>
-        {k.lesson && (
-          <span className="text-[0.6875rem] text-on-surface-variant">Bài {k.lesson}</span>
-        )}
+      <div>
+        <div className="text-sm font-semibold mb-1 text-on-surface">{escapeHtml(k.meaning)}</div>
+        <div
+          className="text-xs text-on-surface-variant mb-2 line-clamp-1"
+          style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
+        >
+          {[k.onyomi, k.kunyomi].filter(Boolean).join(' / ')}
+        </div>
+        <div className="flex items-center justify-center gap-1.5">
+          <span className={`text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full ${levelStyle.bg} ${levelStyle.text}`}>
+            {k.level}
+          </span>
+          {k.lesson && (
+            <span className="text-[0.6875rem] text-on-surface-variant">Bài {k.lesson}</span>
+          )}
+        </div>
       </div>
     </button>
   );
@@ -108,7 +109,6 @@ interface KanjiModalProps {
 }
 
 function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
-  // Đóng bằng Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -135,7 +135,7 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
     >
       <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-elevated">
         {/* Header */}
-        <div className="bg-gradient-to-br from-primary to-primary-dark p-8 text-center text-white rounded-t-2xl relative">
+        <div className="bg-gradient-to-br from-primary to-primary-dark p-8 text-center text-white rounded-t-2xl relative animate-fade-in-up">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-all"
@@ -143,7 +143,7 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
           <div
-            className="text-7xl font-bold mb-2"
+            className="text-7xl font-bold mb-2 animate-pulse"
             style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
           >
             {escapeHtml(char)}
@@ -163,13 +163,13 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-surface-dim rounded-xl p-4">
               <div className="text-xs text-on-surface-variant mb-1 uppercase tracking-wider">On'yomi (Âm On)</div>
-              <div className="font-bold text-lg" style={{ fontFamily: "'Noto Sans JP', sans-serif" }}>
+              <div className="font-bold text-lg text-on-surface font-['Noto_Sans_JP']">
                 {k.onyomi || '—'}
               </div>
             </div>
             <div className="bg-surface-dim rounded-xl p-4">
               <div className="text-xs text-on-surface-variant mb-1 uppercase tracking-wider">Kun'yomi (Âm Kun)</div>
-              <div className="font-bold text-lg" style={{ fontFamily: "'Noto Sans JP', sans-serif" }}>
+              <div className="font-bold text-lg text-on-surface font-['Noto_Sans_JP']">
                 {k.kunyomi || '—'}
               </div>
             </div>
@@ -183,8 +183,7 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
                 {exampleWords.map((ex, i) => (
                   <div key={i} className="bg-surface-dim rounded-lg p-3 flex items-center gap-3">
                     <span
-                      className="text-lg font-bold text-primary"
-                      style={{ fontFamily: "'Noto Sans JP', sans-serif" }}
+                      className="text-lg font-bold text-primary font-['Noto_Sans_JP']"
                     >
                       {escapeHtml(ex.word)}
                     </span>
@@ -203,7 +202,7 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
           {k.radical && (
             <div>
               <div className="text-xs text-on-surface-variant mb-1 uppercase tracking-wider">Bộ thủ</div>
-              <div className="font-bold text-lg" style={{ fontFamily: "'Noto Sans JP', sans-serif" }}>
+              <div className="font-bold text-lg text-on-surface font-['Noto_Sans_JP']">
                 {escapeHtml(k.radical)}
               </div>
             </div>
@@ -217,7 +216,7 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
 // ---- Skeleton Grid ----
 function KanjiSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 flex-grow overflow-hidden">
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="card p-5 text-center">
           <div className="skeleton h-14 w-14 rounded-lg mx-auto mb-3" />
@@ -230,7 +229,7 @@ function KanjiSkeleton() {
 }
 
 // ---- Kanji Grid (fetches with use()) ----
-function KanjiGrid() {
+function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> }) {
   const allKanji = use(kanjiPromise) as KanjiExtended[];
 
   const [activeLevel,   setActiveLevel]   = useState('all');
@@ -272,15 +271,16 @@ function KanjiGrid() {
   const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
-      {/* Filters bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex-1 min-h-0 flex flex-col space-y-4">
+      {/* Filters bar — cố định */}
+      <div className="flex items-start gap-3 flex-wrap flex-shrink-0 bg-transparent">
+        {/* Level pills — hỗ trợ cuộn ngang trên mobile */}
+        <div className="flex items-center gap-2 flex-wrap max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:scrollbar-none max-sm:pb-1 flex-shrink-0">
           {(['all', ...LEVELS] as const).map(level => (
             <button
               key={level}
               onClick={() => handleLevel(level)}
-              className={`px-3.5 py-1.5 rounded-full text-[0.8125rem] font-medium border transition-all
+              className={`px-3.5 py-1.5 rounded-full text-[0.8125rem] font-medium border transition-all flex-shrink-0
                 ${activeLevel === level
                   ? 'bg-primary text-white border-primary'
                   : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
@@ -294,7 +294,7 @@ function KanjiGrid() {
         <LessonSelect lessons={lessons} value={activeLesson} onChange={val => setActiveLesson(val)} />
 
         {/* Search */}
-        <div className="relative flex-1 min-w-[180px] max-w-xs">
+        <div className="relative flex-1 min-w-[160px] max-sm:w-full max-sm:min-w-0">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
             search
           </span>
@@ -309,35 +309,36 @@ function KanjiGrid() {
         </div>
       </div>
 
-      {/* Stats bar */}
-      <div className="flex items-center gap-3 text-sm text-on-surface-variant">
+      {/* Stats bar — cố định */}
+      <div className="flex items-center gap-3 text-sm text-on-surface-variant flex-shrink-0 px-1">
         <span className="font-semibold text-on-surface">{filtered.length} Kanji</span>
         <span>•</span>
         <span>{uniqueLessons} bài</span>
       </div>
 
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-16">
-          <h3 className="text-lg font-bold mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Không tìm thấy Kanji nào
-          </h3>
-          <p className="text-sm text-on-surface-variant">Thử lọc theo level hoặc bài khác</p>
-        </div>
-      ) : (
-        <div
-          className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4
-            transition-opacity ${isPending ? 'opacity-60' : ''}`}
-        >
-          {filtered.map(k => (
-            <KanjiCard
-              key={k.id}
-              k={k}
-              onClick={() => setSelectedKanji(k)}
-            />
-          ))}
-        </div>
-      )}
+      {/* Grid Container — cuộn dọc riêng biệt */}
+      <div className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}>
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 bg-white card border border-gray-100 rounded-2xl">
+            <h3 className="text-lg font-bold mb-2 text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Không tìm thấy Kanji nào
+            </h3>
+            <p className="text-sm text-on-surface-variant">Thử lọc theo level hoặc bài khác</p>
+          </div>
+        ) : (
+          <div
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pb-4"
+          >
+            {filtered.map(k => (
+              <KanjiCard
+                key={k.id}
+                k={k}
+                onClick={() => setSelectedKanji(k)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Modal */}
       {selectedKanji && (
@@ -354,10 +355,13 @@ function KanjiGrid() {
 // Page Export
 // ============================================
 export function KanjiPage() {
+  const { user } = useAuth();
+  const kanjiPromise = useMemo(() => api.getAllKanji().catch(() => [] as KanjiExtended[]), [user]);
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
+      <div className="mb-2 flex-shrink-0">
+        <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Kanji
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
@@ -366,7 +370,7 @@ export function KanjiPage() {
       </div>
 
       <Suspense fallback={<KanjiSkeleton />}>
-        <KanjiGrid />
+        <KanjiGrid kanjiPromise={kanjiPromise} />
       </Suspense>
     </div>
   );

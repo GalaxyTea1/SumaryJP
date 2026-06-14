@@ -64,6 +64,11 @@
   box-sizing: border-box;
 }
 
+button:not([disabled]), 
+[role="button"]:not([disabled]) {
+  cursor: pointer;
+}
+
 body {
   font-family: var(--font-body);
   background: var(--color-background);
@@ -77,10 +82,17 @@ body {
 ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-/* ---- Keyframes ---- */
+/* ============================================
+   Keyframes
+   ============================================ */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes toastSlide {
@@ -102,9 +114,33 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* ---- Utility classes ---- */
+/* Rung lắc khi ghép thẻ sai (Game Ghép Thẻ) */
+@keyframes shakeX {
+  0%, 100% { transform: translateX(0); }
+  20%, 60%  { transform: translateX(-6px); }
+  40%, 80%  { transform: translateX(6px); }
+}
+
+/* Pháo hoa confetti rơi */
+@keyframes confettiFall {
+  to {
+    transform: translateY(105vh) rotate(360deg);
+  }
+}
+
+/* ============================================
+   Utility classes
+   ============================================ */
 .animate-fade-in-up {
   animation: fadeInUp 0.35s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease both;
+}
+
+.animate-shake {
+  animation: shakeX 0.5s ease-in-out;
 }
 
 .card {
@@ -136,4 +172,44 @@ body {
 /* Material Symbols */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Confetti pieces */
+.confetti-piece {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.5rem;
+  animation: confettiFall linear forwards;
+  z-index: 9999;
+}
+
+/* ============================================
+   Responsive — Mobile (≤ 640px)
+   ============================================ */
+@media (max-width: 640px) {
+  /* Flashcard/SRS card size */
+  .flashcard-container,
+  .review-card {
+    height: 240px !important;
+    max-width: 100% !important;
+  }
+
+  /* Ẩn text chỉ dành cho desktop */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Bảng responsive — scroll ngang */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ============================================
+   Responsive — Very small (≤ 380px)
+   ============================================ */
+@media (max-width: 380px) {
+  .kanji-char {
+    font-size: 2.5rem !important;
+  }
 }

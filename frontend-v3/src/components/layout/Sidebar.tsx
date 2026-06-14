@@ -1,10 +1,12 @@
 // ============================================
 // Sidebar — SumaryJP
 // React Router NavLink với active state tự động
+// Responsive: slide in/out trên mobile/tablet
 // ============================================
 
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useAuthModal } from '@/context/AuthModalContext';
 
 interface NavItem {
   to:   string;
@@ -17,14 +19,22 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/vocabulary',  icon: 'menu_book',    label: 'Từ Vựng' },
   { to: '/grammar',     icon: 'edit_note',    label: 'Ngữ Pháp' },
   { to: '/kanji',       icon: 'translate',    label: 'Kanji' },
+  { to: '/kana',        icon: 'abc',          label: 'Kana' },
+  { to: '/matching-game', icon: 'extension',  label: 'Game Ghép Thẻ' },
   { to: '/test-center', icon: 'quiz',         label: 'Bài Test' },
   { to: '/flashcard',   icon: 'style',        label: 'Flashcard' },
   { to: '/srs-review',  icon: 'replay',       label: 'Ôn Tập SRS' },
   { to: '/statistics',  icon: 'bar_chart',    label: 'Thống Kê' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { user, isAdmin, logout } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const navigate = useNavigate();
 
   const userName = user?.display_name ?? user?.username ?? 'Khách';
@@ -33,20 +43,38 @@ export default function Sidebar() {
 
   function handleLogout() {
     logout();
+    onClose();
     navigate('/');
   }
 
   return (
-    <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-30">
-      {/* Logo */}
-      <div className="p-5 border-b border-gray-50">
+    <aside
+      className={`
+        w-[260px] bg-white border-r border-gray-100 flex flex-col fixed h-full z-40
+        transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
+        lg:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}
+    >
+      {/* Logo — click đóng sidebar trên mobile */}
+      <div className="p-5 border-b border-gray-50 flex items-center justify-between">
         <NavLink
-          to="/"
+          to={user ? "/dashboard" : "/"}
           className="text-lg font-bold text-primary tracking-tight"
           style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          onClick={onClose}
         >
           🌸 Learning JP
         </NavLink>
+
+        {/* Nút đóng sidebar — chỉ hiện trên tablet/mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-gray-100 transition-colors"
+          aria-label="Đóng menu"
+        >
+          <span className="material-symbols-outlined text-xl">close</span>
+        </button>
       </div>
 
       {/* Nav */}
@@ -55,6 +83,7 @@ export default function Sidebar() {
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-150 ${
                 isActive
@@ -74,6 +103,7 @@ export default function Sidebar() {
             <div className="border-t border-gray-100 my-2" />
             <NavLink
               to="/admin"
+              onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-2.5 rounded-[10px] text-sm font-medium transition-all duration-150 ${
                   isActive
@@ -108,11 +138,13 @@ export default function Sidebar() {
               <span className="material-symbols-outlined text-xl">logout</span>
             </button>
           ) : (
-            <NavLink to="/login" title="Đăng nhập">
-              <span className="material-symbols-outlined text-xl text-on-surface-variant hover:text-primary transition-colors">
-                login
-              </span>
-            </NavLink>
+            <button
+              onClick={() => { openAuthModal('login'); onClose(); }}
+              title="Đăng nhập"
+              className="text-on-surface-variant hover:text-primary transition-colors"
+            >
+              <span className="material-symbols-outlined text-xl">login</span>
+            </button>
           )}
         </div>
       </div>

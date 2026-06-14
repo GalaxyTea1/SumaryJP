@@ -13,8 +13,7 @@ import type { Grammar } from '@/types';
 const ITEMS_PER_PAGE = 6;
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
 
-// ---- Pre-fetch ----
-const grammarPromise = api.getAllGrammar().catch(() => [] as Grammar[]);
+import { useAuth } from '@/context/AuthContext';
 
 // ---- Level badge colors ----
 const LEVEL_STYLES: Record<string, { bg: string; text: string }> = {
@@ -57,7 +56,7 @@ function GrammarCard({ grammar: g }: GrammarCardProps) {
     : '<span class="text-on-surface-variant italic">Chưa có ví dụ</span>';
 
   return (
-    <div className="card p-6 hover:shadow-card-hover transition-shadow">
+    <div className="card p-6 hover:shadow-card-hover transition-shadow bg-white border border-gray-100">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -142,7 +141,7 @@ function GrammarCardSkeleton() {
 }
 
 // ---- Grammar Grid (data fetched via use()) ----
-function GrammarGrid() {
+function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> }) {
   const allGrammar = use(grammarPromise) as (Grammar & {
     example_ja?: string;
     example_vi?: string;
@@ -179,16 +178,17 @@ function GrammarGrid() {
   }
 
   return (
-    <div className="space-y-5 animate-fade-in-up">
-      {/* Filters */}
-      <div className="card p-4 flex flex-wrap items-center gap-3">
-        {/* Level pills */}
-        <div className="flex gap-2 flex-wrap">
+    <div className="flex-1 min-h-0 flex flex-col space-y-4">
+      {/* Filters — cố định */}
+      <div className="card p-4 flex flex-wrap items-center gap-3 max-sm:gap-2 flex-shrink-0 bg-white">
+        
+        {/* Level pills — hỗ trợ cuộn ngang trên mobile */}
+        <div className="flex gap-2 flex-wrap max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:scrollbar-none max-sm:pb-1 flex-shrink-0">
           {(['all', ...LEVELS] as const).map(level => (
             <button
               key={level}
               onClick={() => handleLevel(level)}
-              className={`px-3.5 py-1.5 rounded-full text-[0.8125rem] font-medium border transition-all
+              className={`px-3.5 py-1.5 rounded-full text-[0.8125rem] font-medium border transition-all flex-shrink-0
                 ${activeLevel === level
                   ? 'bg-primary text-white border-primary'
                   : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
@@ -202,7 +202,7 @@ function GrammarGrid() {
         <div className="h-6 w-px bg-gray-200 hidden md:block" />
 
         {/* Search */}
-        <div className="flex-1 min-w-[200px] relative">
+        <div className="flex-1 min-w-[200px] relative max-sm:min-w-full">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
             search
           </span>
@@ -221,25 +221,27 @@ function GrammarGrid() {
         </div>
 
         {/* Count */}
-        <span className="text-xs text-on-surface-variant ml-auto">
+        <span className="text-xs text-on-surface-variant ml-auto max-sm:w-full max-sm:text-right">
           {filtered.length} cấu trúc
         </span>
       </div>
 
-      {/* Grid */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-5 transition-opacity ${isPending ? 'opacity-60' : ''}`}>
-        {pageItems.length === 0 ? (
-          <div className="col-span-2 text-center text-on-surface-variant py-12">
-            Không tìm thấy ngữ pháp nào.
-          </div>
-        ) : (
-          pageItems.map(g => <GrammarCard key={g.id} grammar={g} />)
-        )}
+      {/* Grid Container — cuộn dọc riêng biệt */}
+      <div className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+          {pageItems.length === 0 ? (
+            <div className="col-span-2 text-center text-on-surface-variant py-12 bg-white card border border-gray-100">
+              Không tìm thấy ngữ pháp nào.
+            </div>
+          ) : (
+            pageItems.map(g => <GrammarCard key={g.id} grammar={g} />)
+          )}
+        </div>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination — cố định ở cuối */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 text-sm">
+        <div className="flex justify-center flex-wrap gap-2 text-sm flex-shrink-0 py-1">
           <button
             onClick={() => setCurrentPage(p => p - 1)}
             disabled={page === 1}
@@ -279,10 +281,13 @@ function GrammarGrid() {
 // Page Export
 // ============================================
 export function GrammarPage() {
+  const { user } = useAuth();
+  const grammarPromise = useMemo(() => api.getAllGrammar().catch(() => [] as Grammar[]), [user]);
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
+      <div className="mb-2 flex-shrink-0">
+        <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ngữ Pháp Tiếng Nhật
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
@@ -292,12 +297,12 @@ export function GrammarPage() {
 
       <Suspense
         fallback={
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-grow overflow-hidden">
             {Array.from({ length: 6 }).map((_, i) => <GrammarCardSkeleton key={i} />)}
           </div>
         }
       >
-        <GrammarGrid />
+        <GrammarGrid grammarPromise={grammarPromise} />
       </Suspense>
     </div>
   );

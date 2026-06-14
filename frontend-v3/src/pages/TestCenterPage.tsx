@@ -9,8 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import type { Vocabulary } from '@/types';
 
-// ---- Pre-fetch ----
-const vocabPromise = api.getAllVocabulary().catch(() => [] as Vocabulary[]);
+import { useAuth } from '@/context/AuthContext';
 
 // ---- Local results (localStorage) ----
 const RESULTS_KEY = 'sumary_test_results';
@@ -281,8 +280,8 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
           <label className="block text-sm font-semibold mb-2">Chế độ</label>
           <div className="flex gap-3">
             {[
-              { val: 'practice' as const, label: '🎮 Luyện tập' },
-              { val: 'exam'     as const, label: '📝 Thi thử' },
+              { val: 'practice' as const, label: 'Luyện tập' },
+              { val: 'exam'     as const, label: 'Thi thử' },
             ].map(m => (
               <label
                 key={m.val}
@@ -379,7 +378,7 @@ function RecentResults() {
 // ============================================
 // Inner component that uses use()
 // ============================================
-function TestCenterInner() {
+function TestCenterInner({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
   const vocab = use(vocabPromise);
   return <TestConfigPanel vocab={vocab} />;
 }
@@ -419,6 +418,9 @@ function TestCenterSkeleton() {
 // Page Export
 // ============================================
 export function TestCenterPage() {
+  const { user } = useAuth();
+  const vocabPromise = useMemo(() => api.getAllVocabulary().catch(() => [] as Vocabulary[]), [user]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -431,7 +433,7 @@ export function TestCenterPage() {
       </div>
 
       <Suspense fallback={<TestCenterSkeleton />}>
-        <TestCenterInner />
+        <TestCenterInner vocabPromise={vocabPromise} />
       </Suspense>
 
       <RecentResults />

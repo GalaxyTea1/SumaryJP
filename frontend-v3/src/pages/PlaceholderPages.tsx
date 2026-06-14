@@ -15,6 +15,7 @@ function ComingSoon({ title, icon }: { title: string; icon: string }) {
 }
 
 export function AdminPage()       { return <ComingSoon title="Admin"     icon="admin_panel_settings" />; }
+export function MatchingGamePage() { return <ComingSoon title="Trò chơi Ghép Thẻ" icon="extension" />; }
 export function NotFoundPage()    {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 animate-fade-in-up">

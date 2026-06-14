@@ -6,6 +6,7 @@
 
 import { useState, useReducer, useEffect, useCallback, useMemo } from 'react';
 import { api } from '@/api';
+import { useAuth } from '@/context/AuthContext';
 import type { Vocabulary, Kanji, Grammar } from '@/types';
 
 // ---- Types ----
@@ -227,7 +228,7 @@ function FlashCard({ content, isFlipped, onFlip }: FlashCardProps) {
   return (
     <div
       onClick={onFlip}
-      className="w-full max-w-[520px] h-[300px] mx-auto cursor-pointer"
+      className="w-full max-w-[520px] max-sm:max-w-full h-[300px] max-sm:h-[240px] mx-auto cursor-pointer"
       style={{ perspective: '1000px' }}
       title="Click để lật thẻ"
     >
@@ -398,6 +399,7 @@ function ConfigPanel({
 // FlashcardPage — main
 // ============================================
 export function FlashcardPage() {
+  const { user } = useAuth();
   // Config state
   const [cardType,  setCardType]  = useState<CardType>('vocab');
   const [level,     setLevel]     = useState('all');
@@ -411,8 +413,8 @@ export function FlashcardPage() {
     cards: [],
     currentIndex: 0,
     isFlipped: false,
-    knownIds: new Set(),
-    unknownIds: new Set(),
+    knownIds: new Set<number>(),
+    unknownIds: new Set<number>(),
     phase: 'config',
   });
 
@@ -434,8 +436,8 @@ export function FlashcardPage() {
     }
   }
 
-  // Load vocab on mount
-  useEffect(() => { loadData('vocab'); }, []);
+  // Load vocab on mount or user change
+  useEffect(() => { loadData('vocab'); }, [user]);
 
   function handleTypeChange(t: CardType) {
     setCardType(t);
@@ -495,7 +497,7 @@ export function FlashcardPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h1 className="text-2xl font-bold max-sm:text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Flashcard
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Học từ vựng bằng phương pháp lật thẻ</p>
@@ -556,7 +558,7 @@ export function FlashcardPage() {
           />
 
           {/* Navigation */}
-          <div className="flex items-center justify-center gap-4 mt-6">
+          <div className="flex items-center justify-center flex-wrap gap-3 mt-6">
             <button
               onClick={() => dispatch({ type: 'PREV' })}
               disabled={session.currentIndex === 0}
@@ -593,8 +595,8 @@ export function FlashcardPage() {
             </button>
           </div>
 
-          {/* Keyboard hints */}
-          <div className="text-center mt-4 text-xs text-on-surface-variant space-x-3">
+          {/* Keyboard hints — ẩn trên mobile nhỏ */}
+          <div className="text-center mt-4 text-xs text-on-surface-variant space-x-3 max-sm:hidden">
             {[['←', 'Trước'], ['→', 'Tiếp'], ['1', 'Chưa biết'], ['2', 'Đã biết']].map(([k, label]) => (
               <span key={k}>
                 <kbd className="px-1.5 py-0.5 bg-gray-100 rounded">{k}</kbd> {label}

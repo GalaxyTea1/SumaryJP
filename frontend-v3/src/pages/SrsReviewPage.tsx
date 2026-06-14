@@ -146,14 +146,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
   }
 }
 
-// ============================================
-// Pre-fetch all data at module level
-// ============================================
-const allDataPromise = Promise.all([
-  api.getAllVocabulary().catch(() => []),
-  api.getAllKanji().catch(() => []),
-  api.getAllGrammar().catch(() => []),
-]);
+import { useAuth } from '@/context/AuthContext';
 
 // ============================================
 // Overview stats card
@@ -202,7 +195,7 @@ const RATINGS = [
 // ============================================
 // SRS Content — fetches with use()
 // ============================================
-function SrsContent() {
+function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[], Kanji[], Grammar[]]> }) {
   const [vocab, kanji, grammar] = use(allDataPromise) as [Vocabulary[], Kanji[], Grammar[]];
 
   const initStore = useMemo(() => loadSrsStore(), []);
@@ -389,12 +382,12 @@ function SrsContent() {
 
           {/* Rating buttons — chỉ hiện sau flip */}
           {state.isFlipped && (
-            <div className="flex items-center justify-center gap-3 mt-6 animate-fade-in-up">
+            <div className="flex items-center justify-center flex-wrap gap-2 mt-6 animate-fade-in-up">
               {RATINGS.map(r => (
                 <button
                   key={r.q}
                   onClick={() => dispatch({ type: 'RATE', quality: r.q })}
-                  className={`px-4 py-2.5 rounded-xl font-semibold text-[0.8125rem] border-2
+                  className={`px-3 py-2.5 rounded-xl font-semibold text-[0.8125rem] border-2
                               ${r.border} ${r.text} ${r.hover} transition-all`}
                 >
                   <span className="block">{r.label}</span>
@@ -452,10 +445,17 @@ function SrsContent() {
 // Page Export
 // ============================================
 export function SrsReviewPage() {
+  const { user } = useAuth();
+  const allDataPromise = useMemo(() => Promise.all([
+    api.getAllVocabulary().catch(() => [] as Vocabulary[]),
+    api.getAllKanji().catch(() => [] as Kanji[]),
+    api.getAllGrammar().catch(() => [] as Grammar[]),
+  ]), [user]);
+
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h1 className="text-2xl font-bold max-sm:text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ôn Tập SRS
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
@@ -475,7 +475,7 @@ export function SrsReviewPage() {
           </div>
         }
       >
-        <SrsContent />
+        <SrsContent allDataPromise={allDataPromise} />
       </Suspense>
     </div>
   );
