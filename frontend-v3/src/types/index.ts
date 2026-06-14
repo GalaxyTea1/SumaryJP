@@ -33,6 +33,9 @@ export interface Grammar {
   meaning: string;
   explanation?: string;
   example?: string;
+  example_ja?: string;
+  example_vi?: string;
+  note?: string;
   level?: string;
   lesson?: string;
   textbook?: string;

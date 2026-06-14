@@ -4,7 +4,7 @@
 // Card layout với pattern highlight
 // ============================================
 
-import { Suspense, use, useState, useMemo, useTransition } from 'react';
+import { Suspense, use, useState, useMemo, useTransition, useRef } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Grammar } from '@/types';
@@ -26,6 +26,13 @@ const LEVEL_STYLES: Record<string, { bg: string; text: string }> = {
 
 function getLevelStyle(level?: string) {
   return LEVEL_STYLES[level ?? ''] ?? LEVEL_STYLES['N5'];
+}
+
+function getPaginationRange(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 3)         return [1, 2, 3, 4, '...', total];
+  if (current >= total - 2) return [1, '...', total - 3, total - 2, total - 1, total];
+  return [1, '...', current - 1, current, current + 1, '...', total];
 }
 
 // ---- Highlight pattern trong example_ja ----
@@ -142,16 +149,16 @@ function GrammarCardSkeleton() {
 
 // ---- Grammar Grid (data fetched via use()) ----
 function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> }) {
-  const allGrammar = use(grammarPromise) as (Grammar & {
-    example_ja?: string;
-    example_vi?: string;
-    note?: string;
-  })[];
+  const allGrammar = use(grammarPromise);
 
   const [activeLevel,  setActiveLevel]  = useState('all');
+  const [localSearch,  setLocalSearch]  = useState('');
   const [searchQuery,  setSearchQuery]  = useState('');
   const [currentPage,  setCurrentPage]  = useState(1);
-  const [isPending, startTransition]    = useTransition();
+  const [isPending, startTransitionHook] = useTransition();
+
+  // Ref cho scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
     return allGrammar.filter(g => {
@@ -171,11 +178,19 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
   const pageItems  = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   function handleLevel(level: string) {
-    startTransition(() => {
+    startTransitionHook(() => {
       setActiveLevel(level);
       setCurrentPage(1);
     });
   }
+
+  // Cuộn về đầu trang khi click chuyển trang
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col space-y-4">
@@ -209,10 +224,14 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
           <input
             type="text"
             placeholder="Tìm ngữ pháp..."
-            value={searchQuery}
+            value={localSearch}
             onChange={e => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
+              const val = e.target.value;
+              setLocalSearch(val);
+              startTransitionHook(() => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              });
             }}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-outline-variant rounded-lg
                        bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
@@ -227,7 +246,10 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
       </div>
 
       {/* Grid Container — cuộn dọc riêng biệt */}
-      <div className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}>
+      <div
+        ref={scrollContainerRef}
+        className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
           {pageItems.length === 0 ? (
             <div className="col-span-2 text-center text-on-surface-variant py-12 bg-white card border border-gray-100">
@@ -243,28 +265,32 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
       {totalPages > 1 && (
         <div className="flex justify-center flex-wrap gap-2 text-sm flex-shrink-0 py-1">
           <button
-            onClick={() => setCurrentPage(p => p - 1)}
+            onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant
                        hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
           >
             ← Trước
           </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-            <button
-              key={p}
-              onClick={() => setCurrentPage(p)}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                p === page
-                  ? 'bg-primary text-white'
-                  : 'border border-outline-variant text-on-surface-variant hover:bg-gray-50'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+          {getPaginationRange(page, totalPages).map((p, i) =>
+            p === '...' ? (
+              <span key={`dots-${i}`} className="px-3 py-1.5 text-on-surface-variant">...</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => handlePageChange(p)}
+                className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  p === page
+                    ? 'bg-primary text-white'
+                    : 'border border-outline-variant text-on-surface-variant hover:bg-gray-50'
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
           <button
-            onClick={() => setCurrentPage(p => p + 1)}
+            onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant
                        hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
@@ -282,7 +308,9 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
 // ============================================
 export function GrammarPage() {
   const { user } = useAuth();
-  const grammarPromise = useMemo(() => api.getAllGrammar().catch(() => [] as Grammar[]), [user]);
+  const grammarPromise = useMemo(() => {
+    return user ? api.getAllGrammar().catch(() => [] as Grammar[]) : Promise.resolve([] as Grammar[]);
+  }, [user]);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
