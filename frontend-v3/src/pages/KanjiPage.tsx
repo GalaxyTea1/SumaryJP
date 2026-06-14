@@ -4,7 +4,7 @@
 // Card grid với detail modal
 // ============================================
 
-import { Suspense, use, useState, useMemo, useTransition, useEffect } from 'react';
+import { Suspense, use, useState, useMemo, useTransition, useEffect, useRef } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Kanji } from '@/types';
@@ -116,6 +116,14 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // Khóa cuộn nền body khi modal được mở
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   if (!k) return null;
 
@@ -234,9 +242,20 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
 
   const [activeLevel,   setActiveLevel]   = useState('all');
   const [activeLesson,  setActiveLesson]  = useState('all');
+  const [localSearch,   setLocalSearch]   = useState('');
   const [searchQuery,   setSearchQuery]   = useState('');
   const [selectedKanji, setSelectedKanji] = useState<KanjiExtended | null>(null);
   const [isPending, startTransition]      = useTransition();
+
+  // Ref cho scroll container của grid
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Tự động cuộn về đầu grid khi thay đổi bất kỳ bộ lọc nào
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0 });
+    }
+  }, [activeLevel, activeLesson, searchQuery]);
 
   const lessons = useMemo(() => {
     const set = new Set(allKanji.map(k => String(k.lesson ?? '')).filter(Boolean));
@@ -291,7 +310,15 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
           ))}
         </div>
 
-        <LessonSelect lessons={lessons} value={activeLesson} onChange={val => setActiveLesson(val)} />
+        <LessonSelect
+          lessons={lessons}
+          value={activeLesson}
+          onChange={val => {
+            startTransition(() => {
+              setActiveLesson(val);
+            });
+          }}
+        />
 
         {/* Search */}
         <div className="relative flex-1 min-w-[160px] max-sm:w-full max-sm:min-w-0">
@@ -301,8 +328,14 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
           <input
             type="text"
             placeholder="Tìm kanji, nghĩa..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            value={localSearch}
+            onChange={e => {
+              const val = e.target.value;
+              setLocalSearch(val);
+              startTransition(() => {
+                setSearchQuery(val);
+              });
+            }}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-outline-variant rounded-xl
                        bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
@@ -317,7 +350,10 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
       </div>
 
       {/* Grid Container — cuộn dọc riêng biệt */}
-      <div className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}>
+      <div
+        ref={scrollContainerRef}
+        className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}
+      >
         {filtered.length === 0 ? (
           <div className="text-center py-16 bg-white card border border-gray-100 rounded-2xl">
             <h3 className="text-lg font-bold mb-2 text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -356,7 +392,9 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
 // ============================================
 export function KanjiPage() {
   const { user } = useAuth();
-  const kanjiPromise = useMemo(() => api.getAllKanji().catch(() => [] as KanjiExtended[]), [user]);
+  const kanjiPromise = useMemo(() => {
+    return user ? api.getAllKanji().catch(() => [] as KanjiExtended[]) : Promise.resolve([] as KanjiExtended[]);
+  }, [user]);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
