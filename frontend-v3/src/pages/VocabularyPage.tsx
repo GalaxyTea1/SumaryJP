@@ -3,7 +3,7 @@
 // React 19: use() hook + useOptimistic cho toggle difficult
 // ============================================
 
-import { Suspense, use, useState, useOptimistic, useMemo, useTransition, useRef } from 'react';
+import { Suspense, use, useState, useOptimistic, useMemo, useTransition, useRef, startTransition } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Vocabulary } from '@/types';
@@ -138,8 +138,14 @@ function VocabRow({ vocab, index, onDifficultToggle }: VocabRowProps) {
   }
 
   function handleToggleDifficult() {
-    setOptimisticDifficult(!optimisticDifficult);
-    onDifficultToggle(vocab);
+    startTransition(async () => {
+      setOptimisticDifficult(!optimisticDifficult);
+      try {
+        await onDifficultToggle(vocab);
+      } catch {
+        // Đã log ở cha, catch ở đây để tránh uncaught error
+      }
+    });
   }
 
   return (
@@ -217,8 +223,14 @@ function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
   }
 
   function handleToggleDifficult() {
-    setOptimisticDifficult(!optimisticDifficult);
-    onDifficultToggle(vocab);
+    startTransition(async () => {
+      setOptimisticDifficult(!optimisticDifficult);
+      try {
+        await onDifficultToggle(vocab);
+      } catch {
+        // Đã log ở cha, catch ở đây để tránh uncaught error
+      }
+    });
   }
 
   return (
@@ -367,6 +379,7 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
       setVocabList(prev => prev.map(v => v.id === vocab.id ? updated : v));
     } catch (e) {
       console.error('Toggle difficult failed:', e);
+      throw e;
     }
   }
 
