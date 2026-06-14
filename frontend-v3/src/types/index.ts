@@ -61,8 +61,21 @@ export interface LearningHistory {
 
 export interface WeeklyGoal {
   goalCount: number;
+  goalTarget?: number;
   weekStart?: string;
   weekEnd?: string;
+}
+
+export interface SrsProgress {
+  id: number;
+  userId: number;
+  itemType: 'vocab' | 'kanji' | 'grammar';
+  itemId: number;
+  repetitions: number;
+  interval: number;
+  easeFactor: number;
+  nextReview: string;
+  lastReview: string | null;
 }
 
 // --- Test ---

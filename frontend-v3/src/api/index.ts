@@ -7,7 +7,7 @@ import type {
   Vocabulary, Grammar, Kanji,
   LearningHistory, WeeklyGoal,
   User, TestResult,
-  GrammarFilters, KanjiFilters, GamificationData, KanaProgressItem,
+  GrammarFilters, KanjiFilters, GamificationData, KanaProgressItem, SrsProgress,
 } from '@/types';
 
 const isLocalhost =
@@ -129,6 +129,14 @@ export const api = {
 
   async getWeeklyGoal(): Promise<WeeklyGoal> {
     return request(`${BASE_URL}/history/weekly-goal`);
+  },
+
+  async updateWeeklyGoal(goalTarget: number): Promise<WeeklyGoal> {
+    return request(`${BASE_URL}/history/weekly-goal`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goalTarget }),
+    });
   },
 
   // === AUTH ===
@@ -275,6 +283,19 @@ export const api = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ kanaType, character, status }),
+    });
+  },
+
+  // === SRS ===
+  async getSrsProgress(): Promise<SrsProgress[]> {
+    return request(`${BASE_URL}/srs/progress`);
+  },
+
+  async reviewSrsItem(itemType: 'vocab' | 'kanji' | 'grammar', itemId: number, quality: number): Promise<SrsProgress> {
+    return request(`${BASE_URL}/srs/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemType, itemId, quality }),
     });
   },
 };
