@@ -23,6 +23,7 @@ export interface Vocabulary {
   status?: 'not-learned' | 'learning' | 'mastered';
   srs_level?: number;
   next_review?: string | null;
+  is_difficult?: boolean;
 }
 
 // --- Grammar ---

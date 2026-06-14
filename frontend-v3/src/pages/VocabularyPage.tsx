@@ -3,7 +3,7 @@
 // React 19: use() hook + useOptimistic cho toggle difficult
 // ============================================
 
-import { Suspense, use, useState, useOptimistic, useMemo, useTransition } from 'react';
+import { Suspense, use, useState, useOptimistic, useMemo, useTransition, useRef } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Vocabulary } from '@/types';
@@ -112,9 +112,9 @@ function SkeletonLoader() {
 // VocabRow — Dành cho giao diện Desktop (Table)
 // ============================================
 interface VocabRowProps {
-  vocab: Vocabulary & { is_difficult?: boolean };
+  vocab: Vocabulary;
   index: number;
-  onDifficultToggle: (vocab: Vocabulary & { is_difficult?: boolean }) => void;
+  onDifficultToggle: (vocab: Vocabulary) => void;
 }
 
 function VocabRow({ vocab, index, onDifficultToggle }: VocabRowProps) {
@@ -129,8 +129,10 @@ function VocabRow({ vocab, index, onDifficultToggle }: VocabRowProps) {
 
   function handleSpeak() {
     if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(vocab.japanese);
       utt.lang = 'ja-JP';
+      utt.rate = 0.8;
       window.speechSynthesis.speak(utt);
     }
   }
@@ -206,8 +208,10 @@ function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
 
   function handleSpeak() {
     if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(vocab.japanese);
       utt.lang = 'ja-JP';
+      utt.rate = 0.8;
       window.speechSynthesis.speak(utt);
     }
   }
@@ -276,15 +280,19 @@ function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
 // VocabTable — Nội dung hiển thị dữ liệu và bộ lọc
 // ============================================
 function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
-  const allVocab = use(vocabPromise) as (Vocabulary & { is_difficult?: boolean })[];
+  const allVocab = use(vocabPromise);
 
   // Filter state
   const [activeLevel,  setActiveLevel]  = useState('all');
   const [activeLesson, setActiveLesson] = useState('all');
   const [activeStatus, setActiveStatus] = useState('all');
+  const [localSearch,  setLocalSearch]  = useState('');
   const [searchQuery,  setSearchQuery]  = useState('');
   const [currentPage,  setCurrentPage]  = useState(1);
   const [vocabList,    setVocabList]    = useState(allVocab);
+
+  // Scroll ref
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // ✨ React 19: useTransition — filter không block UI
   const [isPending, startTransition] = useTransition();
@@ -339,10 +347,23 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
     });
   }
 
-  async function handleToggleDifficult(vocab: Vocabulary & { is_difficult?: boolean }) {
-    const updated = { ...vocab, is_difficult: !vocab.is_difficult };
+  // Cuộn về đầu danh sách khi chuyển trang
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  async function handleToggleDifficult(vocab: Vocabulary) {
+    const nextDifficult = !vocab.is_difficult;
+    const updated = { ...vocab, is_difficult: nextDifficult };
     try {
-      await api.updateVocabulary(updated as Vocabulary);
+      // Chỉ gửi các trường progress để tránh lỗi phân quyền 403 đối với user thường
+      await api.updateVocabularyProgress(vocab.id, {
+        is_difficult: nextDifficult,
+        status: vocab.status,
+      });
       setVocabList(prev => prev.map(v => v.id === vocab.id ? updated : v));
     } catch (e) {
       console.error('Toggle difficult failed:', e);
@@ -397,10 +418,14 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
           <input
             type="text"
             placeholder="Tìm từ vựng..."
-            value={searchQuery}
+            value={localSearch}
             onChange={e => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
+              const val = e.target.value;
+              setLocalSearch(val);
+              startTransition(() => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              });
             }}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-outline-variant rounded-lg
                        bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
@@ -410,7 +435,10 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
       </div>
 
       {/* Main List Container — Chỉ scroll bên trong vùng này */}
-      <div className={`flex-grow overflow-y-auto min-h-0 transition-opacity scrollbar-thin ${isPending ? 'opacity-60' : ''}`}>
+      <div
+        ref={scrollContainerRef}
+        className={`flex-grow overflow-y-auto min-h-0 transition-opacity scrollbar-thin ${isPending ? 'opacity-60' : ''}`}
+      >
         
         {/* Desktop Layout: Bảng Table (Chỉ hiện khi màn hình ≥ 1536px) */}
         <div className="hidden 2xl:block card overflow-hidden">
@@ -481,7 +509,7 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
       {totalPages > 1 && (
         <div className="flex justify-center flex-wrap gap-2 text-sm flex-shrink-0 py-1">
           <button
-            onClick={() => setCurrentPage(p => p - 1)}
+            onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant
                        hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
@@ -494,7 +522,7 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
             ) : (
               <button
                 key={p}
-                onClick={() => setCurrentPage(p)}
+                onClick={() => handlePageChange(p)}
                 className={`px-3 py-1.5 rounded-lg transition-colors ${
                   p === page
                     ? 'bg-primary text-white'
@@ -506,7 +534,7 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
             )
           )}
           <button
-            onClick={() => setCurrentPage(p => p + 1)}
+            onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant
                        hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
@@ -524,7 +552,9 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
 // ============================================
 export function VocabularyPage() {
   const { user } = useAuth();
-  const vocabPromise = useMemo(() => api.getAllVocabulary().catch(() => [] as Vocabulary[]), [user]);
+  const vocabPromise = useMemo(() => {
+    return user ? api.getAllVocabulary().catch(() => [] as Vocabulary[]) : Promise.resolve([] as Vocabulary[]);
+  }, [user]);
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">

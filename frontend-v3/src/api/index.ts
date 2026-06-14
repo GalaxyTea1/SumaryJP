@@ -110,11 +110,26 @@ export const api = {
     });
   },
 
-  async updateVocabulary(vocab: Vocabulary): Promise<Vocabulary> {
+  async updateVocabulary(vocab: Partial<Vocabulary> & { id: number }): Promise<Vocabulary> {
     return request(`${BASE_URL}/vocab/${encodeURIComponent(vocab.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(vocab),
+    });
+  },
+
+  async updateVocabularyProgress(id: number, progress: {
+    status?: 'not-learned' | 'learning' | 'mastered';
+    review_count?: number;
+    interval?: number;
+    ease_factor?: number;
+    next_review?: string | null;
+    is_difficult?: boolean;
+  }): Promise<Vocabulary> {
+    return request(`${BASE_URL}/vocab/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(progress),
     });
   },
 
