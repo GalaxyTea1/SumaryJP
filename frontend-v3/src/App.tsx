@@ -20,7 +20,8 @@ import { FlashcardPage } from '@/pages/FlashcardPage';
 import { SrsReviewPage } from '@/pages/SrsReviewPage';
 import { TestCenterPage } from '@/pages/TestCenterPage';
 import { StatisticsPage } from '@/pages/StatisticsPage';
-import { AdminPage, NotFoundPage, MatchingGamePage } from '@/pages/PlaceholderPages';
+import { AdminPage, NotFoundPage } from '@/pages/PlaceholderPages';
+import MatchingGamePage from '@/pages/MatchingGamePage';
 import KanaPage from '@/pages/KanaPage';
 
 import { useAuth } from '@/context/AuthContext';
