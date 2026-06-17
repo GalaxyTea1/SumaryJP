@@ -179,6 +179,8 @@ export default function MatchingGamePage() {
     cardCount: 12
   });
 
+  const isMeaningDisabled = gameConfig.type === 'hiragana' || gameConfig.type === 'katakana';
+
   // Game Engine State
   const [gameState, setGameState] = useState<'setup' | 'playing' | 'victory'>('setup');
   const [cards, setCards] = useState<Card[]>([]);
@@ -504,7 +506,7 @@ export default function MatchingGamePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 type="button"
-                onClick={() => setGameConfig(prev => ({ ...prev, type: 'hiragana' }))}
+                onClick={() => setGameConfig(prev => ({ ...prev, type: 'hiragana', mode: 'reading' }))}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all font-bold ${
                   gameConfig.type === 'hiragana'
                     ? 'border-primary bg-primary-50 text-primary-dark shadow-sm'
@@ -517,7 +519,7 @@ export default function MatchingGamePage() {
 
               <button
                 type="button"
-                onClick={() => setGameConfig(prev => ({ ...prev, type: 'katakana' }))}
+                onClick={() => setGameConfig(prev => ({ ...prev, type: 'katakana', mode: 'reading' }))}
                 className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all font-bold ${
                   gameConfig.type === 'katakana'
                     ? 'border-primary bg-primary-50 text-primary-dark shadow-sm'
@@ -566,15 +568,25 @@ export default function MatchingGamePage() {
 
               <button
                 type="button"
+                disabled={isMeaningDisabled}
                 onClick={() => setGameConfig(prev => ({ ...prev, mode: 'meaning' }))}
                 className={`flex items-center justify-center gap-2 p-3.5 rounded-xl border-2 transition-all font-bold text-sm ${
-                  gameConfig.mode === 'meaning'
-                    ? 'border-primary bg-primary-50 text-primary-dark shadow-sm'
-                    : 'border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-dim'
+                  isMeaningDisabled
+                    ? 'border-outline-variant bg-surface-container text-on-surface-variant/40 cursor-not-allowed opacity-60'
+                    : gameConfig.mode === 'meaning'
+                      ? 'border-primary bg-primary-50 text-primary-dark shadow-sm'
+                      : 'border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-dim'
                 }`}
               >
                 <span className="material-symbols-outlined text-lg">description</span>
-                <span>Chữ Nhật → Nghĩa Tiếng Việt</span>
+                <span className="flex flex-col items-center">
+                  <span>Chữ Nhật → Nghĩa Tiếng Việt</span>
+                  {isMeaningDisabled && (
+                    <span className="text-[10px] font-normal text-on-surface-variant/60 mt-0.5">
+                      (Chỉ áp dụng cho Kanji / Từ vựng)
+                    </span>
+                  )}
+                </span>
               </button>
             </div>
           </div>
