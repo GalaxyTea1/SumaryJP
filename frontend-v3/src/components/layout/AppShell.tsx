@@ -67,9 +67,9 @@ export default function AppShell() {
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-[260px] flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-[260px] flex flex-col min-h-screen min-w-0">
         <TopBar onMenuClick={() => setIsSidebarOpen(prev => !prev)} />
-        <main className="flex-1 p-8 max-sm:p-4">
+        <main className="flex-1 p-8 max-sm:p-4 min-w-0">
           <Outlet />
         </main>
       </div>

@@ -97,9 +97,16 @@ export interface TestResult {
   id?: number;
   score: number;
   total: number;
-  level?: string;
+  level?: string | null;
   completed_at?: string;
   time_taken?: number;
+  test_type?: string;
+  lesson?: number | null;
+  total_questions?: number;
+  correct_answers?: number;
+  correct?: number;
+  mode?: string;
+  details?: any;
 }
 
 // --- Gamification ---

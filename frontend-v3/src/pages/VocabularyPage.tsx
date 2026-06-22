@@ -8,6 +8,7 @@ import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Vocabulary } from '@/types';
 import { useAuth } from '@/context/AuthContext';
+import CustomSelect from '@/components/Select';
 
 // ---- Constants ----
 const ITEMS_PER_PAGE = 20;
@@ -61,22 +62,12 @@ interface SelectProps {
 
 function Select({ options, value, onChange, className = '' }: SelectProps) {
   return (
-    <div className={`relative ${className}`}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="appearance-none w-full pl-3 pr-8 py-1.5 text-sm border border-outline-variant rounded-lg
-                   bg-white text-on-surface-variant focus:outline-none focus:border-primary
-                   focus:ring-2 focus:ring-primary/20 cursor-pointer transition-all"
-      >
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-base pointer-events-none text-on-surface-variant">
-        expand_more
-      </span>
-    </div>
+    <CustomSelect
+      value={value}
+      onChange={onChange}
+      options={options as any}
+      className={className}
+    />
   );
 }
 

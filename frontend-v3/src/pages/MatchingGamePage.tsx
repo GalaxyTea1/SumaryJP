@@ -193,8 +193,7 @@ export default function MatchingGamePage() {
   const [selectedSecondId, setSelectedSecondId] = useState<string | null>(null);
   const [lockBoard, setLockBoard] = useState<boolean>(false);
 
-  // Confetti particles state
-  const [confetti, setConfetti] = useState<Array<{ id: number; left: string; top: string; delay: string; duration: string; emoji: string; scale: number }>>([]);
+
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load API data on mount
@@ -446,22 +445,7 @@ export default function MatchingGamePage() {
     void trackVictoryEvent();
     setSessionXp(x => x + bonusXp);
 
-    // Launch Confetti
-    const emojis = ['🌸', '✨', '🎉', '🇯🇵', '💯', '🔥', '🏆', '⭐'];
-    const count = 60;
-    const pieces = [];
-    for (let i = 0; i < count; i++) {
-      pieces.push({
-        id: i,
-        left: `${Math.random() * 100}vw`,
-        top: `-${Math.random() * 20 + 20}px`,
-        delay: `${Math.random() * 2}s`,
-        duration: `${2.5 + Math.random() * 2.5}s`,
-        emoji: emojis[Math.floor(Math.random() * emojis.length)],
-        scale: 0.5 + Math.random() * 1
-      });
-    }
-    setConfetti(pieces);
+
   };
 
   const formatTime = (totalSecs: number) => {
@@ -558,7 +542,6 @@ export default function MatchingGamePage() {
                     : 'border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-dim'
                 }`}
               >
-                <span className="material-symbols-outlined text-lg">translate</span>
                 <span>
                   {gameConfig.type === 'kanji'
                     ? 'Kanji → Cách đọc (On/Kun)'
@@ -578,14 +561,8 @@ export default function MatchingGamePage() {
                       : 'border-outline-variant bg-surface text-on-surface-variant hover:bg-surface-dim'
                 }`}
               >
-                <span className="material-symbols-outlined text-lg">description</span>
                 <span className="flex flex-col items-center">
                   <span>Chữ Nhật → Nghĩa Tiếng Việt</span>
-                  {isMeaningDisabled && (
-                    <span className="text-[10px] font-normal text-on-surface-variant/60 mt-0.5">
-                      (Chỉ áp dụng cho Kanji / Từ vựng)
-                    </span>
-                  )}
                 </span>
               </button>
             </div>
@@ -752,22 +729,7 @@ export default function MatchingGamePage() {
       {gameState === 'victory' && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
           
-          {/* Confetti Emoji elements */}
-          {confetti.map(piece => (
-            <div
-              key={piece.id}
-              className="confetti-piece"
-              style={{
-                left: piece.left,
-                top: piece.top,
-                animationDelay: piece.delay,
-                animationDuration: piece.duration,
-                transform: `scale(${piece.scale})`,
-              }}
-            >
-              {piece.emoji}
-            </div>
-          ))}
+
 
           <div className="bg-surface rounded-3xl w-full max-w-md shadow-elevated border border-outline-variant overflow-hidden transform animate-fade-in-up duration-300">
             {/* Header top gradient decoration */}

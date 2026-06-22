@@ -8,6 +8,7 @@ import { Suspense, use, useState, useMemo, useTransition, useEffect, useRef } fr
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Kanji } from '@/types';
+import CustomSelect from '@/components/Select';
 
 // ---- Extended Kanji type (từ v2 có thêm fields) ----
 interface KanjiExtended extends Kanji {
@@ -37,24 +38,20 @@ interface LessonSelectProps {
   onChange: (v: string) => void;
 }
 function LessonSelect({ lessons, value, onChange }: LessonSelectProps) {
+  const options = useMemo(() => {
+    return [
+      { value: 'all', label: 'Tất cả bài' },
+      ...lessons.map(l => ({ value: l, label: `Bài ${l}` }))
+    ];
+  }, [lessons]);
+
   return (
-    <div className="relative min-w-[150px] max-sm:flex-1">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="appearance-none w-full pl-3 pr-8 py-1.5 text-sm border border-outline-variant
-                   rounded-lg bg-white text-on-surface-variant focus:outline-none focus:border-primary
-                   focus:ring-2 focus:ring-primary/20 cursor-pointer transition-all"
-      >
-        <option value="all">Tất cả bài</option>
-        {lessons.map(l => (
-          <option key={l} value={l}>Bài {l}</option>
-        ))}
-      </select>
-      <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-base pointer-events-none text-on-surface-variant">
-        expand_more
-      </span>
-    </div>
+    <CustomSelect
+      value={value}
+      onChange={onChange}
+      options={options}
+      className="min-w-[150px] max-sm:flex-1"
+    />
   );
 }
 

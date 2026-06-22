@@ -19,6 +19,8 @@ import { KanjiPage } from '@/pages/KanjiPage';
 import { FlashcardPage } from '@/pages/FlashcardPage';
 import { SrsReviewPage } from '@/pages/SrsReviewPage';
 import { TestCenterPage } from '@/pages/TestCenterPage';
+import TestTakingPage from '@/pages/TestTakingPage';
+import TestResultPage from '@/pages/TestResultPage';
 import { StatisticsPage } from '@/pages/StatisticsPage';
 import { AdminPage, NotFoundPage } from '@/pages/PlaceholderPages';
 import MatchingGamePage from '@/pages/MatchingGamePage';
@@ -62,6 +64,8 @@ function AppContent() {
           <Route path="/kana"         element={<KanaPage />} />
           <Route path="/matching-game" element={<MatchingGamePage />} />
           <Route path="/test-center"  element={<TestCenterPage />} />
+          <Route path="/test-center/session" element={<TestTakingPage />} />
+          <Route path="/test-center/result"  element={<TestResultPage />} />
           <Route path="/flashcard"    element={<FlashcardPage />} />
           <Route path="/srs-review"   element={<SrsReviewPage />} />
           <Route path="/statistics"   element={<StatisticsPage />} />
