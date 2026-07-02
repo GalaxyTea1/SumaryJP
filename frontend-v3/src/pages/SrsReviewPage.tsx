@@ -17,10 +17,10 @@ import { useGamification } from '@/context/GamificationContext';
 const SRS_KEY = 'sumary_srs_data';
 
 interface SrsItem {
-  interval: number;       // ngày giữa 2 lần ôn
-  repetitions: number;    // số lần ôn đúng liên tiếp
-  easeFactor: number;     // hệ số dễ (2.5 default)
-  nextReview: number;     // timestamp cần ôn
+  interval: number;       // days between reviews
+  repetitions: number;    // consecutive correct reviews
+  easeFactor: number;     // ease factor (default 2.5)
+  nextReview: number;     // next review timestamp
   lastReview: number | null;
 }
 
@@ -52,18 +52,18 @@ function getSrsItem(store: SrsStore, type: string, id: number): SrsItem {
 function calcNextSrs(item: SrsItem, quality: number): SrsItem {
   const updated = { ...item, lastReview: Date.now() };
   if (quality < 2) {
-    // Quên → reset
+    // Forgot -> reset
     updated.repetitions = 0;
     updated.interval    = 0;
-    updated.nextReview  = Date.now() + 60_000; // 1 phút
+    updated.nextReview  = Date.now() + 60_000; // 1 min
   } else if (quality === 2) {
-    // Khó → giữ interval hoặc rút ngắn
+    // Hard -> reduce/keep interval
     updated.repetitions = Math.max(0, updated.repetitions - 1);
     updated.interval    = Math.max(1, Math.round(updated.interval * 0.6));
     updated.easeFactor  = Math.max(1.3, updated.easeFactor - 0.15);
     updated.nextReview  = Date.now() + updated.interval * 86_400_000;
   } else {
-    // Nhớ (quality = 4) → tiến bình thường
+    // Good -> normal SM-2 progress
     updated.repetitions++;
     if (updated.repetitions === 1)      updated.interval = 1;
     else if (updated.repetitions === 2) updated.interval = 3;
@@ -179,7 +179,7 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
 }
 
 // ============================================
-// Rating config — 3 nút trực quan
+// Rating config — 3 visual buttons
 // ============================================
 const RATINGS = [
   {
@@ -308,7 +308,7 @@ function getItemContent(item: ReviewItem) {
   };
 }
 
-// Tự điều chỉnh cỡ chữ theo độ dài
+// Auto-adjust font size based on text length
 function getFrontFontSize(text: string): string {
   const len = text.length;
   if (len > 12) return 'text-base sm:text-xl';
@@ -395,7 +395,7 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
     }
   }, [trackEvent]);
 
-  // Keyboard handler — Space/Enter=flip, J=Quên, K=Khó, L=Nhớ
+  // Keyboard handler — Space/Enter=flip, J=Forgot, K=Hard, L=Good
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (state.phase !== 'playing') return;
     if (showExitDialog) return;

@@ -1,8 +1,8 @@
 // ============================================
 // StatisticsPage — SumaryJP
 // React 19: Suspense + use() cho data
-// Tích hợp Gamification: Level, XP, Streak, Badges
-// Chart.js cho biểu đồ vocab status + level dist
+// Gamification Integration: Level, XP, Streak, Badges
+// Chart.js for vocab status & level distribution charts
 // ============================================
 
 import { Suspense, use, useEffect, useRef, useMemo, useState } from 'react';
@@ -18,7 +18,7 @@ import type { Vocabulary, Grammar, Kanji } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
 
-// Đăng ký Chart.js components một lần
+// Register Chart.js components once
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController);
 
 // ---- localStorage results ----
@@ -449,7 +449,7 @@ function StatsContent({ dataPromise }: { dataPromise: Promise<[Vocabulary[], Gra
                 {testResults.map((t, i) => {
                   const pct   = t.total > 0 ? Math.round(t.correct / t.total * 100) : 0;
                   
-                  // Xác định màu sắc hiển thị cho điểm số
+                  // Determine score color
                   let scoreColor = 'text-error bg-error/10 border border-error/20';
                   if (pct >= 80) {
                     scoreColor = 'text-success bg-success/10 border border-success/20';
@@ -457,7 +457,7 @@ function StatsContent({ dataPromise }: { dataPromise: Promise<[Vocabulary[], Gra
                     scoreColor = 'text-amber-600 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30';
                   }
 
-                  // Xác định icon cho loại bài test
+                  // Determine test icon
                   let testIcon = 'menu_book';
                   if (t.type?.toLowerCase().includes('kanji')) testIcon = 'translate';
                   else if (t.type?.toLowerCase().includes('grammar')) testIcon = 'edit_note';

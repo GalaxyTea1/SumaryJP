@@ -22,7 +22,8 @@ import { TestCenterPage } from '@/pages/TestCenterPage';
 import TestTakingPage from '@/pages/TestTakingPage';
 import TestResultPage from '@/pages/TestResultPage';
 import { StatisticsPage } from '@/pages/StatisticsPage';
-import { AdminPage, NotFoundPage } from '@/pages/PlaceholderPages';
+import { NotFoundPage } from '@/pages/PlaceholderPages';
+import AdminPage from '@/pages/AdminPage';
 import MatchingGamePage from '@/pages/MatchingGamePage';
 import KanaPage from '@/pages/KanaPage';
 

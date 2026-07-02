@@ -1,7 +1,7 @@
 // ============================================
 // TestResultPage.tsx — SumaryJP
 // React 19 + TypeScript + Tailwind CSS v4
-// Trang hiển thị kết quả kiểm tra chi tiết
+// Detailed test results page
 // ============================================
 
 import { useState, useEffect, useTransition } from 'react';

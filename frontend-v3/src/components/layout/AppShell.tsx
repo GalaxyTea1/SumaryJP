@@ -1,6 +1,6 @@
 // ============================================
-// AppShell — Layout chính
-// Sidebar cố định + responsive hamburger menu
+// AppShell — Main layout
+// Fixed sidebar + responsive hamburger menu
 // ============================================
 
 import { useState, useEffect } from 'react';
@@ -12,12 +12,12 @@ export default function AppShell() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
-  // Đóng sidebar khi chuyển route (trên mobile/tablet)
+  // Close sidebar on route change (on mobile/tablet)
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
 
-  // Đóng sidebar khi resize lên desktop
+  // Close sidebar when resizing to desktop
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth > 1024) {
@@ -28,7 +28,7 @@ export default function AppShell() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Khoá scroll body khi sidebar mở trên mobile
+  // Lock body scroll when sidebar is open on mobile
   useEffect(() => {
     if (isSidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -38,7 +38,7 @@ export default function AppShell() {
     return () => { document.body.style.overflow = ''; };
   }, [isSidebarOpen]);
 
-  // Đóng sidebar khi ESC
+  // Close sidebar on ESC key
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && isSidebarOpen) {
@@ -57,7 +57,7 @@ export default function AppShell() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* Overlay khi sidebar mở trên mobile/tablet */}
+      {/* Overlay when sidebar is open on mobile/tablet */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/35 z-[29] lg:hidden"

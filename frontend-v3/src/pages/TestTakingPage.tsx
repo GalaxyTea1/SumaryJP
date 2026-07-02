@@ -1,7 +1,7 @@
 // ============================================
 // TestTakingPage.tsx — SumaryJP
 // React 19 + TypeScript + Tailwind CSS v4
-// Trang làm bài kiểm tra trắc nghiệm
+// Multiple choice test page
 // ============================================
 
 import { useState, useEffect, useRef, useTransition } from 'react';

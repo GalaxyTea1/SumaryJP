@@ -1,7 +1,7 @@
 // ============================================
 // FlashcardPage — SumaryJP
 // React 19: useReducer cho session state, useEffect cho keyboard
-// 3D flip animation thuần CSS
+// Pure CSS 3D flip animation
 // ============================================
 
 import { useState, useReducer, useEffect, useCallback, useMemo } from 'react';
