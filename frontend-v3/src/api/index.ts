@@ -5,14 +5,11 @@ import type {
   GrammarFilters, KanjiFilters, GamificationData, KanaProgressItem, SrsProgress,
 } from '@/types';
 
-const isLocalhost =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1' ||
-  window.location.hostname === '';
-
-export const BASE_URL = isLocalhost
-  ? 'http://localhost:3000/api'
-  : 'https://jp-backend-api.onrender.com/api';
+export const BASE_URL =
+  import.meta.env.VITE_API_URL ??
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'
+    : 'https://jp-backend-api.onrender.com/api');
 
 export const AUTH_TOKEN_KEY = 'sumary_jp_token';
 const SESSION_CACHE_TTL = 30 * 60 * 1000; // 30 phút
