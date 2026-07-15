@@ -94,14 +94,16 @@ export default function AdminPage() {
           const data = await api.getAllKanji();
           if (active) setKanjiList(data);
         }
-      } catch (err: any) {
-        if (active) showToast(err.message || 'Không thể tải dữ liệu', 'error');
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Không thể tải dữ liệu';
+        if (active) showToast(message, 'error');
       } finally {
         if (active) setLoading(false);
       }
     };
 
     fetchTabDb();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination on tab change
     setCurrentPage(1);
     setSearchQuery('');
     setLevelFilter('all');
@@ -109,6 +111,7 @@ export default function AdminPage() {
     return () => {
       active = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- showToast and isAdmin are stable
   }, [activeTab, user, refreshTrigger]);
 
   const handleCloseForm = () => {
@@ -153,7 +156,7 @@ export default function AdminPage() {
     setIsFormOpen(true);
   };
 
-  const openEditModal = (item: any) => {
+  const openEditModal = (item: Vocabulary | Grammar | Kanji) => {
     resetForm();
     setFormType('edit');
     setEditingId(item.id);
@@ -278,8 +281,9 @@ export default function AdminPage() {
       // Refresh data
       handleCloseForm();
       setRefreshTrigger(prev => prev + 1);
-    } catch (err: any) {
-      showToast(err.message || 'Thao tác thất bại!', 'error');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Thao tác thất bại!';
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -313,8 +317,9 @@ export default function AdminPage() {
       setIsDeleteConfirmOpen(false);
       setDeleteId(null);
       setRefreshTrigger(prev => prev + 1);
-    } catch (err: any) {
-      showToast(err.message || 'Không thể xóa mục này!', 'error');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Không thể xóa mục này!';
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -367,11 +372,13 @@ export default function AdminPage() {
   };
 
   // Auto-adjust page if current page exceeds total pages
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
   }, [filteredList.length, currentPage, totalPages]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Access denied screen if not admin
   if (!isAdmin) {

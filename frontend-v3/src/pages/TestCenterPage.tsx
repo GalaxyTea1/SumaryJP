@@ -1,9 +1,3 @@
-// ============================================
-// TestCenterPage — SumaryJP
-// React 19: Suspense + use() cho vocab data
-// Config panel + recent results từ localStorage
-// ============================================
-
 import { Suspense, use, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
@@ -12,7 +6,6 @@ import type { Vocabulary } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import CustomSelect from '@/components/Select';
 
-// ---- Local results (localStorage) ----
 const RESULTS_KEY = 'sumary_test_results';
 
 interface TestResult {
@@ -269,7 +262,7 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
               <CustomSelect
                 value={selectedTime}
                 onChange={setSelectedTime}
-                options={TIME_OPTIONS as any}
+                options={TIME_OPTIONS as { value: string | number; label: string }[]}
                 disabled={!timeEnabled}
                 className="flex-1 min-w-0"
               />
@@ -332,12 +325,12 @@ interface NormalizedRecentResult {
   localIndex?: number;
 }
 
-function normalizeRecentResult(res: any): NormalizedRecentResult {
+function normalizeRecentResult(res: Record<string, unknown>): NormalizedRecentResult {
   if (!res) return { id: 0, testName: '', score: 0, correct: 0, total: 0, timeTaken: 0, date: '' };
   
   const details = typeof res.details === 'string'
-    ? JSON.parse(res.details || '{}')
-    : (res.details || {});
+    ? JSON.parse(res.details || '{}') as Record<string, unknown>
+    : ((res.details || {}) as Record<string, unknown>);
     
   const total = res.total_questions ?? res.total ?? 0;
   const correct = res.correct_answers ?? res.correct ?? 0;
@@ -367,11 +360,11 @@ function RecentResults() {
       try {
         if (isLoggedIn) {
           const apiHistory = await api.getTestHistory(5);
-          const normalized = (apiHistory || []).map((item: any) => normalizeRecentResult(item));
+          const normalized = (apiHistory || []).map((item: Record<string, unknown>) => normalizeRecentResult(item));
           setResults(normalized);
         } else {
           // Guest mode: load from localStorage
-          const local = loadResults().slice(0, 5).map((item: any, idx: number) => ({
+          const local = loadResults().slice(0, 5).map((item: Record<string, unknown>, idx: number) => ({
             ...normalizeRecentResult(item),
             isLocal: true,
             localIndex: idx,
@@ -381,7 +374,7 @@ function RecentResults() {
       } catch (err) {
         console.error('Lỗi khi tải lịch sử kiểm tra:', err);
         // Fallback to local storage
-        const local = loadResults().slice(0, 5).map((item: any, idx: number) => ({
+        const local = loadResults().slice(0, 5).map((item: Record<string, unknown>, idx: number) => ({
           ...normalizeRecentResult(item),
           isLocal: true,
           localIndex: idx,
@@ -506,23 +499,21 @@ function TestCenterSkeleton() {
   );
 }
 
-// ============================================
-// Page Export
-// ============================================
 export function TestCenterPage() {
   const { user } = useAuth();
+  /* eslint-disable react-hooks/exhaustive-deps */
   const vocabPromise = useMemo(() => api.getAllVocabulary().catch(() => [] as Vocabulary[]), [user]);
 
   return (
     <div className="space-y-6">
-      <div>
+      {/* <div>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Trung Tâm Kiểm Tra
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Chọn loại bài test và bắt đầu luyện tập
         </p>
-      </div>
+      </div> */}
 
       <Suspense fallback={<TestCenterSkeleton />}>
         <TestCenterInner vocabPromise={vocabPromise} />

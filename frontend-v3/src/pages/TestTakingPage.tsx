@@ -46,7 +46,7 @@ function speakJapanese(text: string) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ja-JP';
-    utterance.rate = 0.85;
+    utterance.rate = 0.7;
     window.speechSynthesis.speak(utterance);
   }
 }
@@ -87,6 +87,7 @@ export default function TestTakingPage() {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeTakenRef = useRef<number>(0);
+  const handleFinishRef = useRef<(isTimeOut?: boolean) => void>(() => {});
 
   // Initialize and load questions
   useEffect(() => {
@@ -220,9 +221,11 @@ export default function TestTakingPage() {
     return () => {
       active = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Timer running effect
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (loading || errorMsg || isSubmitting) return;
 
@@ -239,7 +242,7 @@ export default function TestTakingPage() {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             clearInterval(elapsedTimer);
-            void handleFinish(true); // Auto submit
+            void handleFinishRef.current(true); // Auto submit via ref
             return 0;
           }
           return prev - 1;
@@ -252,6 +255,7 @@ export default function TestTakingPage() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [loading, errorMsg, isSubmitting]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   // Handle Option Select
   const handleSelectOption = (option: string) => {
@@ -277,6 +281,7 @@ export default function TestTakingPage() {
   };
 
   // Submit test session
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleFinish = async (_isTimeOut = false) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -363,6 +368,11 @@ export default function TestTakingPage() {
       }
     });
   };
+
+  // Keep ref in sync with latest handleFinish
+  useEffect(() => {
+    handleFinishRef.current = handleFinish;
+  });
 
   const handleQuit = () => {
     if (window.confirm('Bạn có chắc chắn muốn thoát khi bài kiểm tra chưa hoàn thành?')) {

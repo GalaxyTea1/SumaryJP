@@ -1,10 +1,3 @@
-// ============================================
-// StatisticsPage — SumaryJP
-// React 19: Suspense + use() cho data
-// Gamification Integration: Level, XP, Streak, Badges
-// Chart.js for vocab status & level distribution charts
-// ============================================
-
 import { Suspense, use, useEffect, useRef, useMemo, useState } from 'react';
 import {
   Chart,
@@ -18,10 +11,8 @@ import type { Vocabulary, Grammar, Kanji } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
 
-// Register Chart.js components once
 Chart.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend, DoughnutController, BarController);
 
-// ---- localStorage results ----
 const RESULTS_KEY = 'sumary_test_results';
 interface TestResult {
   id?: number;
@@ -213,9 +204,6 @@ function LevelDistChart({ data }: LevelDistProps) {
   );
 }
 
-// ============================================
-// Main stats content — uses use()
-// ============================================
 function StatsContent({ dataPromise }: { dataPromise: Promise<[Vocabulary[], Grammar[], Kanji[]]> }) {
   const [vocab, grammar, kanji] = use(dataPromise);
   const testResults = useMemo(() => loadTestResults(), []);
@@ -497,9 +485,6 @@ function StatsContent({ dataPromise }: { dataPromise: Promise<[Vocabulary[], Gra
   );
 }
 
-// ============================================
-// Skeleton
-// ============================================
 function StatsSkeleton() {
   return (
     <div className="space-y-6">
@@ -533,25 +518,24 @@ function StatsSkeleton() {
   );
 }
 
-// ============================================
-// Page Export
-// ============================================
 export function StatisticsPage() {
   const { user } = useAuth();
+  /* eslint-disable react-hooks/exhaustive-deps */
   const dataPromise = useMemo(() => Promise.all([
     api.getAllVocabulary().catch(() => [] as Vocabulary[]),
     api.getAllGrammar().catch(() => [] as Grammar[]),
     api.getAllKanji().catch(() => [] as Kanji[]),
   ]), [user]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   return (
     <div>
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h1 className="text-2xl font-black max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Thống Kê Học Tập
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Theo dõi tiến độ, thành tích và lịch sử ôn luyện của bạn</p>
-      </div>
+      </div> */}
 
       <Suspense fallback={<StatsSkeleton />}>
         <StatsContent dataPromise={dataPromise} />

@@ -1,8 +1,3 @@
-// ============================================
-// KanaPage — SumaryJP V3
-// Bảng chữ cái tiếng Nhật, Mini Quiz & Test Kana hoàn chỉnh
-// ============================================
-
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '@/api';
 import { useAuth } from '@/context/AuthContext';
@@ -201,11 +196,11 @@ export function KanaPage() {
     }
   }, [isLoggedIn]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     fetchProgress();
   }, [fetchProgress]);
 
-  // Khóa cuộn nền khi mở các modal
   useEffect(() => {
     if (detailChar || testModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -217,7 +212,6 @@ export function KanaPage() {
     };
   }, [detailChar, testModalOpen]);
 
-  // Build progress helper map
   const progressMap = useMemo(() => {
     const map = new Map<string, 'new' | 'learning' | 'mastered'>();
     progressList.forEach(item => {
@@ -226,14 +220,12 @@ export function KanaPage() {
     return map;
   }, [progressList]);
 
-  // Derive flat list of all characters in current tab
   const tabCharacters = useMemo(() => {
     return KANA[activeTab].flatMap(g =>
       g.items.map(([character, romaji]) => ({ character, romaji, type: activeTab }))
     );
   }, [activeTab]);
 
-  // Filter groups
   const groupsToDisplay = useMemo(() => {
     const groups = KANA[activeTab];
     if (subGroup === 'dakuten') return groups.filter(g => g.group === 'Dakuten');
@@ -241,7 +233,6 @@ export function KanaPage() {
     return groups.filter(g => g.group !== 'Dakuten' && g.group !== 'Yoon');
   }, [activeTab, subGroup]);
 
-  // Metrics
   const stats = useMemo(() => {
     const total = tabCharacters.length;
     let mastered = 0;
@@ -254,7 +245,6 @@ export function KanaPage() {
     return { total, mastered, learning, percent: total ? Math.round((mastered / total) * 100) : 0 };
   }, [tabCharacters, progressMap]);
 
-  // Save character status helper
   async function handleSaveProgress(
     character: string,
     status: 'new' | 'learning' | 'mastered',
@@ -291,7 +281,6 @@ export function KanaPage() {
     }
   }
 
-  // Quick Practice Quiz Generator
   const generateQuickQuiz = useCallback(() => {
     const items = KANA[activeTab].flatMap(g =>
       g.items.map(([character, romaji]) => ({ character, romaji, type: activeTab }))
@@ -308,6 +297,7 @@ export function KanaPage() {
     setQuizFeedback('');
   }, [activeTab]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     generateQuickQuiz();
   }, [activeTab, generateQuickQuiz]);
@@ -327,7 +317,6 @@ export function KanaPage() {
     setTimeout(generateQuickQuiz, 1500);
   }
 
-  // Character Detail Modal Helper
   const selectedCharacterProgress = useMemo(() => {
     if (!detailChar) return 'new';
     return progressMap.get(`${detailChar.type}:${detailChar.character}`) || 'new';
@@ -339,10 +328,8 @@ export function KanaPage() {
     return KANA_EXAMPLES[hira] || [{ ja: `${detailChar.character} (Ví dụ)`, vi: 'Ký tự này đang chờ cập nhật thêm ví dụ.' }];
   }, [detailChar]);
 
-  // Full Test logic
-  // Timer effect
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (testTimerActive) {
       interval = setInterval(() => {
         setTestTime(t => t + 1);
@@ -385,9 +372,9 @@ export function KanaPage() {
 
       const distractors = shuffleArray(pool.filter(p => p.type === item.type && p.character !== item.character)).slice(0, 3);
 
-      let questionText = '';
-      let correctAnswer = '';
-      let options: string[] = [];
+      let questionText: string;
+      let correctAnswer: string;
+      let options: string[];
 
       if (qFormat === 'kana-romaji') {
         questionText = item.character;
@@ -447,14 +434,13 @@ export function KanaPage() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
-      {/* Header — cố định */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-shrink-0">
-        <div>
+        {/* <div>
           <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Học Chữ Cái Kana
           </h1>
           <p className="text-sm text-on-surface-variant mt-0.5">Luyện tập Hiragana và Katakana mỗi ngày</p>
-        </div>
+        </div> */}
 
         {/* Tab switcher */}
         <div className="flex gap-1 bg-surface-variant/50 p-1 rounded-xl flex-shrink-0">
@@ -477,7 +463,6 @@ export function KanaPage() {
         </div>
       </div>
 
-      {/* Mobile Section switcher (Bảng chữ / Luyện tập) */}
       <div className="flex lg:hidden gap-1 bg-surface-variant/30 p-1 rounded-xl w-full flex-shrink-0">
         <button
           onClick={() => setMobileTab('grid')}
@@ -497,14 +482,9 @@ export function KanaPage() {
         </button>
       </div>
 
-      {/* Main Content Area (2 cột trái phải) */}
       <div className="flex-grow overflow-hidden min-h-0">
         <div className="flex flex-col lg:flex-row gap-6 pb-4 lg:pb-0 h-full">
-          
-          {/* Alphabet Grid (bên trái) */}
           <div className={`flex-1 flex flex-col h-full overflow-hidden ${mobileTab === 'grid' ? 'flex' : 'hidden lg:flex'}`}>
-            
-            {/* Sticky Header Wrapper */}
             <div className="sticky top-0 z-10 bg-[#f8fafb] pt-2 pb-4 space-y-4 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.02)]">
               {/* Progress Card */}
               <div className="card p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 bg-white border border-gray-100 shadow-sm">
@@ -528,7 +508,6 @@ export function KanaPage() {
                 </div> */}
               </div>
 
-              {/* Sub-tabs BASIC / DAKUTEN / YOON */}
               <div className="flex gap-2 flex-wrap">
                 {[
                   { value: 'basic' as const, label: 'Chữ cơ bản' },
@@ -550,7 +529,6 @@ export function KanaPage() {
               </div>
             </div>
 
-            {/* Kana Grid Display */}
             <div className="space-y-6 flex-grow overflow-y-auto pr-2 scrollbar-thin min-h-0 pb-4 mt-6">
               {groupsToDisplay.map(group => {
                 const isYoon = group.group === 'Yoon';
@@ -577,7 +555,6 @@ export function KanaPage() {
                             onClick={() => setDetailChar({ character: char, romaji, type: activeTab })}
                             className={`relative min-h-[76px] sm:min-h-[96px] md:min-h-[100px] border-2 rounded-xl sm:rounded-2xl p-2 sm:p-4 flex flex-col items-center justify-center cursor-pointer transition-all ${statusBorder}`}
                           >
-                            {/* Speak button - desktop only */}
                             <button
                               type="button"
                               onClick={e => { e.stopPropagation(); speak(char); }}
@@ -587,7 +564,6 @@ export function KanaPage() {
                               <span className="material-symbols-outlined text-sm">volume_up</span>
                             </button>
 
-                            {/* Status indicator dot - desktop (clickable) */}
                             <button
                               type="button"
                               onClick={e => {
@@ -607,7 +583,6 @@ export function KanaPage() {
                               }`} />
                             </button>
 
-                            {/* Status indicator dot - mobile (non-clickable indicator) */}
                             <div className="flex sm:hidden absolute top-1 right-1 w-2.5 h-2.5 items-center justify-center pointer-events-none">
                               <span className={`w-1.5 h-1.5 rounded-full ${
                                 status === 'mastered' ? 'bg-success' :
@@ -635,9 +610,7 @@ export function KanaPage() {
             </div>
           </div>
 
-          {/* Sidebar (bên phải) */}
           <div className={`w-full lg:w-[320px] space-y-6 flex-shrink-0 h-full overflow-y-auto pr-1 pb-4 scrollbar-thin ${mobileTab === 'practice' ? 'block' : 'hidden lg:block'}`}>
-            {/* Quick Quiz Card */}
             {quizItem && (
               <div className="card p-6 border border-outline-variant relative overflow-hidden bg-white shadow-sm">
                 <div className="absolute top-4 left-4 text-xs font-bold text-on-surface-variant uppercase tracking-wider">
@@ -684,7 +657,6 @@ export function KanaPage() {
               </div>
             )}
 
-            {/* Test Section Starter */}
             <div className="card p-5 border border-outline-variant space-y-4 bg-white shadow-sm">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary text-3xl">quiz</span>
@@ -706,8 +678,6 @@ export function KanaPage() {
         </div>
       </div>
 
-      {/* Modals ở dưới cùng */}
-      {/* ── CHARACTER DETAIL MODAL ── */}
       {detailChar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDetailChar(null)} />
@@ -769,7 +739,6 @@ export function KanaPage() {
                 </div>
               </div>
 
-              {/* Example words */}
               <div className="space-y-2">
                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Từ vựng ví dụ</h4>
                 <div className="space-y-1.5 max-h-40 overflow-y-auto">
@@ -784,7 +753,6 @@ export function KanaPage() {
                 </div>
               </div>
 
-              {/* Action buttons */}
               <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
                 {[
                   { val: 'new' as const, label: 'Chưa học', icon: 'radio_button_unchecked', style: 'hover:bg-gray-50 border-gray-200 text-on-surface-variant' },
@@ -818,7 +786,6 @@ export function KanaPage() {
         </div>
       )}
 
-      {/* ── KANA TEST MODAL (FULL SCREEN) ── */}
       {testModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setTestModalOpen(false)} />

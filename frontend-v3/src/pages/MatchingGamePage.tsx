@@ -1,8 +1,3 @@
-// ============================================
-// MatchingGamePage.tsx — Card Matching Game
-// React 19 + TypeScript + Tailwind CSS v4
-// ============================================
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useGamification } from '@/context/GamificationContext';
@@ -369,7 +364,7 @@ export default function MatchingGamePage() {
       ));
 
       // Track gamification XP
-      let xpAwarded = 1;
+      const xpAwarded = 1;
       async function trackProgress() {
         try {
           if (gameConfig.type === 'hiragana' || gameConfig.type === 'katakana') {
@@ -434,7 +429,7 @@ export default function MatchingGamePage() {
     setGameState('victory');
 
     // Victory bonus XP (+5 XP)
-    let bonusXp = 5;
+    const bonusXp = 5;
     async function trackVictoryEvent() {
       try {
         await trackEvent('flashcard_complete');
@@ -460,7 +455,7 @@ export default function MatchingGamePage() {
   return (
     <div className="flex flex-col min-h-[80vh] w-full max-w-6xl mx-auto py-6 px-4 animate-fade-in-up">
       {/* HEADER SECTION */}
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-outline-variant pb-4">
+      {/* <div className="flex flex-wrap justify-between items-center gap-4 mb-6 border-b border-outline-variant pb-4">
         <div>
           <h1 className="text-2xl font-bold font-headline flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-3xl">extension</span>
@@ -469,12 +464,11 @@ export default function MatchingGamePage() {
           <p className="text-on-surface-variant text-sm mt-0.5">Rèn luyện phản xạ ghi nhớ Kana và Kanji siêu tốc</p>
         </div>
         
-        {/* Live XP Display */}
         <div className="flex items-center gap-2 bg-primary-50 border border-primary-100 px-4 py-2 rounded-full text-primary-500 font-semibold text-sm">
           <span className="material-symbols-outlined text-lg">workspace_premium</span>
           <span>{gamificationData.xp} XP Hệ Thống</span>
         </div>
-      </div>
+      </div> */}
 
       {/* 1. SETUP SCREEN */}
       {gameState === 'setup' && (

@@ -204,9 +204,11 @@ export default function AuthModal({ isOpen, defaultTab = 'login', onClose }: Aut
   const navigate = useNavigate();
 
   // Sync tab khi defaultTab thay đổi
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setTab(defaultTab);
   }, [defaultTab, isOpen]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Khoá scroll khi modal mở
   useEffect(() => {

@@ -1,18 +1,11 @@
-// ============================================
-// KanjiPage — SumaryJP
-// React 19: use() + useState cho modal
-// Card grid với detail modal
-// ============================================
-
 import { Suspense, use, useState, useMemo, useTransition, useEffect, useRef } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Kanji } from '@/types';
 import CustomSelect from '@/components/Select';
 
-// ---- Extended Kanji type (từ v2 có thêm fields) ----
 interface KanjiExtended extends Kanji {
-  character?: string;   // alias cho kanji field
+  character?: string;  
   radical?: string;
   example_words?: string;
 }
@@ -114,7 +107,6 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  // Khóa cuộn nền body khi modal được mở
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -218,7 +210,6 @@ function KanjiModal({ kanji: k, onClose }: KanjiModalProps) {
   );
 }
 
-// ---- Skeleton Grid ----
 function KanjiSkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 flex-grow overflow-hidden">
@@ -233,7 +224,6 @@ function KanjiSkeleton() {
   );
 }
 
-// ---- Kanji Grid (fetches with use()) ----
 function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> }) {
   const allKanji = use(kanjiPromise) as KanjiExtended[];
 
@@ -244,10 +234,8 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
   const [selectedKanji, setSelectedKanji] = useState<KanjiExtended | null>(null);
   const [isPending, startTransition]      = useTransition();
 
-  // Ref cho scroll container của grid
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Tự động cuộn về đầu grid khi thay đổi bất kỳ bộ lọc nào
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0 });
@@ -288,9 +276,7 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
 
   return (
     <div className="flex-1 min-h-0 flex flex-col space-y-4">
-      {/* Filters bar — cố định */}
       <div className="flex items-start gap-3 flex-wrap flex-shrink-0 bg-transparent">
-        {/* Level pills — hỗ trợ cuộn ngang trên mobile */}
         <div className="flex items-center gap-2 flex-wrap max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:scrollbar-none max-sm:pb-1 flex-shrink-0">
           {(['all', ...LEVELS] as const).map(level => (
             <button
@@ -339,14 +325,12 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
         </div>
       </div>
 
-      {/* Stats bar — cố định */}
       <div className="flex items-center gap-3 text-sm text-on-surface-variant flex-shrink-0 px-1">
         <span className="font-semibold text-on-surface">{filtered.length} Kanji</span>
         <span>•</span>
         <span>{uniqueLessons} bài</span>
       </div>
 
-      {/* Grid Container — cuộn dọc riêng biệt */}
       <div
         ref={scrollContainerRef}
         className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}
@@ -395,14 +379,14 @@ export function KanjiPage() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
-      <div className="mb-2 flex-shrink-0">
+      {/* <div className="mb-2 flex-shrink-0">
         <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Kanji
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Khám phá và học Kanji theo bài
         </p>
-      </div>
+      </div> */}
 
       <Suspense fallback={<KanjiSkeleton />}>
         <KanjiGrid kanjiPromise={kanjiPromise} />

@@ -66,9 +66,11 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
   }, [isLoggedIn]);
 
   // Sync data khi trạng thái login/user thay đổi
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     void refresh();
   }, [refresh, isLoggedIn, user]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const addXP = useCallback(async (amount: number, reason = '') => {
     addOptimisticXP(amount); // UI thấy ngay lập tức
@@ -143,6 +145,7 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useGamification(): GamificationContextValue {
   const ctx = useContext(GamificationContext);
   if (!ctx) throw new Error('useGamification phải dùng trong GamificationProvider');

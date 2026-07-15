@@ -143,6 +143,7 @@ function checkBadge(badgeId: string, data: GamificationData): boolean {
 }
 
 // ---- Add XP ----
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function addXP(amount: number, _reason = ''): GamificationData {
   const data = loadGamification();
   const oldLevel = getCurrentLevel(data.xp);

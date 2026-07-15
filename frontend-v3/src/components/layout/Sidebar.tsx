@@ -20,7 +20,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/grammar',     icon: 'edit_note',    label: 'Ngữ Pháp' },
   { to: '/kanji',       icon: 'translate',    label: 'Kanji' },
   { to: '/kana',        icon: 'abc',          label: 'Kana' },
-  { to: '/matching-game', icon: 'extension',  label: 'Game Ghép Thẻ' },
+  { to: '/matching-game', icon: 'extension',  label: 'Games' },
   { to: '/test-center', icon: 'quiz',         label: 'Bài Test' },
   { to: '/flashcard',   icon: 'style',        label: 'Flashcard' },
   { to: '/srs-review',  icon: 'replay',       label: 'Ôn Tập SRS' },

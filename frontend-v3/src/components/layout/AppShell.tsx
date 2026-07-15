@@ -13,9 +13,11 @@ export default function AppShell() {
   const location = useLocation();
 
   // Close sidebar on route change (on mobile/tablet)
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Close sidebar when resizing to desktop
   useEffect(() => {

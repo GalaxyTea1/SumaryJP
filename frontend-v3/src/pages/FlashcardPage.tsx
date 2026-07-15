@@ -1,9 +1,3 @@
-// ============================================
-// FlashcardPage — SumaryJP
-// React 19: useReducer cho session state, useEffect cho keyboard
-// Pure CSS 3D flip animation
-// ============================================
-
 import { useState, useReducer, useEffect, useCallback, useMemo } from 'react';
 import { api } from '@/api';
 import { useAuth } from '@/context/AuthContext';
@@ -11,7 +5,6 @@ import { useGamification } from '@/context/GamificationContext';
 import type { Vocabulary, Kanji, Grammar } from '@/types';
 import CustomSelect from '@/components/Select';
 
-// ---- Types ----
 type CardType = 'vocab' | 'kanji' | 'grammar';
 
 type AnyCard = (Vocabulary | Kanji | Grammar) & {
@@ -34,7 +27,6 @@ type AnyCard = (Vocabulary | Kanji | Grammar) & {
   example_vi?: string;
 };
 
-// ---- Session state via useReducer ----
 interface SessionState {
   cards: AnyCard[];
   currentIndex: number;
@@ -147,7 +139,6 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
   }
 }
 
-// ---- Shuffle helper ----
 function shuffle<T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -156,17 +147,15 @@ function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
-// ---- TTS helper ----
 function speak(text: string) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'ja-JP';
-  u.rate = 0.8;
+  u.rate = 0.7;
   window.speechSynthesis.speak(u);
 }
 
-// ---- Card face content ----
 interface FaceContent {
   frontLabel: string;
   frontMain: string;
@@ -219,12 +208,8 @@ function getCardContent(card: AnyCard, type: CardType): FaceContent {
   };
 }
 
-// ============================================
-// FlashCard 3D component
-// ============================================
-// Helper to dynamically adjust font size based on text length to prevent overflow
 function getFontSizeClass(text: string, isBig?: boolean) {
-  if (isBig) return 'text-lg sm:text-2xl'; // For long grammar sentences
+  if (isBig) return 'text-lg sm:text-2xl'; 
   const len = text.length;
   if (len > 12) return 'text-base sm:text-xl';
   if (len > 8) return 'text-xl sm:text-2xl';
@@ -232,9 +217,6 @@ function getFontSizeClass(text: string, isBig?: boolean) {
   return 'text-4xl sm:text-5xl';
 }
 
-// ============================================
-// FlashCard 3D component
-// ============================================
 interface FlashCardProps {
   content: FaceContent;
   isFlipped: boolean;
@@ -470,7 +452,7 @@ export function FlashcardPage() {
     }
   }
 
-  // Load vocab on mount or user change
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- data fetch on mount/user change
   useEffect(() => { loadData('vocab'); }, [user]);
 
   function handleTypeChange(t: CardType) {
@@ -489,7 +471,7 @@ export function FlashcardPage() {
 
   // Start session
   function handleStart() {
-    let filtered = allData.filter(d => {
+    const filtered = allData.filter(d => {
       if (level  !== 'all' && d.level !== level)          return false;
       if (lesson !== 'all' && String(d.lesson) !== lesson) return false;
       return true;
@@ -548,12 +530,12 @@ export function FlashcardPage() {
 
   return (
     <div>
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Flashcard
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Học từ vựng bằng phương pháp lật thẻ</p>
-      </div>
+      </div> */}
 
       {/* Config */}
       <ConfigPanel
@@ -650,7 +632,6 @@ export function FlashcardPage() {
             </button>
           </div>
 
-          {/* Keyboard hints — ẩn trên mobile nhỏ */}
           <div className="text-center mt-4 text-xs text-on-surface-variant space-x-3 max-sm:hidden">
             {[['←', 'Trước'], ['→', 'Tiếp'], ['1', 'Chưa biết'], ['2', 'Đã biết']].map(([k, label]) => (
               <span key={k}>
@@ -732,12 +713,12 @@ export function FlashcardPage() {
           <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
             <span className="material-symbols-outlined text-3xl">psychology</span>
           </div>
-          <h3 className="text-lg font-bold mb-2 text-on-surface font-display">
+          {/* <h3 className="text-lg font-bold mb-2 text-on-surface font-display">
             Phương pháp lật thẻ (Spaced Repetition)
           </h3>
           <p className="text-sm text-on-surface-variant max-w-[450px] mx-auto mb-8">
             Phương pháp học chủ động giúp kích thích não bộ ghi nhớ sâu từ vựng, Kanji và ngữ pháp tiếng Nhật thông qua việc chủ động gợi nhớ nghĩa của thẻ.
-          </p>
+          </p> */}
           
           <div className="border-t border-outline-variant/60 pt-6">
             <h4 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant/80 mb-4">Hướng dẫn phím tắt (Desktop)</h4>

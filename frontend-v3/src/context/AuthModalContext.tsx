@@ -41,6 +41,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuthModal(): AuthModalContextValue {
   const ctx = useContext(AuthModalContext);
   if (!ctx) throw new Error('useAuthModal phải dùng trong AuthModalProvider');

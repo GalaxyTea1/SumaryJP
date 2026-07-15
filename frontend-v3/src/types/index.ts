@@ -106,7 +106,7 @@ export interface TestResult {
   correct_answers?: number;
   correct?: number;
   mode?: string;
-  details?: any;
+  details?: unknown;
 }
 
 // --- Gamification ---

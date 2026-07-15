@@ -1,8 +1,3 @@
-// ============================================
-// VocabularyPage — SumaryJP
-// React 19: use() hook + useOptimistic cho toggle difficult
-// ============================================
-
 import { Suspense, use, useState, useOptimistic, useMemo, useTransition, useRef, startTransition } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
@@ -10,7 +5,6 @@ import type { Vocabulary } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import CustomSelect from '@/components/Select';
 
-// ---- Constants ----
 const ITEMS_PER_PAGE = 20;
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
 const STATUS_OPTIONS = [
@@ -20,7 +14,6 @@ const STATUS_OPTIONS = [
   { value: 'mastered',    label: 'Đã thuộc' },
 ] as const;
 
-// ---- Helpers ----
 function getWordType(vocab: Vocabulary): string {
   if ('word_type' in vocab && vocab['word_type' as keyof Vocabulary]) {
     return String(vocab['word_type' as keyof Vocabulary]);
@@ -52,7 +45,6 @@ function getPaginationRange(current: number, total: number): (number | '...')[] 
   return [1, '...', current - 1, current, current + 1, '...', total];
 }
 
-// ---- Select Dropdown ----
 interface SelectProps {
   options: readonly { value: string; label: string }[];
   value: string;
@@ -65,24 +57,21 @@ function Select({ options, value, onChange, className = '' }: SelectProps) {
     <CustomSelect
       value={value}
       onChange={onChange}
-      options={options as any}
+      options={options as { value: string | number; label: string }[]}
       className={className}
     />
   );
 }
 
-// ---- Skeleton Loader cho Mobile & Desktop ----
 function SkeletonLoader() {
   return (
     <div className="space-y-4 flex-1 flex flex-col min-h-0">
-      {/* Filters Skeleton */}
       <div className="card p-4 flex flex-wrap gap-3 animate-pulse">
         <div className="h-8 w-48 bg-gray-200 rounded-full" />
         <div className="h-8 w-32 bg-gray-200 rounded-lg" />
         <div className="h-8 w-36 bg-gray-200 rounded-lg" />
         <div className="h-8 w-48 bg-gray-200 rounded-lg flex-1" />
       </div>
-      {/* List/Table Skeleton */}
       <div className="card p-4 flex-grow overflow-hidden animate-pulse space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
@@ -99,9 +88,6 @@ function SkeletonLoader() {
   );
 }
 
-// ============================================
-// VocabRow — Dành cho giao diện Desktop (Table)
-// ============================================
 interface VocabRowProps {
   vocab: Vocabulary;
   index: number;
@@ -123,7 +109,7 @@ function VocabRow({ vocab, index, onDifficultToggle }: VocabRowProps) {
       window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(vocab.japanese);
       utt.lang = 'ja-JP';
-      utt.rate = 0.8;
+      utt.rate = 0.7;
       window.speechSynthesis.speak(utt);
     }
   }
@@ -134,7 +120,6 @@ function VocabRow({ vocab, index, onDifficultToggle }: VocabRowProps) {
       try {
         await onDifficultToggle(vocab);
       } catch {
-        // Đã log ở cha, catch ở đây để tránh uncaught error
       }
     });
   }
@@ -190,9 +175,6 @@ function VocabRow({ vocab, index, onDifficultToggle }: VocabRowProps) {
   );
 }
 
-// ============================================
-// VocabCard — Dành cho giao diện Mobile/Tablet (Cards List)
-// ============================================
 function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
   const [optimisticDifficult, setOptimisticDifficult] = useOptimistic(
     vocab.is_difficult ?? false,
@@ -208,7 +190,7 @@ function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
       window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(vocab.japanese);
       utt.lang = 'ja-JP';
-      utt.rate = 0.8;
+      utt.rate = 0.7;
       window.speechSynthesis.speak(utt);
     }
   }
@@ -219,7 +201,6 @@ function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
       try {
         await onDifficultToggle(vocab);
       } catch {
-        // Đã log ở cha, catch ở đây để tránh uncaught error
       }
     });
   }
@@ -279,13 +260,9 @@ function VocabCard({ vocab, index, onDifficultToggle }: VocabRowProps) {
   );
 }
 
-// ============================================
-// VocabTable — Nội dung hiển thị dữ liệu và bộ lọc
-// ============================================
 function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
   const allVocab = use(vocabPromise);
 
-  // Filter state
   const [activeLevel,  setActiveLevel]  = useState('all');
   const [activeLesson, setActiveLesson] = useState('all');
   const [activeStatus, setActiveStatus] = useState('all');
@@ -294,13 +271,10 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
   const [currentPage,  setCurrentPage]  = useState(1);
   const [vocabList,    setVocabList]    = useState(allVocab);
 
-  // Scroll ref
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // ✨ React 19: useTransition — filter không block UI
   const [isPending, startTransition] = useTransition();
 
-  // Lesson list từ data
   const lessons = useMemo(() => {
     const set = new Set(allVocab.map(v => String(v.lesson ?? '')).filter(Boolean));
     return [...set].sort((a, b) => {
@@ -340,7 +314,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
   const learning   = filtered.filter(v => v.status === 'learning').length;
   const notLearned = filtered.filter(v => v.status === 'not-learned').length;
 
-  // Xử lý bộ lọc thông qua startTransition
   function handleFilter(key: string, val: string) {
     startTransition(() => {
       if (key === 'level')  setActiveLevel(val);
@@ -350,7 +323,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
     });
   }
 
-  // Cuộn về đầu danh sách khi chuyển trang
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     if (scrollContainerRef.current) {
@@ -362,7 +334,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
     const nextDifficult = !vocab.is_difficult;
     const updated = { ...vocab, is_difficult: nextDifficult };
     try {
-      // Chỉ gửi các trường progress để tránh lỗi phân quyền 403 đối với user thường
       await api.updateVocabularyProgress(vocab.id, {
         is_difficult: nextDifficult,
         status: vocab.status,
@@ -376,10 +347,8 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col space-y-4">
-      {/* Filters — cố định vị trí */}
       <div className="card p-4 flex flex-wrap items-center gap-3 max-sm:gap-2 flex-shrink-0">
         
-        {/* Level pills — hỗ trợ cuộn ngang trên điện thoại */}
         <div className="flex gap-1.5 flex-wrap max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:scrollbar-none max-sm:pb-1 flex-shrink-0">
           {['all', ...LEVELS].map(level => (
             <button
@@ -398,7 +367,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
 
         <div className="h-6 w-px bg-gray-200 hidden md:block" />
 
-        {/* Lesson dropdown — tự động co giãn dưới màn 1536px */}
         <Select
           options={lessonOptions}
           value={activeLesson}
@@ -406,7 +374,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
           className="min-w-[140px] max-2xl:flex-1"
         />
 
-        {/* Status dropdown — tự động co giãn dưới màn 1536px */}
         <Select
           options={STATUS_OPTIONS}
           value={activeStatus}
@@ -414,7 +381,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
           className="min-w-[160px] max-2xl:flex-1"
         />
 
-        {/* Search — xuống hàng và rộng 100% khi màn hình < 1536px */}
         <div className="w-full 2xl:flex-1 2xl:min-w-[200px] relative flex-shrink-0">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
             search
@@ -438,13 +404,11 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
         </div>
       </div>
 
-      {/* Main List Container — Chỉ scroll bên trong vùng này */}
       <div
         ref={scrollContainerRef}
         className={`flex-grow overflow-y-auto min-h-0 transition-opacity scrollbar-thin ${isPending ? 'opacity-60' : ''}`}
       >
         
-        {/* Desktop Layout: Bảng Table (Chỉ hiện khi màn hình ≥ 1536px) */}
         <div className="hidden 2xl:block card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: '600px' }}>
@@ -481,7 +445,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
           </div>
         </div>
 
-        {/* Mobile/Tablet/Laptop Layout: Danh sách Thẻ Card (Hiện khi màn hình < 1536px, gồm cả 1343px) */}
         <div className="2xl:hidden grid grid-cols-1 lg:grid-cols-2 gap-3 pb-4">
           {pageItems.length === 0 ? (
             <div className="col-span-full bg-white border border-gray-100 rounded-xl p-6 text-center text-on-surface-variant text-sm">
@@ -501,15 +464,13 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
 
       </div>
 
-      {/* Summary — cố định vị trí */}
-      <div className="text-sm text-on-surface-variant flex-shrink-0 pt-1">
+      {/* <div className="text-sm text-on-surface-variant flex-shrink-0 pt-1">
         {filtered.length} từ &nbsp;|&nbsp;
         <span className="text-success font-medium">Đã thuộc: {mastered}</span> &nbsp;|&nbsp;
         <span className="text-secondary font-medium">Đang học: {learning}</span> &nbsp;|&nbsp;
         Chưa học: {notLearned}
-      </div>
+      </div> */}
 
-      {/* Pagination — cố định vị trí */}
       {totalPages > 1 && (
         <div className="flex justify-center flex-wrap gap-2 text-sm flex-shrink-0 py-1">
           <button
@@ -562,12 +523,12 @@ export function VocabularyPage() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
-      <div className="mb-2 flex-shrink-0">
+      {/* <div className="mb-2 flex-shrink-0">
         <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Từ Vựng Tiếng Nhật
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">Quản lý và ôn tập từ vựng của bạn</p>
-      </div>
+      </div> */}
       <Suspense fallback={<SkeletonLoader />}>
         <VocabTable vocabPromise={vocabPromise} />
       </Suspense>

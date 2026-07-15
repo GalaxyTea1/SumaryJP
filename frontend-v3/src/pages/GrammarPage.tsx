@@ -1,9 +1,3 @@
-// ============================================
-// GrammarPage — SumaryJP
-// React 19: use() + useTransition cho filter
-// Card layout với pattern highlight
-// ============================================
-
 import { Suspense, use, useState, useMemo, useTransition, useRef } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
@@ -109,7 +103,6 @@ function GrammarCard({ grammar: g }: GrammarCardProps) {
         </div>
       )}
 
-      {/* Expand explanation */}
       {g.explanation && (
         <>
           <button
@@ -129,7 +122,6 @@ function GrammarCard({ grammar: g }: GrammarCardProps) {
   );
 }
 
-// ---- Skeleton Card ----
 function GrammarCardSkeleton() {
   return (
     <div className="card p-6">
@@ -147,7 +139,6 @@ function GrammarCardSkeleton() {
   );
 }
 
-// ---- Grammar Grid (data fetched via use()) ----
 function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> }) {
   const allGrammar = use(grammarPromise);
 
@@ -157,7 +148,6 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
   const [currentPage,  setCurrentPage]  = useState(1);
   const [isPending, startTransitionHook] = useTransition();
 
-  // Ref cho scroll container
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
@@ -184,7 +174,6 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
     });
   }
 
-  // Cuộn về đầu trang khi click chuyển trang
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     if (scrollContainerRef.current) {
@@ -194,10 +183,8 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
 
   return (
     <div className="flex-1 min-h-0 flex flex-col space-y-4">
-      {/* Filters — cố định */}
       <div className="card p-4 flex flex-wrap items-center gap-3 max-sm:gap-2 flex-shrink-0 bg-white">
         
-        {/* Level pills — hỗ trợ cuộn ngang trên mobile */}
         <div className="flex gap-2 flex-wrap max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:scrollbar-none max-sm:pb-1 flex-shrink-0">
           {(['all', ...LEVELS] as const).map(level => (
             <button
@@ -245,7 +232,6 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
         </span>
       </div>
 
-      {/* Grid Container — cuộn dọc riêng biệt */}
       <div
         ref={scrollContainerRef}
         className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}
@@ -261,7 +247,6 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
         </div>
       </div>
 
-      {/* Pagination — cố định ở cuối */}
       {totalPages > 1 && (
         <div className="flex justify-center flex-wrap gap-2 text-sm flex-shrink-0 py-1">
           <button
@@ -314,14 +299,14 @@ export function GrammarPage() {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
-      <div className="mb-2 flex-shrink-0">
+      {/* <div className="mb-2 flex-shrink-0">
         <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ngữ Pháp Tiếng Nhật
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Tổng hợp cấu trúc ngữ pháp từ N5 đến N1
         </p>
-      </div>
+      </div> */}
 
       <Suspense
         fallback={

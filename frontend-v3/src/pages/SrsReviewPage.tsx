@@ -1,19 +1,10 @@
-// ============================================
-// SrsReviewPage — SumaryJP
-// SM-2 Spaced Repetition System
-// React 19: useReducer cho session + localStorage cho SRS state
-// ============================================
-
 import { Suspense, use, useReducer, useEffect, useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '@/api';
-import type { Vocabulary, Kanji, Grammar } from '@/types';
+import type { Vocabulary, Kanji, Grammar, SrsProgress } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
 
-// ============================================
-// SRS Algorithm (SM-2 simplified)
-// ============================================
 const SRS_KEY = 'sumary_srs_data';
 
 interface SrsItem {
@@ -75,6 +66,21 @@ function calcNextSrs(item: SrsItem, quality: number): SrsItem {
   return updated;
 }
 
+// Convert backend SrsProgress[] → local SrsStore format
+function backendToStore(progress: SrsProgress[]): SrsStore {
+  const store: SrsStore = {};
+  progress.forEach(p => {
+    store[`${p.itemType}_${p.itemId}`] = {
+      interval: p.interval,
+      repetitions: p.repetitions,
+      easeFactor: p.easeFactor,
+      nextReview: new Date(p.nextReview).getTime(),
+      lastReview: p.lastReview ? new Date(p.lastReview).getTime() : null,
+    };
+  });
+  return store;
+}
+
 // ============================================
 // TTS helper
 // ============================================
@@ -83,7 +89,7 @@ function speak(text: string) {
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'ja-JP';
-  u.rate = 0.8;
+  u.rate = 0.7;
   window.speechSynthesis.speak(u);
 }
 
@@ -154,6 +160,11 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
       const key = `${item.type}_${item.id}`;
       newStore[key] = calcNextSrs(getSrsItem(newStore, item.type, item.id), action.quality);
       saveSrsStore(newStore);
+
+      // Sync to backend (fire-and-forget)
+      void api.reviewSrsItem(item.type, item.id, action.quality).catch(err => {
+        console.warn('SRS backend sync failed (offline?):', err);
+      });
 
       const nextIdx = state.currentIndex + 1;
       const isEnd   = nextIdx >= state.queue.length;
@@ -308,7 +319,6 @@ function getItemContent(item: ReviewItem) {
   };
 }
 
-// Auto-adjust font size based on text length
 function getFrontFontSize(text: string): string {
   const len = text.length;
   if (len > 12) return 'text-base sm:text-xl';
@@ -317,12 +327,28 @@ function getFrontFontSize(text: string): string {
   return 'text-4xl sm:text-5xl';
 }
 
-function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[], Kanji[], Grammar[]]> }) {
+interface SrsContentProps {
+  allDataPromise: Promise<[Vocabulary[], Kanji[], Grammar[]]>;
+  srsProgressPromise: Promise<SrsProgress[]> | null;
+}
+
+function SrsContent({ allDataPromise, srsProgressPromise }: SrsContentProps) {
   const [vocab, kanji, grammar] = use(allDataPromise) as [Vocabulary[], Kanji[], Grammar[]];
+  const backendSrs = srsProgressPromise ? use(srsProgressPromise) : null;
+  const { isLoggedIn } = useAuth();
   const { trackEvent } = useGamification();
   const [showExitDialog, setShowExitDialog] = useState(false);
 
-  const initStore = useMemo(() => loadSrsStore(), []);
+  const initStore = useMemo(() => {
+    if (backendSrs && backendSrs.length > 0) {
+      const serverStore = backendToStore(backendSrs);
+      // Also sync to localStorage for offline use
+      saveSrsStore(serverStore);
+      return serverStore;
+    }
+    return loadSrsStore();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [state, dispatch] = useReducer(sessionReducer, {
     queue: [], currentIndex: 0, isFlipped: false,
@@ -331,6 +357,7 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
   });
 
   // Compute overview stats
+  /* eslint-disable react-hooks/purity */
   const stats = useMemo(() => {
     const now   = Date.now();
     let due = 0, learning = 0, mastered = 0;
@@ -350,7 +377,8 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
     });
 
     return { due, learning, mastered };
-  }, [vocab, kanji, grammar, state.srsStore, state.reviewedToday]);
+  }, [vocab, kanji, grammar, state.srsStore]);
+  /* eslint-enable react-hooks/purity */
 
   // Build review queue
   function handleStart() {
@@ -428,7 +456,6 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
   const content     = currentItem ? getItemContent(currentItem) : null;
   const progress    = state.queue.length > 0 ? (state.currentIndex / state.queue.length) * 100 : 0;
 
-  // Accuracy for complete screen
   const accuracy = state.queue.length > 0
     ? Math.round((state.goodCount / state.queue.length) * 100)
     : 0;
@@ -442,7 +469,6 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
 
   return (
     <div className="animate-fade-in-up space-y-6">
-      {/* Overview stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <StatCard value={stats.due}           color="text-error"    icon="pending"          label="Cần ôn hôm nay" />
         <StatCard value={stats.learning}      color="text-amber-500" icon="sync"             label="Đang học" />
@@ -450,7 +476,6 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
         <StatCard value={stats.mastered}      color="text-success"  icon="military_tech"     label="Đã thuộc" />
       </div>
 
-      {/* ─── OVERVIEW PHASE ─── */}
       {state.phase === 'overview' && (
         <div className="max-w-[600px] mx-auto text-center py-10 px-6 bg-white border border-black/[0.03] rounded-3xl shadow-sm">
           <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center">
@@ -504,10 +529,8 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
         </div>
       )}
 
-      {/* ─── PLAYING PHASE ─── */}
       {state.phase === 'playing' && content && (
         <div>
-          {/* Progress bar + exit */}
           <div className="flex items-center gap-3 mb-2">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1.5 text-sm">
@@ -624,7 +647,6 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
             </div>
           </div>
 
-          {/* Rating buttons — hiện sau khi lật */}
           {state.isFlipped && (
             <div className="flex items-stretch justify-center gap-3 mt-6 animate-fade-in-up w-full max-w-[560px] max-sm:max-w-full mx-auto">
               {RATINGS.map(r => (
@@ -649,7 +671,6 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
             </div>
           )}
 
-          {/* Keyboard hints */}
           <div className="text-center mt-4 text-xs text-on-surface-variant flex items-center justify-center gap-4 max-sm:hidden">
             {state.isFlipped ? (
               RATINGS.map(r => (
@@ -742,27 +763,32 @@ function SrsContent({ allDataPromise }: { allDataPromise: Promise<[Vocabulary[],
   );
 }
 
-// ============================================
-// Page Export
-// ============================================
 export function SrsReviewPage() {
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
+  /* eslint-disable react-hooks/exhaustive-deps */
   const allDataPromise = useMemo(() => Promise.all([
     api.getAllVocabulary().catch(() => [] as Vocabulary[]),
     api.getAllKanji().catch(() => [] as Kanji[]),
     api.getAllGrammar().catch(() => [] as Grammar[]),
   ]), [user]);
 
+  // Fetch SRS progress from backend when logged in
+  const srsProgressPromise = useMemo(() => {
+    if (!isLoggedIn) return null;
+    return api.getSrsProgress().catch(() => [] as SrsProgress[]);
+  }, [user]);
+  /* eslint-enable react-hooks/exhaustive-deps */
+
   return (
     <div>
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ôn Tập SRS
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Ôn tập thông minh — Spaced Repetition System
         </p>
-      </div>
+      </div> */}
 
       <Suspense
         fallback={
@@ -776,7 +802,7 @@ export function SrsReviewPage() {
           </div>
         }
       >
-        <SrsContent allDataPromise={allDataPromise} />
+        <SrsContent allDataPromise={allDataPromise} srsProgressPromise={srsProgressPromise} />
       </Suspense>
     </div>
   );

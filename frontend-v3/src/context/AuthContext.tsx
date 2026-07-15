@@ -63,9 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     void refreshUser();
   }, [refreshUser]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Login — React 19: có thể dùng với useActionState
   const login = useCallback(async (username: string, password: string) => {
@@ -110,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // ---- Hook ----
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth phải dùng trong AuthProvider');

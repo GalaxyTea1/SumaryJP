@@ -325,7 +325,7 @@ export default function LandingPage() {
         }
         .card:hover {
           box-shadow: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
-          transform: translateY(-2px);
+          transform: scale(1.01);
         }
         .btn-primary {
           background: #6caba0;

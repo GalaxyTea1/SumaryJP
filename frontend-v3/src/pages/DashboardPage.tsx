@@ -156,12 +156,14 @@ function WeeklyGoalSection({ weeklyPromise, onRefresh }: { weeklyPromise: Promis
   const [weeklyTarget, setWeeklyTarget] = useState(initialTarget);
   const [isSaving, setIsSaving] = useState(false);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (weeklyData.goalTarget) {
       setWeeklyTarget(weeklyData.goalTarget);
       setTempTarget(weeklyData.goalTarget);
     }
   }, [weeklyData.goalTarget]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const weeklyCount = weeklyData.goalCount ?? 0;
   const pct = calcPercent(weeklyCount, weeklyTarget);
@@ -177,7 +179,7 @@ function WeeklyGoalSection({ weeklyPromise, onRefresh }: { weeklyPromise: Promis
       setWeeklyTarget(tempTarget);
       setIsEditing(false);
       onRefresh();
-    } catch (err) {
+    } catch {
       alert('Không thể lưu mục tiêu tuần. Vui lòng thử lại.');
     } finally {
       setIsSaving(false);
@@ -269,17 +271,19 @@ function WeeklyGoalSection({ weeklyPromise, onRefresh }: { weeklyPromise: Promis
 // ============================================
 // Gamification Widget
 // ============================================
-function GamificationWidget() {
-  const { isLoggedIn } = useAuth();
-  const { data, currentLevel, nextLevel, levelProgress, badges, optimisticXP } = useGamification();
-  const earnedBadges = badges.filter(b => b.earned).length;
-
-  const LockOverlay = () => (
+function LockOverlay() {
+  return (
     <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl">
       <span className="material-symbols-outlined text-3xl text-primary mb-2">lock</span>
       <span className="text-sm font-semibold">Đăng nhập để xem</span>
     </div>
   );
+}
+
+function GamificationWidget() {
+  const { isLoggedIn } = useAuth();
+  const { data, currentLevel, nextLevel, levelProgress, badges, optimisticXP } = useGamification();
+  const earnedBadges = badges.filter(b => b.earned).length;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -479,12 +483,14 @@ export default function DashboardPage() {
 
   const handleRefresh = () => setRefreshKey(k => k + 1);
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   const vocabPromise   = useMemo(() => user ? api.getAllVocabulary().catch(() => [] as Vocabulary[]) : Promise.resolve([] as Vocabulary[]), [user]);
   const grammarPromise = useMemo(() => user ? api.getAllGrammar().catch(() => [] as Grammar[]) : Promise.resolve([] as Grammar[]), [user]);
   const kanjiPromise   = useMemo(() => user ? api.getAllKanji().catch(() => [] as Kanji[]) : Promise.resolve([] as Kanji[]), [user]);
   const srsPromise     = useMemo(() => user ? api.getSrsProgress().catch(() => [] as SrsProgress[]) : Promise.resolve([] as SrsProgress[]), [user]);
   const historyPromise = useMemo(() => user ? api.getLearningHistory(4).catch(() => [] as LearningHistory[]) : Promise.resolve([] as LearningHistory[]), [user, refreshKey]);
   const weeklyPromise  = useMemo(() => user ? api.getWeeklyGoal().catch(() => ({ goalCount: 0 } as WeeklyGoal)) : Promise.resolve({ goalCount: 0 } as WeeklyGoal), [user, refreshKey]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   return (
     <Wrapper>
@@ -499,7 +505,7 @@ export default function DashboardPage() {
       </Suspense>
 
       {/* Gamification */}
-      <GamificationWidget />
+      {/* <GamificationWidget /> */}
 
       {/* Quick Actions + Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
