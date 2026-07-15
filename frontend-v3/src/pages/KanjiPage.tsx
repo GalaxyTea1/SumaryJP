@@ -368,9 +368,6 @@ function KanjiGrid({ kanjiPromise }: { kanjiPromise: Promise<KanjiExtended[]> })
   );
 }
 
-// ============================================
-// Page Export
-// ============================================
 export function KanjiPage() {
   const { user } = useAuth();
   const kanjiPromise = useMemo(() => {

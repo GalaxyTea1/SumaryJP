@@ -1,8 +1,3 @@
-// ============================================
-// Landing Page — SumaryJP V3
-// Sao chép thiết kế từ V2 sang React
-// ============================================
-
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthModal } from '@/context/AuthModalContext';

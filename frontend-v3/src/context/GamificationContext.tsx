@@ -1,9 +1,3 @@
-// ============================================
-// GamificationContext — SumaryJP
-// React 19: useOptimistic cho XP animation
-// Đồng bộ với API backend khi đăng nhập, fallback localStorage khi offline
-// ============================================
-
 import {
   createContext, useContext, useState,
   useCallback, useOptimistic, useEffect, type ReactNode,
@@ -24,7 +18,7 @@ import type { TrackEventType } from '@/lib/gamification';
 
 interface GamificationContextValue {
   data: GamificationData;
-  optimisticXP: number;           // ← React 19 useOptimistic
+  optimisticXP: number;   
   badges: GamificationBadge[];
   currentLevel: GamificationLevel;
   nextLevel: GamificationLevel | null;
@@ -33,7 +27,6 @@ interface GamificationContextValue {
   trackEvent: (type: TrackEventType, extra?: Record<string, number>) => Promise<void>;
   initStreak: () => Promise<void>;
   refresh: () => Promise<void>;
-  // Constants
   LEVELS: typeof LEVELS;
   BADGE_DEFS: typeof BADGE_DEFS;
   XP_REWARDS: typeof XP_REWARDS;
@@ -45,7 +38,6 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
   const { isLoggedIn, user } = useAuth();
   const [data, setData] = useState<GamificationData>(() => loadGamification());
 
-  // ✨ React 19 — useOptimistic: UI cập nhật XP ngay lập tức
   const [optimisticXP, addOptimisticXP] = useOptimistic(
     data.xp,
     (currentXP: number, delta: number) => currentXP + delta,
@@ -65,21 +57,15 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
     }
   }, [isLoggedIn]);
 
-  // Sync data khi trạng thái login/user thay đổi
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     void refresh();
   }, [refresh, isLoggedIn, user]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const addXP = useCallback(async (amount: number, reason = '') => {
     addOptimisticXP(amount); // UI thấy ngay lập tức
     if (isLoggedIn) {
-      // Khi online, XP được cộng gián tiếp qua events hoặc trực tiếp nếu có API.
-      // Vì backend không có API addXP trực tiếp (chỉ có trackEvent), ta giả lập event 'daily_login' hoặc srs_card_good tùy trường hợp.
-      // Ở đây ta cứ lưu tạm offline và sync nếu cần, hoặc gọi trackEvent nếu là hành động cụ thể.
       try {
-        // Gọi trackEvent tương ứng hoặc chỉ cập nhật local
         libAddXP(amount, reason);
       } catch (err) {
         console.error('Add XP local sync error:', err);
@@ -127,7 +113,6 @@ export function GamificationProvider({ children }: { children: ReactNode }) {
   const nextLevel    = getNextLevel(optimisticXP);
   const levelProgress = getLevelProgress(optimisticXP);
 
-  // Map badges từ data.badges sang BADGE_DEFS
   const badges = BADGE_DEFS.map(def => ({
     ...def,
     earned: data.badges.includes(def.id),

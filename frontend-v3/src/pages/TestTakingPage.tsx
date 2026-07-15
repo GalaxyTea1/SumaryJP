@@ -1,9 +1,3 @@
-// ============================================
-// TestTakingPage.tsx — SumaryJP
-// React 19 + TypeScript + Tailwind CSS v4
-// Multiple choice test page
-// ============================================
-
 import { useState, useEffect, useRef, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '@/api';
@@ -225,7 +219,6 @@ export default function TestTakingPage() {
   }, []);
 
   // Timer running effect
-  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (loading || errorMsg || isSubmitting) return;
 

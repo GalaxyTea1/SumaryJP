@@ -1,8 +1,3 @@
-// ============================================
-// API Layer — SumaryJP
-// Migrate từ frontend-v2/scripts/api.js
-// ============================================
-
 import type {
   Vocabulary, Grammar, Kanji,
   LearningHistory, WeeklyGoal,

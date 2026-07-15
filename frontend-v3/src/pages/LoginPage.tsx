@@ -1,8 +1,3 @@
-// ============================================
-// Login Page — React 19 useActionState
-// ✨ Thay thế onSubmit truyền thống
-// ============================================
-
 import { useActionState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -17,8 +12,6 @@ export default function LoginPage() {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
-  // ✨ React 19 — useActionState
-  // action fn nhận (prevState, formData) — không cần useState riêng cho loading
   const [state, loginAction, isPending] = useActionState(
     async (_prevState: ActionState, formData: FormData): Promise<ActionState> => {
       const username = formData.get('username') as string;
@@ -54,7 +47,6 @@ export default function LoginPage() {
             <p className="text-sm text-on-surface-variant mt-1">Tiếp tục hành trình học tiếng Nhật</p>
           </div>
 
-          {/* ✨ React 19: <form action={loginAction}> — không cần onSubmit */}
           <form action={loginAction} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-on-surface mb-1.5" htmlFor="username">

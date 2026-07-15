@@ -1,8 +1,3 @@
-// ============================================
-// App.tsx — Router configuration
-// React Router v7 với nested routes
-// ============================================
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { GamificationProvider } from '@/context/GamificationContext';
@@ -30,7 +25,6 @@ import KanaPage from '@/pages/KanaPage';
 import { useAuth } from '@/context/AuthContext';
 import { FullscreenLoader } from '@/components/LoadingSpinner';
 
-// AuthModal được render ở root level, nhận state từ AuthModalContext
 function GlobalAuthModal() {
   const { modalState, closeAuthModal } = useAuthModal();
   return (
@@ -56,7 +50,6 @@ function AppContent() {
         {/* Public routes */}
         <Route path="/"   element={<LandingPage />} />
 
-        {/* App routes — có Sidebar + TopBar */}
         <Route element={<AppShell />}>
           <Route path="/dashboard"    element={<DashboardPage />} />
           <Route path="/vocabulary"   element={<VocabularyPage />} />

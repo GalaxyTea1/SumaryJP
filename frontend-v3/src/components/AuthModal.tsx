@@ -1,9 +1,3 @@
-// ============================================
-// AuthModal — SumaryJP V3
-// Modal đăng nhập / đăng ký nổi lên
-// React 19: useActionState
-// ============================================
-
 import { useActionState, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -203,14 +197,11 @@ export default function AuthModal({ isOpen, defaultTab = 'login', onClose }: Aut
   const [tab, setTab] = useState<ModalTab>(defaultTab);
   const navigate = useNavigate();
 
-  // Sync tab khi defaultTab thay đổi
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setTab(defaultTab);
   }, [defaultTab, isOpen]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Khoá scroll khi modal mở
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';

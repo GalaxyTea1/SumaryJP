@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/* ============================================
-   Design System — SumaryJP
-   Primary: #6caba0 (soft sage teal)
-   ============================================ */
-
 @theme {
   /* Primary palette */
   --color-primary: #6caba0;
@@ -233,19 +228,16 @@ body {
    Responsive — Mobile (≤ 640px)
    ============================================ */
 @media (max-width: 640px) {
-  /* Flashcard/SRS card size */
   .flashcard-container,
   .review-card {
     height: 240px !important;
     max-width: 100% !important;
   }
 
-  /* Ẩn text chỉ dành cho desktop */
   .hide-mobile {
     display: none !important;
   }
 
-  /* Bảng responsive — scroll ngang */
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
   }

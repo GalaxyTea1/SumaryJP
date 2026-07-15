@@ -1,8 +1,3 @@
-// ============================================
-// AuthContext — SumaryJP
-// React 19: useActionState cho login/register
-// ============================================
-
 import {
   createContext, useContext, useState,
   useCallback, useEffect, type ReactNode,
@@ -67,9 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refreshUser();
   }, [refreshUser]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Login — React 19: có thể dùng với useActionState
   const login = useCallback(async (username: string, password: string) => {
     const data = await api.login(username, password);
     if (data.token) {
@@ -111,7 +104,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext value={value}>{children}</AuthContext>;
 }
 
-// ---- Hook ----
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);

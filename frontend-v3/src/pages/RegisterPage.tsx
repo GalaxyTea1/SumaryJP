@@ -1,7 +1,3 @@
-// ============================================
-// Register Page — React 19 useActionState
-// ============================================
-
 import { useActionState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';

@@ -1,8 +1,3 @@
-// ============================================
-// TopBar — Header sticky
-// Responsive: hamburger button trên mobile/tablet
-// ============================================
-
 import { useAuth } from '@/context/AuthContext';
 import { getGreeting } from '@/lib/utils';
 
@@ -19,7 +14,6 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
   return (
     <header className="sticky top-0 bg-background/80 backdrop-blur-sm border-b border-gray-100 px-8 py-4 flex items-center justify-between z-20 max-sm:px-4 max-sm:py-3">
       <div className="flex items-center gap-3">
-        {/* Hamburger button — chỉ hiện trên tablet/mobile (< lg) */}
         <button
           onClick={onMenuClick}
           className="lg:hidden w-10 h-10 rounded-[10px] bg-white border border-outline-variant shadow-sm flex items-center justify-center hover:bg-primary-50 hover:border-primary/30 transition-all flex-shrink-0"

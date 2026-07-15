@@ -59,16 +59,12 @@ import { calcPercent, timeAgo } from '@/lib/utils';
 import type { Vocabulary, Grammar, Kanji, LearningHistory, WeeklyGoal, SrsProgress } from '@/types';
 
 // ============================================
-// Stats Section — dùng React 19 use()
-// ✨ use() có thể gọi trong điều kiện, loop — khác với useEffect
-// ============================================
 function StatsSection({ vocabPromise, grammarPromise, kanjiPromise, srsPromise }: {
   vocabPromise: Promise<Vocabulary[]>;
   grammarPromise: Promise<Grammar[]>;
   kanjiPromise: Promise<Kanji[]>;
   srsPromise: Promise<SrsProgress[]>;
 }) {
-  // React 19: use() unwrap Promise trực tiếp trong render
   const vocabulary = use(vocabPromise);
   const grammar    = use(grammarPromise);
   const kanji      = use(kanjiPromise);
@@ -118,9 +114,6 @@ function StatsSection({ vocabPromise, grammarPromise, kanjiPromise, srsPromise }
   );
 }
 
-// ============================================
-// XP Card từ Gamification Context
-// ============================================
 function XPCard() {
   const { optimisticXP } = useGamification();
   return (
@@ -163,7 +156,6 @@ function WeeklyGoalSection({ weeklyPromise, onRefresh }: { weeklyPromise: Promis
       setTempTarget(weeklyData.goalTarget);
     }
   }, [weeklyData.goalTarget]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const weeklyCount = weeklyData.goalCount ?? 0;
   const pct = calcPercent(weeklyCount, weeklyTarget);
@@ -458,11 +450,6 @@ function RecentActivity({ historyPromise }: { historyPromise: Promise<LearningHi
   );
 }
 
-// ============================================
-// Dashboard Page — Root
-// Dùng Suspense boundary cho mỗi section
-// ============================================
-
 function SectionFallback({ count = 1 }: { count?: number }) {
   return (
     <div className={`grid gap-4 ${count > 1 ? `grid-cols-${count}` : ''}`}>
@@ -490,11 +477,9 @@ export default function DashboardPage() {
   const srsPromise     = useMemo(() => user ? api.getSrsProgress().catch(() => [] as SrsProgress[]) : Promise.resolve([] as SrsProgress[]), [user]);
   const historyPromise = useMemo(() => user ? api.getLearningHistory(4).catch(() => [] as LearningHistory[]) : Promise.resolve([] as LearningHistory[]), [user, refreshKey]);
   const weeklyPromise  = useMemo(() => user ? api.getWeeklyGoal().catch(() => ({ goalCount: 0 } as WeeklyGoal)) : Promise.resolve({ goalCount: 0 } as WeeklyGoal), [user, refreshKey]);
-  /* eslint-enable react-hooks/exhaustive-deps */
 
   return (
     <Wrapper>
-      {/* Stats - dùng Suspense riêng để mỗi section load độc lập */}
       <Suspense fallback={<SectionFallback count={4} />}>
         <StatsSection vocabPromise={vocabPromise} grammarPromise={grammarPromise} kanjiPromise={kanjiPromise} srsPromise={srsPromise} />
       </Suspense>

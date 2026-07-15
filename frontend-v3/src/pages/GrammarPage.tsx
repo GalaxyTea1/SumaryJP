@@ -29,7 +29,6 @@ function getPaginationRange(current: number, total: number): (number | '...')[] 
   return [1, '...', current - 1, current, current + 1, '...', total];
 }
 
-// ---- Highlight pattern trong example_ja ----
 function highlightPattern(text: string, pattern: string): string {
   if (!text || !pattern) return escapeHtml(text ?? '');
   const cleanPattern = pattern.replace(/[～〜]/g, '');
@@ -288,9 +287,6 @@ function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> })
   );
 }
 
-// ============================================
-// Page Export
-// ============================================
 export function GrammarPage() {
   const { user } = useAuth();
   const grammarPromise = useMemo(() => {

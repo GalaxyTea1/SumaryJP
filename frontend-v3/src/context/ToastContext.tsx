@@ -1,8 +1,3 @@
-// ============================================
-// ToastContext — SumaryJP
-// React 19: createContext không cần .Provider
-// ============================================
-
 import {
   createContext, useContext, useState,
   useCallback, useRef, type ReactNode,
@@ -23,7 +18,6 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
-// ---- Color config ----
 const TOAST_COLORS: Record<ToastType, { bg: string; border: string; text: string }> = {
   xp:       { bg: '#f0f7f6', border: '#6caba0', text: '#4d8a80' },
   badge:    { bg: '#fffbeb', border: '#f59e0b', text: '#d97706' },
@@ -41,12 +35,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const id = ++counterRef.current;
     setToasts(prev => [...prev, { id, message, type, exiting: false }]);
 
-    // Bắt đầu exit animation
     setTimeout(() => {
       setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
     }, 3000);
 
-    // Remove khỏi DOM
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 3350);

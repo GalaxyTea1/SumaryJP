@@ -1,9 +1,3 @@
-// ============================================
-// Sidebar — SumaryJP
-// React Router NavLink với active state tự động
-// Responsive: slide in/out trên mobile/tablet
-// ============================================
-
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useAuthModal } from '@/context/AuthModalContext';
@@ -56,7 +50,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}
     >
-      {/* Logo — click đóng sidebar trên mobile */}
       <div className="p-5 border-b border-gray-50 flex items-center justify-between">
         <NavLink
           to={user ? "/dashboard" : "/"}
@@ -67,7 +60,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           🌸 Learning JP
         </NavLink>
 
-        {/* Nút đóng sidebar — chỉ hiện trên tablet/mobile */}
         <button
           onClick={onClose}
           className="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-gray-100 transition-colors"
@@ -97,7 +89,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </NavLink>
         ))}
 
-        {/* Admin link — chỉ hiện khi là admin */}
         {isAdmin && (
           <>
             <div className="border-t border-gray-100 my-2" />

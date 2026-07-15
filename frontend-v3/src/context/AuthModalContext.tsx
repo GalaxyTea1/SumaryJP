@@ -1,8 +1,3 @@
-// ============================================
-// AuthModalContext — SumaryJP V3
-// Global state để mở AuthModal từ bất kỳ đâu
-// ============================================
-
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
 type ModalTab = 'login' | 'register';

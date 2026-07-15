@@ -1,8 +1,3 @@
-// ============================================
-// CustomSelect.tsx — SumaryJP V3
-// Custom dropdown Select component aligned with Sage Teal theme
-// ============================================
-
 import { useState, useEffect, useRef } from 'react';
 
 interface SelectOption {

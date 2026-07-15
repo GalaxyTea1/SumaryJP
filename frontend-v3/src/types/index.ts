@@ -1,7 +1,3 @@
-// ============================================
-// Type Definitions — SumaryJP
-// ============================================
-
 // --- Auth ---
 export interface User {
   id: number;

@@ -1,9 +1,3 @@
-// ============================================
-// AdminPage — SumaryJP
-// CRUD Vocabulary, Grammar, Kanji for Admin
-// UI/UX optimization, responsive and cache invalidation
-// ============================================
-
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -111,7 +105,6 @@ export default function AdminPage() {
     return () => {
       active = false;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- showToast and isAdmin are stable
   }, [activeTab, user, refreshTrigger]);
 
   const handleCloseForm = () => {
@@ -367,7 +360,6 @@ export default function AdminPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll table container or window to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -378,7 +370,6 @@ export default function AdminPage() {
       setCurrentPage(totalPages);
     }
   }, [filteredList.length, currentPage, totalPages]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Access denied screen if not admin
   if (!isAdmin) {

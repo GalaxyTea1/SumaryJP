@@ -1,10 +1,3 @@
-// ============================================
-// LoadingSpinner — SumaryJP V3
-// Các loại loading spinner thiết kế premium
-// ============================================
-
-
-
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   color?: string;

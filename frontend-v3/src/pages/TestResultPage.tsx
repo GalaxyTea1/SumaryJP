@@ -1,9 +1,3 @@
-// ============================================
-// TestResultPage.tsx — SumaryJP
-// React 19 + TypeScript + Tailwind CSS v4
-// Detailed test results page
-// ============================================
-
 import { useState, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '@/api';
@@ -243,7 +237,6 @@ export default function TestResultPage() {
         </div>
       </div>
 
-      {/* WEAK POINTS (DIỂM CẦN CẢI THIỆN) */}
       <div className="card p-6 bg-surface border border-outline-variant rounded-2xl shadow-sm">
         <h3 className="font-bold font-headline text-base border-b border-outline-variant pb-3 flex items-center gap-2 mb-4">
           <span className="material-symbols-outlined text-error">flag</span>
@@ -300,7 +293,6 @@ export default function TestResultPage() {
         )}
       </div>
 
-      {/* FULL ANSWERS REVIEW GRID */}
       {result.answers.length > 0 && (
         <div className="card p-6 bg-surface border border-outline-variant rounded-2xl shadow-sm">
           <h3 className="font-bold font-headline text-base border-b border-outline-variant pb-3 flex items-center gap-2 mb-4">
@@ -327,7 +319,6 @@ export default function TestResultPage() {
         </div>
       )}
 
-      {/* ACTION ACTIONS BUTTONS */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
         <button
           type="button"

@@ -1,8 +1,3 @@
-// ============================================
-// Gamification — SumaryJP (TypeScript)
-// XP, Levels, Streak, Badges (localStorage)
-// ============================================
-
 import type {
   GamificationData, GamificationLevel,
   GamificationBadge, GamificationBadgeDef,
@@ -142,7 +137,6 @@ function checkBadge(badgeId: string, data: GamificationData): boolean {
   return earned;
 }
 
-// ---- Add XP ----
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function addXP(amount: number, _reason = ''): GamificationData {
   const data = loadGamification();

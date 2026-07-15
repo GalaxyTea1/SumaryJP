@@ -1,4 +1,3 @@
-// Placeholder pages — sẽ được implement dần
 import { Link } from 'react-router-dom';
 
 

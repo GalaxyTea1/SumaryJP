@@ -1,8 +1,3 @@
-// ============================================
-// AppShell — Main layout
-// Fixed sidebar + responsive hamburger menu
-// ============================================
-
 import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
@@ -12,14 +7,11 @@ export default function AppShell() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
 
-  // Close sidebar on route change (on mobile/tablet)
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Close sidebar when resizing to desktop
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth > 1024) {
@@ -30,7 +22,6 @@ export default function AppShell() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Lock body scroll when sidebar is open on mobile
   useEffect(() => {
     if (isSidebarOpen) {
       document.body.style.overflow = 'hidden';
@@ -40,7 +31,6 @@ export default function AppShell() {
     return () => { document.body.style.overflow = ''; };
   }, [isSidebarOpen]);
 
-  // Close sidebar on ESC key
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && isSidebarOpen) {
@@ -59,7 +49,6 @@ export default function AppShell() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* Overlay when sidebar is open on mobile/tablet */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/35 z-[29] lg:hidden"

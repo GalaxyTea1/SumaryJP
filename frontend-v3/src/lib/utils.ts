@@ -1,8 +1,3 @@
-// ============================================
-// Utils — SumaryJP
-// ============================================
-
-/** Trả về chuỗi "X phút trước", "3 giờ trước"... */
 export function timeAgo(dateStr: string): string {
   const date = new Date(dateStr);
   const diff = Date.now() - date.getTime();
@@ -21,7 +16,6 @@ export function timeAgo(dateStr: string): string {
   return date.toLocaleDateString('vi-VN');
 }
 
-/** Escape HTML để tránh XSS */
 export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -31,7 +25,6 @@ export function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-/** Chào buổi sáng / chiều / tối */
 export function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return 'Chào buổi sáng';
@@ -39,18 +32,15 @@ export function getGreeting(): string {
   return 'Chào buổi tối';
 }
 
-/** Format số với dấu phẩy */
 export function formatNumber(n: number): string {
   return n.toLocaleString('vi-VN');
 }
 
-/** Tính phần trăm an toàn */
 export function calcPercent(current: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min(Math.round((current / total) * 100), 100);
 }
 
-/** Decode JWT payload */
 export function decodeJWT<T = Record<string, unknown>>(token: string): T | null {
   try {
     return JSON.parse(atob(token.split('.')[1])) as T;
@@ -59,7 +49,6 @@ export function decodeJWT<T = Record<string, unknown>>(token: string): T | null 
   }
 }
 
-/** Clamp giá trị trong khoảng [min, max] */
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
