@@ -263,14 +263,14 @@ function WeeklyGoalSection({ weeklyPromise, onRefresh }: { weeklyPromise: Promis
 // ============================================
 // Gamification Widget
 // ============================================
-function LockOverlay() {
-  return (
-    <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl">
-      <span className="material-symbols-outlined text-3xl text-primary mb-2">lock</span>
-      <span className="text-sm font-semibold">Đăng nhập để xem</span>
-    </div>
-  );
-}
+// function LockOverlay() {
+//   return (
+//     <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl">
+//       <span className="material-symbols-outlined text-3xl text-primary mb-2">lock</span>
+//       <span className="text-sm font-semibold">Đăng nhập để xem</span>
+//     </div>
+//   );
+// }
 
 
 // ============================================
