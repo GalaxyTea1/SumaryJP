@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sakura Learn - Create Account</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#ffb0cd",
+                    "secondary": "#0060ac",
+                    "tertiary-container": "#80707a",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-secondary-fixed-variant": "#004883",
+                    "tertiary-fixed-dim": "#d5c1cd",
+                    "on-secondary-fixed": "#001c39",
+                    "background": "#f8f9ff",
+                    "outline-variant": "#debec8",
+                    "on-surface": "#121c28",
+                    "secondary-fixed-dim": "#a4c9ff",
+                    "tertiary-fixed": "#f1dde9",
+                    "on-primary-fixed-variant": "#8c0053",
+                    "on-secondary-container": "#003c70",
+                    "on-surface-variant": "#574048",
+                    "primary-container": "#d23284",
+                    "primary": "#b10e6b",
+                    "secondary-container": "#64a8fe",
+                    "tertiary": "#675862",
+                    "surface-tint": "#b4136d",
+                    "surface": "#f8f9ff",
+                    "on-tertiary-fixed": "#231820",
+                    "on-secondary": "#ffffff",
+                    "outline": "#8b7079",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#3e0022",
+                    "surface-container-highest": "#d9e3f4",
+                    "surface-bright": "#f8f9ff",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-variant": "#d9e3f4",
+                    "surface-container-low": "#eef4ff",
+                    "on-tertiary-fixed-variant": "#51434c",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#dfe9fa",
+                    "inverse-surface": "#27313e",
+                    "on-background": "#121c28",
+                    "on-primary-container": "#fffbff",
+                    "secondary-fixed": "#d4e3ff",
+                    "primary-fixed": "#ffd9e4",
+                    "surface-dim": "#d1dbec",
+                    "inverse-primary": "#ffb0cd",
+                    "surface-container": "#e5eeff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "xl": "40px",
+                    "xs": "4px",
+                    "margin-mobile": "16px",
+                    "md": "16px",
+                    "sm": "8px",
+                    "gutter": "24px",
+                    "container-max": "1200px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "japanese-display": ["Noto Sans JP"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "japanese-display": ["40px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f8f9ff;
+            overflow-x: hidden;
+        }
+        .sakura-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #fce7f3 100%);
+            position: relative;
+        }
+        .petal {
+            position: absolute;
+            background-color: #ffb0cd;
+            border-radius: 150% 0 150% 0;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-card-shadow {
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.08);
+        }
+        input:focus {
+            box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+            outline: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-on-surface min-h-screen flex flex-col">
+<!-- Background Decoration -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none" id="petal-container"></div>
+<!-- Top Navigation (Static/Branded for Signup) -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-center px-lg h-20 bg-surface/80 backdrop-blur-md shadow-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="local_florist">local_florist</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Sakura Learn</h1>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center pt-24 pb-12 px-margin-mobile relative z-10">
+<div class="w-full max-w-md">
+<!-- Welcome Section -->
+<div class="text-center mb-xl">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Start your journey.</h2>
+<p class="font-body-md text-on-surface-variant">Create an account to begin learning.</p>
+</div>
+<!-- Registration Card -->
+<div class="bg-surface-container-lowest rounded-xl p-lg md:p-xl soft-card-shadow border border-primary-fixed/20">
+<form class="space-y-md" onsubmit="event.preventDefault();">
+<!-- Full Name -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs" for="name">Full Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50" data-icon="person">person</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg transition-all focus:border-primary text-body-md" id="name" placeholder="Haruki Murakami" type="text"/>
+</div>
+</div>
+<!-- Email -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50" data-icon="mail">mail</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg transition-all focus:border-primary text-body-md" id="email" placeholder="haruki@example.com" type="email"/>
+</div>
+</div>
+<!-- Password -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50" data-icon="lock">lock</span>
+<input class="w-full pl-10 pr-10 py-3 bg-surface border border-outline-variant rounded-lg transition-all focus:border-primary text-body-md" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+<p class="mt-sm font-label-sm text-label-sm text-on-surface-variant flex items-start gap-xs">
+<span class="material-symbols-outlined text-[16px] mt-[2px]" data-icon="info">info</span>
+                            At least 8 characters, one number and one symbol.
+                        </p>
+</div>
+<!-- Terms Checkbox -->
+<div class="flex items-center gap-sm pt-sm">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary transition-colors cursor-pointer" id="terms" type="checkbox"/>
+<label class="font-label-sm text-label-sm text-on-surface-variant cursor-pointer" for="terms">
+                            I agree to the <a class="text-primary hover:underline font-bold" href="#">Terms and Conditions</a>
+</label>
+</div>
+<!-- Action Button -->
+<div class="pt-md">
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-xl shadow-lg hover:bg-primary-container active:scale-[0.98] transition-all flex items-center justify-center gap-sm">
+                            Create Account
+                            <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Divider -->
+<div class="flex items-center my-lg">
+<div class="flex-grow h-[1px] bg-outline-variant/30"></div>
+<span class="px-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">or continue with</span>
+<div class="flex-grow h-[1px] bg-outline-variant/30"></div>
+</div>
+<!-- Social Proof / Alternative Signup -->
+<div class="grid grid-cols-2 gap-md">
+<button class="flex items-center justify-center gap-sm py-3 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors">
+<img class="w-5 h-5" data-alt="A clean, minimalist logo icon for Google on a white circular background, high resolution, soft professional lighting." src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="font-label-sm">Google</span>
+</button>
+<button class="flex items-center justify-center gap-sm py-3 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors">
+<img class="w-5 h-5" data-alt="A clean, minimalist logo icon for Apple on a white circular background, high resolution, professional tech aesthetic." src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="font-label-sm">Apple</span>
+</button>
+</div>
+</div>
+<!-- Bottom Link -->
+<div class="mt-xl text-center">
+<p class="font-body-md text-on-surface-variant">
+                    Already have an account? 
+                    <a class="text-primary font-bold hover:underline ml-xs" href="#">Log In</a>
+</p>
+</div>
+</div>
+</main>
+<!-- Visual Polish: Petal Animation -->
+<script>
+        function createPetal() {
+            const container = document.getElementById('petal-container');
+            if (!container) return;
+            
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            
+            const size = Math.random() * 10 + 10;
+            const startX = Math.random() * window.innerWidth;
+            const duration = Math.random() * 5 + 10;
+            const delay = Math.random() * 5;
+            
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size * 0.8}px`;
+            petal.style.left = `${startX}px`;
+            petal.style.animationDuration = `${duration}s`;
+            petal.style.animationDelay = `${delay}s`;
+            
+            container.appendChild(petal);
+            
+            setTimeout(() => {
+                petal.remove();
+            }, (duration + delay) * 1000);
+        }
+
+        // Initialize background petals
+        for(let i = 0; i < 15; i++) {
+            createPetal();
+        }
+        setInterval(createPetal, 1500);
+    </script>
+<!-- Footer for Mobile/Desktop differentiation as per guidance -->
+<footer class="py-lg px-margin-mobile text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant/60">
+            © 2024 Sakura Learn. Master Japanese with ease.
+        </p>
+</footer>
+</body></html>

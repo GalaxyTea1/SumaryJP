@@ -157,7 +157,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function MatchingGamePage() {
-  const { data: gamificationData, trackEvent } = useGamification();
+  const { data: _gamificationData, trackEvent } = useGamification();
   
   // State for loaded database items
   const [apiKanjiList, setApiKanjiList] = useState<Kanji[]>([]);

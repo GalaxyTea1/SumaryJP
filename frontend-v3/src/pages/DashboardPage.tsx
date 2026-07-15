@@ -272,6 +272,7 @@ function LockOverlay() {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function GamificationWidget() {
   const { isLoggedIn } = useAuth();
   const { data, currentLevel, nextLevel, levelProgress, badges, optimisticXP } = useGamification();

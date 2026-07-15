@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sakura Learn - Dashboard</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Work+Sans:wght@400;500&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-container-low": "#f2f4f6",
+                "inverse-primary": "#debfc2",
+                "surface": "#f8f9fb",
+                "tertiary-fixed": "#d8e3fb",
+                "secondary-container": "#bdddff",
+                "primary-fixed-dim": "#debfc2",
+                "surface-tint": "#70585b",
+                "on-surface-variant": "#4f4445",
+                "on-tertiary-container": "#5a6479",
+                "on-error-container": "#93000a",
+                "surface-dim": "#d9dadc",
+                "on-secondary-fixed": "#001d32",
+                "primary": "#70585b",
+                "on-error": "#ffffff",
+                "error-container": "#ffdad6",
+                "on-tertiary": "#ffffff",
+                "surface-container-lowest": "#ffffff",
+                "on-primary-fixed": "#281719",
+                "error": "#ba1a1a",
+                "on-primary-container": "#765e61",
+                "on-primary-fixed-variant": "#574144",
+                "primary-container": "#fadadd",
+                "inverse-surface": "#2e3132",
+                "outline-variant": "#d2c3c4",
+                "on-tertiary-fixed-variant": "#3d475a",
+                "on-secondary-fixed-variant": "#294965",
+                "on-secondary-container": "#42627f",
+                "on-surface": "#191c1e",
+                "on-primary": "#ffffff",
+                "tertiary": "#555f73",
+                "secondary-fixed-dim": "#a9caeb",
+                "on-background": "#191c1e",
+                "secondary-fixed": "#cee5ff",
+                "on-secondary": "#ffffff",
+                "secondary": "#41617e",
+                "surface-container-highest": "#e1e2e4",
+                "surface-container-high": "#e7e8ea",
+                "inverse-on-surface": "#f0f1f3",
+                "primary-fixed": "#fbdbde",
+                "outline": "#807475",
+                "background": "#f8f9fb",
+                "tertiary-fixed-dim": "#bcc7de",
+                "surface-bright": "#f8f9fb",
+                "surface-variant": "#e1e2e4",
+                "tertiary-container": "#d8e2fa",
+                "surface-container": "#edeef0",
+                "on-tertiary-fixed": "#111c2d"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "xl": "80px",
+                "sm": "12px",
+                "container-max": "1200px",
+                "md": "24px",
+                "margin-mobile": "16px",
+                "xs": "4px",
+                "base": "8px",
+                "lg": "48px",
+                "gutter": "24px"
+            },
+            "fontFamily": {
+                "headline-md": ["Plus Jakarta Sans"],
+                "body-lg": ["Work Sans"],
+                "label-sm": ["JetBrains Mono"],
+                "display-lg": ["Plus Jakarta Sans"],
+                "display-lg-mobile": ["Plus Jakarta Sans"],
+                "body-md": ["Work Sans"]
+            },
+            "fontSize": {
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sakura-shadow {
+            box-shadow: 0px 4px 20px rgba(236, 72, 153, 0.04);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        body {
+            background-color: #f8f9fb;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md flex items-center justify-between px-margin-mobile h-16 w-full">
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform" data-icon="menu">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Sakura Learn</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center bg-primary-container/30 px-3 py-1 rounded-full border border-primary-fixed">
+<span class="material-symbols-outlined text-primary text-sm mr-1" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">15</span>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional profile portrait of a young Japanese student smiling warmly, set against a soft bokeh background of a peaceful study environment. The lighting is bright and airy, reflecting a clean light-mode aesthetic with soft pink and white tones. The image is crisp, modern, and captures a sense of academic motivation and calm focus." src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-margin-mobile max-w-lg mx-auto min-h-screen">
+<!-- Greeting Section -->
+<section class="mb-8">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Konnichiwa, Haruki!</h2>
+<p class="text-on-surface-variant font-body-md">You're on a 15-day streak. Keep blooming!</p>
+</section>
+<!-- Start Review FAB-style Prominent Button -->
+<section class="mb-8">
+<button class="w-full bg-primary hover:opacity-90 active:scale-[0.98] transition-all duration-200 text-on-primary py-5 rounded-xl sakura-shadow flex items-center justify-center gap-3 group">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform" data-icon="style" style="font-variation-settings: 'FILL' 1;">style</span>
+<span class="text-lg font-semibold tracking-wide uppercase">Start Review</span>
+</button>
+</section>
+<!-- Weekly Progress Card (Asymmetric Layout Hint) -->
+<section class="mb-8 bg-surface-container-lowest p-md rounded-xl sakura-shadow border border-outline-variant/30">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-lg">Weekly Progress</h3>
+<p class="text-on-surface-variant font-label-sm uppercase tracking-wider">Words Learned</p>
+</div>
+<div class="text-right">
+<span class="text-primary font-bold text-2xl">142</span>
+<span class="text-on-surface-variant font-label-sm">/200</span>
+</div>
+</div>
+<!-- Custom Micro-Chart -->
+<div class="flex items-end justify-between h-32 gap-2 px-1">
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container/40 rounded-t-lg transition-all duration-500 hover:bg-secondary-container" style="height: 45%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-on-surface-variant">M</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container/40 rounded-t-lg transition-all duration-500 hover:bg-secondary-container" style="height: 65%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-on-surface-variant">T</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container/40 rounded-t-lg transition-all duration-500 hover:bg-secondary-container" style="height: 40%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-on-surface-variant">W</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary-container rounded-t-lg transition-all duration-500 hover:bg-primary-container/80" style="height: 85%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-primary font-bold">T</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container/40 rounded-t-lg transition-all duration-500 hover:bg-secondary-container" style="height: 55%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-on-surface-variant">F</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container/40 rounded-t-lg transition-all duration-500 hover:bg-secondary-container" style="height: 30%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-on-surface-variant">S</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container/20 rounded-t-lg" style="height: 10%;"></div>
+<span class="font-label-sm text-[10px] mt-2 text-on-surface-variant opacity-50">S</span>
+</div>
+</div>
+</section>
+<!-- Stats Grid (Bento Style) -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Total Kanji -->
+<div class="bg-surface-container-lowest p-md rounded-xl sakura-shadow border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+<div class="relative flex items-center justify-center mb-3">
+<svg class="w-20 h-20">
+<circle class="text-surface-container-high" cx="40" cy="40" fill="transparent" r="32" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-primary progress-ring-circle" cx="40" cy="40" fill="transparent" r="32" stroke="currentColor" stroke-dasharray="201" stroke-dashoffset="60" stroke-linecap="round" stroke-width="6"></circle>
+</svg>
+<span class="absolute font-headline-md text-lg text-primary">70%</span>
+</div>
+<h4 class="font-label-sm text-on-surface-variant uppercase mb-1">Total Kanji</h4>
+<p class="font-body-md font-bold">428 / 600</p>
+</div>
+<!-- Vocabulary -->
+<div class="bg-surface-container-lowest p-md rounded-xl sakura-shadow border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+<div class="relative flex items-center justify-center mb-3">
+<svg class="w-20 h-20">
+<circle class="text-surface-container-high" cx="40" cy="40" fill="transparent" r="32" stroke="currentColor" stroke-width="6"></circle>
+<circle class="text-secondary progress-ring-circle" cx="40" cy="40" fill="transparent" r="32" stroke="currentColor" stroke-dasharray="201" stroke-dashoffset="110" stroke-linecap="round" stroke-width="6"></circle>
+</svg>
+<span class="absolute font-headline-md text-lg text-secondary">45%</span>
+</div>
+<h4 class="font-label-sm text-on-surface-variant uppercase mb-1">Vocabulary</h4>
+<p class="font-body-md font-bold">1.2k / 3k</p>
+</div>
+<!-- JLPT Goal - Spans full width -->
+<div class="col-span-2 bg-surface-container-lowest p-md rounded-xl sakura-shadow border border-outline-variant/30 flex items-center justify-between">
+<div class="flex-1">
+<h4 class="font-label-sm text-on-surface-variant uppercase mb-1">JLPT N3 Goal</h4>
+<p class="font-headline-md text-lg text-on-surface mb-2">Steady Progress</p>
+<div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+<div class="bg-gradient-to-r from-secondary to-primary h-full rounded-full transition-all duration-1000" style="width: 62%;"></div>
+</div>
+</div>
+<div class="ml-6 flex-shrink-0">
+<div class="w-16 h-16 bg-primary-container/20 rounded-full flex items-center justify-center border-2 border-primary-fixed">
+<span class="font-headline-md text-primary text-xl">N3</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface dark:bg-surface-dim shadow-[0_-4px_20px_rgba(236,72,153,0.08)] flex justify-around items-center h-20 pb-safe px-2">
+<!-- Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-2xl px-4 py-1 transition-all duration-200 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- Lessons -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 transition-all duration-200 hover:bg-surface-container-high active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span class="font-label-sm text-label-sm">Lessons</span>
+</a>
+<!-- Review -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 transition-all duration-200 hover:bg-surface-container-high active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="auto_stories">auto_stories</span>
+<span class="font-label-sm text-label-sm">Review</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 transition-all duration-200 hover:bg-surface-container-high active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Subtle micro-interaction: update progress rings on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const circles = document.querySelectorAll('.progress-ring-circle');
+            circles.forEach(circle => {
+                const radius = circle.r.baseVal.value;
+                const circumference = radius * 2 * Math.PI;
+                circle.style.strokeDasharray = `${circumference} ${circumference}`;
+                
+                // Extract current offset from HTML (as a simple demo logic)
+                const currentOffset = circle.getAttribute('stroke-dashoffset');
+                circle.style.strokeDashoffset = circumference;
+                
+                setTimeout(() => {
+                    circle.style.strokeDashoffset = currentOffset;
+                }, 300);
+            });
+        });
+
+        // Toggle Active State Simulation
+        const navItems = document.querySelectorAll('nav a');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                navItems.forEach(nav => {
+                    nav.classList.remove('bg-primary-container', 'text-on-primary-container', 'rounded-2xl');
+                    nav.classList.add('text-on-surface-variant');
+                    const icon = nav.querySelector('.material-symbols-outlined');
+                    if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+                });
+                item.classList.remove('text-on-surface-variant');
+                item.classList.add('bg-primary-container', 'text-on-primary-container', 'rounded-2xl');
+                const activeIcon = item.querySelector('.material-symbols-outlined');
+                if (activeIcon) activeIcon.style.fontVariationSettings = "'FILL' 1";
+            });
+        });
+    </script>
+</body></html>

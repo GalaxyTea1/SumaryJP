@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SumaryJP - Từ điển</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Noto Sans JP', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#fdf2f8', 100: '#fce7f3', 400: '#f472b6', 500: '#ec4899', 600: '#db2777' },
+                        secondary: { 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px -10px rgba(236, 72, 153, 0.1); }
+        .dark .glass-panel { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5); }
+        body { background: linear-gradient(-45deg, #fce7f3, #e0f2fe, #fdf2f8, #f0f9ff); background-size: 400% 400%; animation: gradientBG 20s ease infinite; }
+        .dark body { background: linear-gradient(-45deg, #4a044e, #082f49, #831843, #0f172a); background-size: 400% 400%; animation: gradientBG 20s ease infinite; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    </style>
+</head>
+<body class="text-gray-800 dark:text-gray-100 min-h-screen">
+    <nav class="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center border-b border-white/50 dark:border-white/10">
+        <span class="text-xl font-bold tracking-tight">SumaryJP Dictionary</span>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 py-10">
+        <!-- Search Bar -->
+        <div class="relative w-full mb-10">
+            <input type="text" placeholder="Tra từ bằng Hiragana, Romaji hoặc Tiếng Việt..." class="w-full pl-14 pr-6 py-5 rounded-2xl text-lg bg-white/70 dark:bg-black/40 border border-white/50 dark:border-white/10 focus:outline-none focus:ring-4 focus:ring-primary-500/50 shadow-xl transition-all">
+            <svg class="w-7 h-7 absolute left-5 top-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <button class="absolute right-3 top-3 px-6 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-bold rounded-xl shadow-md hover:-translate-y-0.5 transition-transform">Dịch</button>
+        </div>
+
+        <!-- Search Result Card -->
+        <div class="glass-panel rounded-3xl p-8 mb-6 shadow-sm">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Kanji Main Display -->
+                <div class="flex-shrink-0 flex flex-col items-center">
+                    <div class="w-40 h-40 bg-white/50 dark:bg-black/30 rounded-2xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-7xl font-['Noto_Sans_JP'] shadow-inner mb-4 hover:border-primary-400 transition-colors cursor-pointer">
+                        学
+                    </div>
+                    <span class="text-sm font-bold text-gray-500">JLPT N5</span>
+                </div>
+
+                <!-- Meaning & Details -->
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h2 class="text-4xl font-bold mb-2">Học tập, học hỏi</h2>
+                            <p class="text-xl text-primary-600 dark:text-primary-400 font-['Noto_Sans_JP'] font-medium">Hán Việt: HỌC</p>
+                        </div>
+                        <button class="p-3 bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400 rounded-xl hover:bg-primary-200 dark:hover:bg-primary-900/60 transition-colors shadow-sm" title="Thêm vào danh sách ôn tập">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- Readings -->
+                    <div class="grid grid-cols-2 gap-4 mb-6 p-4 rounded-xl bg-white/40 dark:bg-black/20 shadow-inner border border-white/50 dark:border-white/5">
+                        <div>
+                            <span class="text-sm font-bold text-gray-500 block mb-1">Onyomi (Âm On)</span>
+                            <span class="text-lg font-['Noto_Sans_JP'] font-medium">ガク (gaku)</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-bold text-gray-500 block mb-1">Kunyomi (Âm Kun)</span>
+                            <span class="text-lg font-['Noto_Sans_JP'] font-medium">まな.ぶ (mana.bu)</span>
+                        </div>
+                    </div>
+
+                    <!-- Example -->
+                    <div class="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+                        <h3 class="font-bold text-lg">Ví dụ (Examples)</h3>
+                        <div class="p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-white/50 dark:hover:bg-black/20 transition-colors cursor-pointer shadow-sm">
+                            <p class="text-lg font-['Noto_Sans_JP'] mb-1">日本語を<span class="text-primary-600 dark:text-primary-400 font-bold">学</span>びます。</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 font-medium">Nihongo o manabimasu.</p>
+                            <p class="font-medium">Tôi học tiếng Nhật.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

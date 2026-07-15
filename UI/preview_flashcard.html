@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SumaryJP - Học Flashcard</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#fdf2f8', 100: '#fce7f3', 400: '#f472b6', 500: '#ec4899', 600: '#db2777', 700: '#be185d',
+                        },
+                        secondary: {
+                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 30px -10px rgba(236, 72, 153, 0.1);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        body {
+            background: linear-gradient(-45deg, #fce7f3, #e0f2fe, #fdf2f8, #f0f9ff); background-size: 400% 400%; animation: gradientBG 20s ease infinite;
+        }
+        .dark body {
+            background: linear-gradient(-45deg, #4a044e, #082f49, #831843, #0f172a); background-size: 400% 400%; animation: gradientBG 20s ease infinite;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* 3D Flip Card Styles */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .is-flipped { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="text-gray-800 dark:text-gray-100 transition-colors duration-700 min-h-screen flex flex-col">
+
+    <!-- Navbar/Progress -->
+    <nav class="glass-panel sticky top-0 z-40 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-white/50 dark:border-white/10">
+        <div class="flex items-center gap-4 w-full sm:w-1/3">
+            <a href="#" class="p-2 rounded-full hover:bg-white/50 dark:hover:bg-black/20 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+            <span class="font-bold text-lg">Ôn tập Hằng ngày</span>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="w-full sm:w-1/3 flex flex-col items-center">
+            <div class="w-full bg-white/50 dark:bg-black/30 rounded-full h-3 mb-1.5 shadow-inner overflow-hidden border border-gray-200 dark:border-gray-700">
+                <div class="bg-gradient-to-r from-primary-500 to-secondary-500 h-full rounded-full transition-all duration-500 relative overflow-hidden" style="width: 33%">
+                    <!-- Shimmer effect on progress bar -->
+                    <div class="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                </div>
+            </div>
+            <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">15 / 45 thẻ</span>
+        </div>
+
+        <div class="flex items-center justify-end w-full sm:w-1/3">
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-white/50 dark:hover:bg-black/20 transition-colors">
+                <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-6 w-full max-w-2xl mx-auto">
+        
+        <!-- Flashcard Container -->
+        <div class="w-full aspect-[4/3] max-h-[450px] perspective-1000 mb-8 relative">
+            
+            <div id="flashcard" class="w-full h-full relative transition-transform duration-700 transform-style-3d cursor-pointer shadow-2xl rounded-3xl">
+                
+                <!-- Front Side (Japanese Word) -->
+                <div class="absolute w-full h-full glass-panel rounded-3xl backface-hidden flex flex-col items-center justify-center p-8 text-center border-2 border-white/60 dark:border-white/10 hover:border-primary-400 dark:hover:border-primary-500 transition-colors">
+                    <span class="text-xl font-medium text-gray-500 dark:text-gray-400 tracking-widest mb-4">TỪ VỰNG</span>
+                    
+                    <!-- Only Japanese content here since it's the learning material -->
+                    <h2 class="text-7xl font-bold text-gray-900 dark:text-white mb-6 font-['Noto_Sans_JP']">食べる</h2>
+                    <p class="text-2xl text-primary-600 dark:text-primary-400 font-medium font-['Noto_Sans_JP']">たべる</p>
+                    
+                    <div class="absolute bottom-6 left-0 right-0 text-center text-sm text-gray-400 font-medium flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                        Chạm để lật thẻ
+                    </div>
+                </div>
+
+                <!-- Back Side (Meaning) -->
+                <div class="absolute w-full h-full glass-panel rounded-3xl backface-hidden rotate-y-180 flex flex-col items-center justify-center p-8 text-center border-2 border-secondary-400 dark:border-secondary-500 transition-colors">
+                    <span class="text-xl font-medium text-gray-500 dark:text-gray-400 tracking-widest mb-2">Ý NGHĨA</span>
+                    <h2 class="text-5xl font-bold text-gray-900 dark:text-white mb-6">Ăn</h2>
+                    
+                    <div class="w-full max-w-md bg-white/40 dark:bg-black/20 p-5 rounded-2xl text-left border border-white/30 dark:border-gray-700 shadow-sm">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 font-semibold">Ví dụ:</p>
+                        <p class="text-lg font-medium dark:text-white font-['Noto_Sans_JP'] mb-1">朝ご飯を<span class="text-primary-600 dark:text-primary-400">食べる</span>。</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 italic">(Tôi ăn sáng.)</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Action Buttons (Hidden until flipped) -->
+        <div id="actionButtons" class="w-full flex justify-center gap-3 opacity-0 pointer-events-none transition-all duration-500 translate-y-4">
+            <button class="flex-1 py-4 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-2xl font-bold shadow-sm transition-colors border border-red-200 dark:border-red-800 hover:-translate-y-1">
+                <span class="block text-lg">Quên</span>
+                <span class="block text-xs font-normal mt-1 opacity-80">&lt; 1 phút</span>
+            </button>
+            <button class="flex-1 py-4 bg-orange-100 hover:bg-orange-200 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-400 rounded-2xl font-bold shadow-sm transition-colors border border-orange-200 dark:border-orange-800 hover:-translate-y-1">
+                <span class="block text-lg">Khó</span>
+                <span class="block text-xs font-normal mt-1 opacity-80">5 phút</span>
+            </button>
+            <button class="flex-1 py-4 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-400 rounded-2xl font-bold shadow-sm transition-colors border border-green-200 dark:border-green-800 hover:-translate-y-1">
+                <span class="block text-lg">Tốt</span>
+                <span class="block text-xs font-normal mt-1 opacity-80">1 ngày</span>
+            </button>
+            <button class="flex-1 py-4 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 rounded-2xl font-bold shadow-sm transition-colors border border-blue-200 dark:border-blue-800 hover:-translate-y-1">
+                <span class="block text-lg">Dễ</span>
+                <span class="block text-xs font-normal mt-1 opacity-80">4 ngày</span>
+            </button>
+        </div>
+        
+        <!-- Flip Hint Button (Visible before flip) -->
+        <div id="flipHint" class="w-full flex justify-center mt-4 transition-all duration-300">
+            <button id="flipBtn" class="px-8 py-3.5 bg-white/60 dark:bg-black/30 hover:bg-white/80 dark:hover:bg-black/50 border border-gray-200 dark:border-gray-700 rounded-full font-bold shadow-sm transition-all hover:shadow-md flex items-center gap-2 hover:-translate-y-1 text-gray-700 dark:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                Hiện đáp án
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        const flashcard = document.getElementById('flashcard');
+        const flipBtn = document.getElementById('flipBtn');
+        const actionButtons = document.getElementById('actionButtons');
+        const flipHint = document.getElementById('flipHint');
+        let isFlipped = false;
+
+        function toggleFlip() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                flashcard.classList.add('is-flipped');
+                actionButtons.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+                flipHint.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                setTimeout(() => flipHint.style.display = 'none', 300);
+            } else {
+                flashcard.classList.remove('is-flipped');
+                flipHint.style.display = 'flex';
+                // Trigger reflow
+                void flipHint.offsetWidth;
+                actionButtons.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+                flipHint.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+            }
+        }
+
+        flashcard.addEventListener('click', toggleFlip);
+        flipBtn.addEventListener('click', toggleFlip);
+
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            html.classList.add('dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+        });
+    </script>
+    <style>
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</body>
+</html>

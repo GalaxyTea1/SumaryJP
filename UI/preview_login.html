@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SumaryJP - Preview Login</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#fdf2f8', 100: '#fce7f3', 400: '#f472b6', 500: '#ec4899', 600: '#db2777', 700: '#be185d',
+                        },
+                        secondary: {
+                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 25px 50px -12px rgba(236, 72, 153, 0.15);
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+        body { background: linear-gradient(-45deg, #fce7f3, #e0f2fe, #fbcfe8, #bae6fd); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
+        .dark body { background: linear-gradient(-45deg, #4a044e, #082f49, #831843, #0c4a6e); background-size: 400% 400%; animation: gradientBG 15s ease infinite; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-gray-800 transition-colors duration-700">
+    <div class="fixed top-6 right-6 z-50">
+        <button id="themeToggle" class="glass-panel p-3 rounded-full shadow-lg hover:scale-110 transition-transform duration-300 text-gray-700 dark:text-gray-200">
+            <svg id="moonIcon" class="w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="sunIcon" class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+    </div>
+
+    <div class="w-full max-w-md relative">
+        <div class="absolute -top-12 -left-12 w-36 h-36 bg-secondary-400 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob dark:opacity-20"></div>
+        <div class="absolute -bottom-12 -right-12 w-36 h-36 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-blob animation-delay-2000 dark:opacity-20"></div>
+
+        <div class="glass-panel rounded-3xl p-10 relative z-10 dark:text-gray-100">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-secondary-500 mb-5 shadow-lg transform rotate-3">
+                    <span class="text-3xl font-bold text-white transform -rotate-3">S</span>
+                </div>
+                <h1 class="text-4xl font-extrabold mb-3 tracking-tight">SumaryJP</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Học tiếng Nhật hiệu quả</p>
+            </div>
+
+            <form class="space-y-6" onsubmit="event.preventDefault();">
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold ml-1 text-gray-700 dark:text-gray-200" for="email">Email</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" /></svg>
+                        </div>
+                        <input type="email" id="email" class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/70 dark:bg-black/30 border border-white/50 dark:border-gray-700/50 focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition-all dark:text-white placeholder-gray-400 shadow-inner" placeholder="you@example.com">
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <div class="flex justify-between items-center ml-1">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200" for="password">Mật khẩu</label>
+                        <a href="#" class="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-800 transition-colors font-medium">Quên mật khẩu?</a>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        </div>
+                        <input type="password" id="password" class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white/70 dark:bg-black/30 border border-white/50 dark:border-gray-700/50 focus:ring-2 focus:ring-primary-400 focus:border-primary-400 outline-none transition-all dark:text-white placeholder-gray-400 shadow-inner" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button class="w-full py-4 mt-2 bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transform hover:-translate-y-1 transition-all duration-300">
+                    Đăng Nhập
+                </button>
+            </form>
+
+            <div class="mt-8 text-center text-sm font-medium">
+                <span class="text-gray-500 dark:text-gray-400">Chưa có tài khoản?</span>
+                <a href="#" class="ml-1 text-primary-600 dark:text-primary-400 hover:text-primary-800 transition-colors">Tạo tài khoản mới</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            html.classList.add('dark');
+        }
+        toggleBtn.addEventListener('click', () => {
+            html.classList.toggle('dark');
+        });
+    </script>
+</body>
+</html>

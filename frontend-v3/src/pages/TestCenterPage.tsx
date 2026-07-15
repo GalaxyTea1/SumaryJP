@@ -325,7 +325,8 @@ interface NormalizedRecentResult {
   localIndex?: number;
 }
 
-function normalizeRecentResult(res: Record<string, unknown>): NormalizedRecentResult {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeRecentResult(res: Record<string, any>): NormalizedRecentResult {
   if (!res) return { id: 0, testName: '', score: 0, correct: 0, total: 0, timeTaken: 0, date: '' };
   
   const details = typeof res.details === 'string'
@@ -336,13 +337,13 @@ function normalizeRecentResult(res: Record<string, unknown>): NormalizedRecentRe
   const correct = res.correct_answers ?? res.correct ?? 0;
   
   return {
-    id: res.id,
-    testName: details.testName || res.testName || `${res.test_type || 'Vocabulary'} Test`,
+    id: Number(res.id ?? 0),
+    testName: String(details.testName || res.testName || `${res.test_type || 'Vocabulary'} Test`),
     score: Number(res.score || 0),
     correct: Number(correct),
     total: Number(total),
-    timeTaken: res.time_taken ?? res.timeTaken ?? 0,
-    date: res.completed_at || res.date || new Date().toISOString(),
+    timeTaken: Number(res.time_taken ?? res.timeTaken ?? 0),
+    date: String(res.completed_at || res.date || new Date().toISOString()),
   };
 }
 

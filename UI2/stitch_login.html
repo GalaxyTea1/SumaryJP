@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sakura Learn - Login</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+JP:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#ffb0cd",
+                        "secondary": "#0060ac",
+                        "tertiary-container": "#80707a",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-secondary-fixed-variant": "#004883",
+                        "tertiary-fixed-dim": "#d5c1cd",
+                        "on-secondary-fixed": "#001c39",
+                        "background": "#f8f9ff",
+                        "outline-variant": "#debec8",
+                        "on-surface": "#121c28",
+                        "secondary-fixed-dim": "#a4c9ff",
+                        "tertiary-fixed": "#f1dde9",
+                        "on-primary-fixed-variant": "#8c0053",
+                        "on-secondary-container": "#003c70",
+                        "on-surface-variant": "#574048",
+                        "primary-container": "#d23284",
+                        "primary": "#b10e6b",
+                        "secondary-container": "#64a8fe",
+                        "tertiary": "#675862",
+                        "surface-tint": "#b4136d",
+                        "surface": "#f8f9ff",
+                        "on-tertiary-fixed": "#231820",
+                        "on-secondary": "#ffffff",
+                        "outline": "#8b7079",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#3e0022",
+                        "surface-container-highest": "#d9e3f4",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-variant": "#d9e3f4",
+                        "surface-container-low": "#eef4ff",
+                        "on-tertiary-fixed-variant": "#51434c",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#dfe9fa",
+                        "inverse-surface": "#27313e",
+                        "on-background": "#121c28",
+                        "on-primary-container": "#fffbff",
+                        "secondary-fixed": "#d4e3ff",
+                        "primary-fixed": "#ffd9e4",
+                        "surface-dim": "#d1dbec",
+                        "inverse-primary": "#ffb0cd",
+                        "surface-container": "#e5eeff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xl": "40px",
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "gutter": "24px",
+                        "container-max": "1200px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "japanese-display": ["Noto Sans JP"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "japanese-display": ["40px", {"lineHeight": "1.5", "fontWeight": "500"}],
+                        "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .sakura-petal {
+            position: absolute;
+            background-color: #ffd9e4;
+            border-radius: 100% 0% 100% 0% / 100% 0% 100% 0%;
+            pointer-events: none;
+            opacity: 0.3;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translate(0, -10%) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% { transform: translate(100px, 110vh) rotate(360deg); opacity: 0; }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col font-body-md text-on-surface overflow-hidden">
+<!-- Animated Petals Container -->
+<div class="fixed inset-0 pointer-events-none z-0" id="petal-container"></div>
+<!-- Login Content -->
+<main class="flex-grow flex items-center justify-center relative z-10 px-md py-xl">
+<div class="w-full max-w-[440px] flex flex-col space-y-lg">
+<!-- Branded Header -->
+<div class="flex flex-col items-center text-center space-y-sm">
+<div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[40px] text-primary" data-icon="local_florist">local_florist</span>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Sakura Learn</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant px-md">Welcome back! Ready to continue your journey?</p>
+</div>
+<!-- Login Card -->
+<div class="glass-card shadow-[0_4px_20px_rgba(236,72,153,0.08)] rounded-xl p-lg border border-primary-fixed/30">
+<form class="space-y-md" onsubmit="event.preventDefault();">
+<!-- Email Field -->
+<div class="space-y-xs">
+<label class="font-label-sm text-label-sm text-on-surface-variant ml-1">Email</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="mail">mail</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-primary-fixed rounded-xl focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary outline-none transition-all placeholder:text-outline-variant font-body-md text-body-md" placeholder="name@example.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-xs">
+<div class="flex justify-between items-center px-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Password</label>
+<a class="font-label-sm text-label-sm text-primary hover:text-primary-container transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="lock">lock</span>
+<input class="w-full pl-12 pr-12 py-3 bg-white border border-primary-fixed rounded-xl focus:ring-2 focus:ring-primary-fixed-dim focus:border-primary outline-none transition-all placeholder:text-outline-variant font-body-md text-body-md" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Sign In Button -->
+<button class="w-full bg-primary text-on-primary py-3.5 rounded-xl font-headline-md text-headline-md shadow-lg hover:bg-primary-container active:scale-[0.98] transition-all duration-200 mt-sm">
+                        Sign In
+                    </button>
+</form>
+<!-- Divider -->
+<div class="relative my-xl flex items-center">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="mx-md font-label-sm text-label-sm text-outline">or continue with</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-md">
+<button class="flex items-center justify-center space-x-sm py-3 px-md border border-outline-variant rounded-xl hover:bg-surface-container transition-colors active:scale-95 duration-150">
+<img class="w-5 h-5 grayscale" data-alt="A clean, minimalist high-fidelity logo icon of Google centered on a white background. The style is modern and professional, matching a soft light-mode Japanese learning application interface. The lighting is bright and even, highlighting a polished digital finish." src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="font-label-sm text-label-sm">Google</span>
+</button>
+<button class="flex items-center justify-center space-x-sm py-3 px-md border border-outline-variant rounded-xl hover:bg-surface-container transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[20px]" data-icon="phone_iphone">phone_iphone</span>
+<span class="font-label-sm text-label-sm">Apple</span>
+</button>
+</div>
+</div>
+<!-- Footer Link -->
+<p class="text-center font-body-md text-body-md text-on-surface-variant">
+                Don't have an account? 
+                <a class="text-primary font-bold hover:underline ml-1" href="#">Sign Up</a>
+</p>
+</div>
+</main>
+<!-- Side Illustration (Decorative) -->
+<div class="hidden lg:block fixed right-0 top-0 h-screen w-1/3 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center opacity-80 mix-blend-multiply" data-alt="A beautiful, soft-focus digital painting of a Japanese landscape featuring a majestic Mount Fuji in the distance under a clear morning sky. In the foreground, a vibrant cherry blossom tree with delicate pink petals is in full bloom. The art style is minimalist and approachable, using a palette of soft pinks, fuji blues, and pristine whites to create a calm and optimistic atmosphere." style="background-image: url('https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg')"></div>
+<div class="absolute inset-0 bg-gradient-to-l from-transparent to-background"></div>
+</div>
+<script>
+        // Sakura Petal Animation Script
+        function createPetal() {
+            const container = document.getElementById('petal-container');
+            if (!container) return;
+            
+            const petal = document.createElement('div');
+            petal.className = 'sakura-petal';
+            
+            // Randomize petal properties
+            const size = Math.random() * 10 + 10;
+            const left = Math.random() * 100;
+            const duration = Math.random() * 10 + 8;
+            const delay = Math.random() * 5;
+            
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size * 1.2}px`;
+            petal.style.left = `${left}%`;
+            petal.style.animationDuration = `${duration}s`;
+            petal.style.animationDelay = `-${delay}s`;
+            
+            container.appendChild(petal);
+            
+            // Remove petal after animation
+            setTimeout(() => {
+                petal.remove();
+            }, (duration + delay) * 1000);
+        }
+
+        // Initialize petals
+        for(let i = 0; i < 20; i++) {
+            createPetal();
+        }
+        setInterval(createPetal, 1500);
+
+        // Micro-interactions for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+    </script>
+</body></html>

@@ -335,7 +335,7 @@ interface SrsContentProps {
 function SrsContent({ allDataPromise, srsProgressPromise }: SrsContentProps) {
   const [vocab, kanji, grammar] = use(allDataPromise) as [Vocabulary[], Kanji[], Grammar[]];
   const backendSrs = srsProgressPromise ? use(srsProgressPromise) : null;
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn: _isLoggedIn } = useAuth();
   const { trackEvent } = useGamification();
   const [showExitDialog, setShowExitDialog] = useState(false);
 
