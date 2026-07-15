@@ -1,22 +1,4 @@
-// ============================================
-// Dashboard Page — SumaryJP
-// React 19: use() hook để fetch data
-// ============================================
-
-import { Suspense, use, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { api } from '@/api';
-import { useAuth } from '@/context/AuthContext';
-import { useGamification } from '@/context/GamificationContext';
-import { calcPercent, timeAgo } from '@/lib/utils';
-import type { Vocabulary, Grammar, Kanji, LearningHistory, WeeklyGoal } from '@/types';
-
-// ---- Pre-fetch promises (tạo ngoài component để không re-create khi re-render) ----
-const vocabPromise   = api.getAllVocabulary().catch(() => [] as Vocabulary[]);
-const grammarPromise = api.getAllGrammar().catch(() => [] as Grammar[]);
-const kanjiPromise   = api.getAllKanji().catch(() => [] as Kanji[]);
-const historyPromise = api.getLearningHistory(4).catch(() => [] as LearningHistory[]);
-const weeklyPromise  = api.getWeeklyGoal().catch(() => ({ goalCount: 0 } as WeeklyGoal));
+import { Suspense, use, useMemo, useState, useEffect, type ReactNode } from 'react';
 
 // ============================================
 // Skeleton
@@ -69,17 +51,49 @@ function StatCard({ label, current, total, color, icon, iconBg }: StatCardProps)
   );
 }
 
+import { Link } from 'react-router-dom';
+import { api } from '@/api';
+import { useAuth } from '@/context/AuthContext';
+import { useGamification } from '@/context/GamificationContext';
+import { calcPercent, timeAgo } from '@/lib/utils';
+import type { Vocabulary, Grammar, Kanji, LearningHistory, WeeklyGoal, SrsProgress } from '@/types';
+
 // ============================================
 // Stats Section — dùng React 19 use()
 // ✨ use() có thể gọi trong điều kiện, loop — khác với useEffect
 // ============================================
-function StatsSection() {
+function StatsSection({ vocabPromise, grammarPromise, kanjiPromise, srsPromise }: {
+  vocabPromise: Promise<Vocabulary[]>;
+  grammarPromise: Promise<Grammar[]>;
+  kanjiPromise: Promise<Kanji[]>;
+  srsPromise: Promise<SrsProgress[]>;
+}) {
   // React 19: use() unwrap Promise trực tiếp trong render
   const vocabulary = use(vocabPromise);
   const grammar    = use(grammarPromise);
   const kanji      = use(kanjiPromise);
+  const srsProgress = use(srsPromise);
 
   const masteredVocab = vocabulary.filter(v => v.status === 'mastered').length;
+
+  const grammarIds = useMemo(() => new Set(grammar.map(g => g.id)), [grammar]);
+  const kanjiIds = useMemo(() => new Set(kanji.map(k => k.id)), [kanji]);
+
+  const masteredGrammar = useMemo(() => {
+    return srsProgress.filter(item => 
+      item.itemType === 'grammar' && 
+      grammarIds.has(item.itemId) && 
+      item.interval >= 7
+    ).length;
+  }, [srsProgress, grammarIds]);
+
+  const masteredKanji = useMemo(() => {
+    return srsProgress.filter(item => 
+      item.itemType === 'kanji' && 
+      kanjiIds.has(item.itemId) && 
+      item.interval >= 7
+    ).length;
+  }, [srsProgress, kanjiIds]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -90,12 +104,12 @@ function StatsSection() {
       />
       <StatCard
         label="Ngữ Pháp"
-        current={grammar.length} total={grammar.length}
+        current={masteredGrammar} total={grammar.length}
         color="#f0a868" icon="edit_note" iconBg="bg-warning-light"
       />
       <StatCard
         label="Kanji"
-        current={kanji.length} total={kanji.length}
+        current={masteredKanji} total={kanji.length}
         color="#4caf50" icon="translate" iconBg="bg-success-light"
       />
       {/* XP Card */}
@@ -132,20 +146,93 @@ function XPCard() {
 // ============================================
 // Weekly Goal
 // ============================================
-function WeeklyGoalSection() {
+function WeeklyGoalSection({ weeklyPromise, onRefresh }: { weeklyPromise: Promise<WeeklyGoal>; onRefresh: () => void }) {
   const weeklyData = use(weeklyPromise);
-  const weeklyTarget = parseInt(localStorage.getItem('weeklyGoalTarget') ?? '20');
-  const weeklyCount  = weeklyData.goalCount ?? 0;
+  const { isLoggedIn } = useAuth();
+  
+  const initialTarget = weeklyData.goalTarget ?? 20;
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempTarget, setTempTarget] = useState(initialTarget);
+  const [weeklyTarget, setWeeklyTarget] = useState(initialTarget);
+  const [isSaving, setIsSaving] = useState(false);
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (weeklyData.goalTarget) {
+      setWeeklyTarget(weeklyData.goalTarget);
+      setTempTarget(weeklyData.goalTarget);
+    }
+  }, [weeklyData.goalTarget]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const weeklyCount = weeklyData.goalCount ?? 0;
   const pct = calcPercent(weeklyCount, weeklyTarget);
 
+  const handleSave = async () => {
+    if (!Number.isInteger(tempTarget) || tempTarget < 1 || tempTarget > 500) {
+      alert('Mục tiêu phải là số nguyên trong khoảng 1-500.');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await api.updateWeeklyGoal(tempTarget);
+      setWeeklyTarget(tempTarget);
+      setIsEditing(false);
+      onRefresh();
+    } catch {
+      alert('Không thể lưu mục tiêu tuần. Vui lòng thử lại.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="card p-5 animate-fade-in-up">
+    <div className="card p-5 animate-fade-in-up relative">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Mục tiêu tuần
-          </h3>
-          <p className="text-sm text-on-surface-variant">Thuộc {weeklyTarget} từ mới trong tuần này</p>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Mục tiêu tuần
+            </h3>
+            {isLoggedIn && !isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-primary hover:text-primary-dark transition-colors flex items-center p-1 cursor-pointer"
+                title="Chỉnh sửa mục tiêu"
+              >
+                <span className="material-symbols-outlined text-sm">edit</span>
+              </button>
+            )}
+          </div>
+          {isEditing ? (
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="number"
+                value={tempTarget}
+                onChange={e => setTempTarget(Number(e.target.value))}
+                min={1}
+                max={500}
+                className="border border-outline rounded-lg px-2 py-1 text-xs w-20 focus:border-primary focus:outline-none"
+                disabled={isSaving}
+              />
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {isSaving ? 'Lưu...' : 'Lưu'}
+              </button>
+              <button
+                onClick={() => { setIsEditing(false); setTempTarget(weeklyTarget); }}
+                disabled={isSaving}
+                className="border border-outline text-on-surface-variant text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-surface-variant transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Hủy
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-on-surface-variant">Thuộc {weeklyTarget} từ mới trong tuần này</p>
+          )}
         </div>
         <div className="text-2xl font-bold text-primary" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           {weeklyCount}
@@ -157,18 +244,25 @@ function WeeklyGoalSection() {
       </div>
       {/* Day indicators */}
       <div className="flex gap-2 mt-3">
-        {['T2','T3','T4','T5','T6','T7','CN'].map((day, i) => (
-          <span
-            key={day}
-            className={`w-8 h-8 rounded-full text-xs flex items-center justify-center font-semibold ${
-              i < 5
-                ? 'bg-primary text-white'
-                : 'bg-surface-variant text-on-surface-variant'
-            }`}
-          >
-            {day}
-          </span>
-        ))}
+        {['T2','T3','T4','T5','T6','T7','CN'].map((day, i) => {
+          const today = new Date();
+          let currentDayIdx = today.getDay();
+          if (currentDayIdx === 0) currentDayIdx = 6;
+          else currentDayIdx = currentDayIdx - 1;
+          
+          return (
+            <span
+              key={day}
+              className={`w-8 h-8 rounded-full text-xs flex items-center justify-center font-semibold ${
+                i <= currentDayIdx && isLoggedIn
+                  ? 'bg-primary text-white'
+                  : 'bg-surface-variant text-on-surface-variant'
+              }`}
+            >
+              {day}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -177,20 +271,22 @@ function WeeklyGoalSection() {
 // ============================================
 // Gamification Widget
 // ============================================
-function GamificationWidget() {
-  const { isLoggedIn } = useAuth();
-  const { data, currentLevel, nextLevel, levelProgress, badges, optimisticXP } = useGamification();
-  const earnedBadges = badges.filter(b => b.earned).length;
-
-  const LockOverlay = () => (
+function LockOverlay() {
+  return (
     <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center rounded-2xl">
       <span className="material-symbols-outlined text-3xl text-primary mb-2">lock</span>
       <span className="text-sm font-semibold">Đăng nhập để xem</span>
     </div>
   );
+}
+
+function GamificationWidget() {
+  const { isLoggedIn } = useAuth();
+  const { data, currentLevel, nextLevel, levelProgress, badges, optimisticXP } = useGamification();
+  const earnedBadges = badges.filter(b => b.earned).length;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Level & XP */}
       <div className="card p-5 relative overflow-hidden">
         {!isLoggedIn && <LockOverlay />}
@@ -294,7 +390,7 @@ function QuickActions() {
         <Link
           key={action.to}
           to={action.to}
-          className="flex items-center gap-4 card p-5 border border-outline-variant
+          className="flex items-center gap-4 card p-4 border border-outline-variant
                      hover:shadow-card-hover hover:-translate-y-0.5 hover:border-primary
                      transition-all duration-200 cursor-pointer block"
         >
@@ -307,7 +403,7 @@ function QuickActions() {
             <div className="font-semibold text-sm">{action.title}</div>
             <div className="text-xs text-on-surface-variant">{action.desc}</div>
           </div>
-          <span className="bg-primary text-white rounded-lg font-semibold text-[0.8125rem] px-4 py-2 hover:bg-primary-dark transition-colors">
+          <span className="bg-primary text-white rounded-lg font-semibold text-[0.8125rem] px-3 py-2 hover:bg-primary-dark transition-colors flex-shrink-0 max-sm:hidden">
             {action.btnText}
           </span>
         </Link>
@@ -325,7 +421,7 @@ const ICON_MAP: Record<string, { icon: string; bg: string; color: string }> = {
   'not-learned': { icon: 'school', bg: 'bg-blue-50',       color: 'text-[#42a5f5]' },
 };
 
-function RecentActivity() {
+function RecentActivity({ historyPromise }: { historyPromise: Promise<LearningHistory[]> }) {
   const history = use(historyPromise);
 
   return (
@@ -382,20 +478,34 @@ function Wrapper({ children }: { children: ReactNode }) {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleRefresh = () => setRefreshKey(k => k + 1);
+
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const vocabPromise   = useMemo(() => user ? api.getAllVocabulary().catch(() => [] as Vocabulary[]) : Promise.resolve([] as Vocabulary[]), [user]);
+  const grammarPromise = useMemo(() => user ? api.getAllGrammar().catch(() => [] as Grammar[]) : Promise.resolve([] as Grammar[]), [user]);
+  const kanjiPromise   = useMemo(() => user ? api.getAllKanji().catch(() => [] as Kanji[]) : Promise.resolve([] as Kanji[]), [user]);
+  const srsPromise     = useMemo(() => user ? api.getSrsProgress().catch(() => [] as SrsProgress[]) : Promise.resolve([] as SrsProgress[]), [user]);
+  const historyPromise = useMemo(() => user ? api.getLearningHistory(4).catch(() => [] as LearningHistory[]) : Promise.resolve([] as LearningHistory[]), [user, refreshKey]);
+  const weeklyPromise  = useMemo(() => user ? api.getWeeklyGoal().catch(() => ({ goalCount: 0 } as WeeklyGoal)) : Promise.resolve({ goalCount: 0 } as WeeklyGoal), [user, refreshKey]);
+  /* eslint-enable react-hooks/exhaustive-deps */
+
   return (
     <Wrapper>
       {/* Stats - dùng Suspense riêng để mỗi section load độc lập */}
       <Suspense fallback={<SectionFallback count={4} />}>
-        <StatsSection />
+        <StatsSection vocabPromise={vocabPromise} grammarPromise={grammarPromise} kanjiPromise={kanjiPromise} srsPromise={srsPromise} />
       </Suspense>
 
       {/* Weekly Goal */}
       <Suspense fallback={<StatCardSkeleton />}>
-        <WeeklyGoalSection />
+        <WeeklyGoalSection weeklyPromise={weeklyPromise} onRefresh={handleRefresh} />
       </Suspense>
 
       {/* Gamification */}
-      <GamificationWidget />
+      {/* <GamificationWidget /> */}
 
       {/* Quick Actions + Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -404,7 +514,7 @@ export default function DashboardPage() {
         </div>
         <div className="lg:col-span-2">
           <Suspense fallback={<StatCardSkeleton />}>
-            <RecentActivity />
+            <RecentActivity historyPromise={historyPromise} />
           </Suspense>
         </div>
       </div>

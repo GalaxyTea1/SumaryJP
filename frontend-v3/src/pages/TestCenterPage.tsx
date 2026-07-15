@@ -1,18 +1,11 @@
-// ============================================
-// TestCenterPage — SumaryJP
-// React 19: Suspense + use() cho vocab data
-// Config panel + recent results từ localStorage
-// ============================================
-
-import { Suspense, use, useState, useMemo } from 'react';
+import { Suspense, use, useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import type { Vocabulary } from '@/types';
 
-// ---- Pre-fetch ----
-const vocabPromise = api.getAllVocabulary().catch(() => [] as Vocabulary[]);
+import { useAuth } from '@/context/AuthContext';
+import CustomSelect from '@/components/Select';
 
-// ---- Local results (localStorage) ----
 const RESULTS_KEY = 'sumary_test_results';
 
 interface TestResult {
@@ -123,6 +116,22 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
     });
   }, [vocab]);
 
+  // Level options
+  const levelOptions = useMemo(() => {
+    return LEVELS.map(l => ({
+      value: l,
+      label: l === 'all' ? 'Tất cả level' : l
+    }));
+  }, []);
+
+  // Lesson options
+  const lessonOptions = useMemo(() => {
+    return [
+      { value: 'all', label: 'Tất cả bài' },
+      ...lessons.map(l => ({ value: l, label: `Bài ${l}` }))
+    ];
+  }, [lessons]);
+
   // Filtered count for vocab type
   const filteredCount = useMemo(() => {
     if (selectedType !== 'vocab') return 0;
@@ -142,7 +151,7 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
       time:   timeEnabled ? String(selectedTime) : '0',
       mode:   selectedMode,
     });
-    navigate(`/test?${params.toString()}`);
+    navigate(`/test-center/session?${params.toString()}`);
   }
 
   return (
@@ -200,43 +209,32 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
           {/* Level */}
           <div>
             <label className="block text-sm font-semibold mb-1.5">Chọn Level</label>
-            <select
+            <CustomSelect
               value={selectedLevel}
-              onChange={e => setSelectedLevel(e.target.value)}
-              className="w-full pl-3 pr-8 py-2.5 text-sm border border-outline-variant rounded-xl
-                         bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-            >
-              {LEVELS.map(l => (
-                <option key={l} value={l}>{l === 'all' ? 'Tất cả level' : l}</option>
-              ))}
-            </select>
+              onChange={setSelectedLevel}
+              options={levelOptions}
+            />
           </div>
 
           {/* Lesson */}
           <div>
             <label className="block text-sm font-semibold mb-1.5">Chọn Bài</label>
-            <select
+            <CustomSelect
               value={selectedLesson}
-              onChange={e => setSelectedLesson(e.target.value)}
-              className="w-full pl-3 pr-8 py-2.5 text-sm border border-outline-variant rounded-xl
-                         bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="all">Tất cả bài</option>
-              {lessons.map(l => (
-                <option key={l} value={l}>Bài {l}</option>
-              ))}
-            </select>
+              onChange={setSelectedLesson}
+              options={lessonOptions}
+            />
           </div>
 
           {/* Question count */}
           <div>
             <label className="block text-sm font-semibold mb-1.5">Số câu hỏi</label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {QUESTION_COUNTS.map(n => (
                 <button
                   key={n}
                   onClick={() => setSelectedCount(n)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all
+                  className={`py-2 rounded-lg text-sm font-medium transition-all
                     ${selectedCount === n
                       ? 'bg-primary text-white'
                       : 'border border-outline-variant hover:border-primary hover:text-primary'
@@ -252,7 +250,7 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
           <div>
             <label className="block text-sm font-semibold mb-1.5">Giới hạn thời gian</label>
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={timeEnabled}
@@ -261,17 +259,13 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
                 />
                 Bật
               </label>
-              <select
+              <CustomSelect
                 value={selectedTime}
-                onChange={e => setSelectedTime(Number(e.target.value))}
+                onChange={setSelectedTime}
+                options={TIME_OPTIONS as { value: string | number; label: string }[]}
                 disabled={!timeEnabled}
-                className="flex-1 pl-3 pr-8 py-2 text-sm border border-outline-variant rounded-xl
-                           bg-white focus:outline-none focus:border-primary disabled:opacity-50"
-              >
-                {TIME_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+                className="flex-1 min-w-0"
+              />
             </div>
           </div>
         </div>
@@ -281,8 +275,8 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
           <label className="block text-sm font-semibold mb-2">Chế độ</label>
           <div className="flex gap-3">
             {[
-              { val: 'practice' as const, label: '🎮 Luyện tập' },
-              { val: 'exam'     as const, label: '📝 Thi thử' },
+              { val: 'practice' as const, label: 'Luyện tập' },
+              { val: 'exam'     as const, label: 'Thi thử' },
             ].map(m => (
               <label
                 key={m.val}
@@ -319,11 +313,87 @@ function TestConfigPanel({ vocab }: { vocab: Vocabulary[] }) {
   );
 }
 
+interface NormalizedRecentResult {
+  id: number;
+  testName: string;
+  score: number;
+  correct: number;
+  total: number;
+  timeTaken: number;
+  date: string;
+  isLocal?: boolean;
+  localIndex?: number;
+}
+
+function normalizeRecentResult(res: Record<string, unknown>): NormalizedRecentResult {
+  if (!res) return { id: 0, testName: '', score: 0, correct: 0, total: 0, timeTaken: 0, date: '' };
+  
+  const details = typeof res.details === 'string'
+    ? JSON.parse(res.details || '{}') as Record<string, unknown>
+    : ((res.details || {}) as Record<string, unknown>);
+    
+  const total = res.total_questions ?? res.total ?? 0;
+  const correct = res.correct_answers ?? res.correct ?? 0;
+  
+  return {
+    id: res.id,
+    testName: details.testName || res.testName || `${res.test_type || 'Vocabulary'} Test`,
+    score: Number(res.score || 0),
+    correct: Number(correct),
+    total: Number(total),
+    timeTaken: res.time_taken ?? res.timeTaken ?? 0,
+    date: res.completed_at || res.date || new Date().toISOString(),
+  };
+}
+
 // ============================================
 // Recent Results Table
 // ============================================
 function RecentResults() {
-  const results = loadResults().slice(0, 5);
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const [results, setResults] = useState<NormalizedRecentResult[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        if (isLoggedIn) {
+          const apiHistory = await api.getTestHistory(5);
+          const normalized = (apiHistory || []).map((item: Record<string, unknown>) => normalizeRecentResult(item));
+          setResults(normalized);
+        } else {
+          // Guest mode: load from localStorage
+          const local = loadResults().slice(0, 5).map((item: Record<string, unknown>, idx: number) => ({
+            ...normalizeRecentResult(item),
+            isLocal: true,
+            localIndex: idx,
+          }));
+          setResults(local);
+        }
+      } catch (err) {
+        console.error('Lỗi khi tải lịch sử kiểm tra:', err);
+        // Fallback to local storage
+        const local = loadResults().slice(0, 5).map((item: Record<string, unknown>, idx: number) => ({
+          ...normalizeRecentResult(item),
+          isLocal: true,
+          localIndex: idx,
+        }));
+        setResults(local);
+      } finally {
+        setLoading(false);
+      }
+    }
+    void fetchHistory();
+  }, [isLoggedIn]);
+
+  const handleGoToResult = (r: NormalizedRecentResult) => {
+    if (r.isLocal) {
+      navigate(`/test-center/result?localIndex=${r.localIndex}`);
+    } else {
+      navigate(`/test-center/result?id=${r.id}`);
+    }
+  };
 
   return (
     <div>
@@ -331,40 +401,53 @@ function RecentResults() {
         Kết quả gần đây
       </h3>
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface-dim text-left text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
-              {['Bài test', 'Điểm', 'Kết quả', 'Thời gian', 'Ngày', ''].map(h => (
-                <th key={h} className={`px-5 py-3 ${h === 'Điểm' || h === 'Kết quả' || h === 'Thời gian' ? 'text-center' : ''}`}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {results.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-5 py-8 text-center text-on-surface-variant">
-                  Chưa có kết quả nào.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[600px] sm:min-w-0">
+            <thead>
+              <tr className="bg-surface-dim text-left text-xs font-semibold text-on-surface-variant uppercase tracking-wider">
+                <th className="px-5 py-3">Bài test</th>
+                <th className="px-5 py-3 text-center">Điểm</th>
+                <th className="px-5 py-3 text-center">Kết quả</th>
+                <th className="px-5 py-3 text-center hidden sm:table-cell">Thời gian</th>
+                <th className="px-5 py-3 hidden sm:table-cell">Ngày</th>
+                <th className="px-5 py-3"></th>
               </tr>
-            ) : results.map(r => {
-              const scoreColor = r.score >= 80
-                ? 'text-success'
-                : r.score >= 60
-                  ? 'text-[#f59e0b]'
-                  : 'text-error';
-              return (
-                <tr key={r.id} className="border-t border-outline-variant/30 hover:bg-surface-dim/50">
-                  <td className="px-5 py-3 font-medium">{r.testName || 'Test'}</td>
-                  <td className="px-5 py-3 text-center">
-                    <span className={`font-bold ${scoreColor}`}>{r.score}%</span>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-8 text-center text-on-surface-variant">
+                    Đang tải lịch sử...
                   </td>
-                  <td className="px-5 py-3 text-center">{r.correct}/{r.total} đúng</td>
-                  <td className="px-5 py-3 text-center text-on-surface-variant">{formatTime(r.timeTaken ?? 0)}</td>
-                  <td className="px-5 py-3 text-on-surface-variant">{timeAgo(r.date)}</td>
-                  <td className="px-5 py-3">
-                    <button className="text-primary hover:underline text-xs">Chi tiết</button>
+                </tr>
+              ) : results.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-8 text-center text-on-surface-variant">
+                    Chưa có kết quả nào.
+                  </td>
+                </tr>
+              ) : results.map(r => {
+                const scoreColor = r.score >= 80
+                  ? 'text-success'
+                  : r.score >= 60
+                    ? 'text-[#f59e0b]'
+                    : 'text-error';
+                return (
+                  <tr key={r.id || r.localIndex} className="border-t border-outline-variant/30 hover:bg-surface-dim/50">
+                    <td className="px-5 py-3 font-medium">{r.testName || 'Test'}</td>
+                    <td className="px-5 py-3 text-center">
+                      <span className={`font-bold ${scoreColor}`}>{r.score}%</span>
+                    </td>
+                    <td className="px-5 py-3 text-center">{r.correct}/{r.total} đúng</td>
+                    <td className="px-5 py-3 text-center text-on-surface-variant hidden sm:table-cell">{formatTime(r.timeTaken ?? 0)}</td>
+                    <td className="px-5 py-3 text-on-surface-variant hidden sm:table-cell">{timeAgo(r.date)}</td>
+                    <td className="px-5 py-3 text-right">
+                      <button
+                        onClick={() => handleGoToResult(r)}
+                      className="text-primary hover:underline text-xs font-semibold cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded"
+                    >
+                      Chi tiết
+                    </button>
                   </td>
                 </tr>
               );
@@ -373,13 +456,14 @@ function RecentResults() {
         </table>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 // ============================================
 // Inner component that uses use()
 // ============================================
-function TestCenterInner() {
+function TestCenterInner({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
   const vocab = use(vocabPromise);
   return <TestConfigPanel vocab={vocab} />;
 }
@@ -415,23 +499,24 @@ function TestCenterSkeleton() {
   );
 }
 
-// ============================================
-// Page Export
-// ============================================
 export function TestCenterPage() {
+  const { user } = useAuth();
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const vocabPromise = useMemo(() => api.getAllVocabulary().catch(() => [] as Vocabulary[]), [user]);
+
   return (
     <div className="space-y-6">
-      <div>
+      {/* <div>
         <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Trung Tâm Kiểm Tra
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Chọn loại bài test và bắt đầu luyện tập
         </p>
-      </div>
+      </div> */}
 
       <Suspense fallback={<TestCenterSkeleton />}>
-        <TestCenterInner />
+        <TestCenterInner vocabPromise={vocabPromise} />
       </Suspense>
 
       <RecentResults />

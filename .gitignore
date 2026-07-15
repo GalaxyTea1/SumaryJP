@@ -9,3 +9,40 @@
 /backend/migrations/run.js
 /convert_sql.js
 
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Production build outputs
+dist/
+**/dist/
+build/
+**/build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.qodo/
+

@@ -117,6 +117,12 @@
         <a href="kanji.html" class="sidebar-link">
           <span class="material-symbols-outlined text-xl">translate</span> Kanji
         </a>
+        <a href="kana.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">abc</span> Kana
+        </a>
+        <a href="matching-game.html" class="sidebar-link">
+          <span class="material-symbols-outlined text-xl">extension</span> Game Ghép Thẻ
+        </a>
         <a href="test-center.html" class="sidebar-link">
           <span class="material-symbols-outlined text-xl">quiz</span> Bài Test
         </a>
@@ -214,10 +220,10 @@
                 <span class="material-symbols-outlined text-[#42a5f5] text-lg">bolt</span>
               </div>
             </div>
-            <div class="text-2xl font-bold font-['Plus_Jakarta_Sans']">150 <span
+            <div id="stat-daily-xp" class="text-2xl font-bold font-['Plus_Jakarta_Sans']">-- <span
                 class="text-sm font-normal text-[#5f6b7a]">XP</span></div>
             <div class="flex items-center gap-1 mt-2">
-              <span class="material-symbols-outlined text-[#4caf50] text-sm">trending_up</span>
+              <span class="material-symbols-outlined text-[#42a5f5] text-sm">flag</span>
               <span class="text-xs text-[#4caf50]">+23% so với hôm qua</span>
             </div>
           </div>
@@ -233,6 +239,16 @@
             <div class="flex items-center gap-3">
               <div id="weekly-goal-count" class="text-2xl font-bold text-[#6caba0]">--<span
                   class="text-sm font-normal text-[#5f6b7a]">/--</span></div>
+              <div class="flex items-center gap-2">
+                <input id="weekly-goal-target-input" type="number" min="1" max="500"
+                  class="w-20 rounded-lg border-gray-200 text-sm focus:border-[#6caba0] focus:ring-[#6caba0]"
+                  aria-label="Weekly goal target" />
+                <button id="weekly-goal-save-btn"
+                  class="w-9 h-9 rounded-lg bg-[#6caba0] text-white flex items-center justify-center hover:bg-[#4d8a80]"
+                  title="Save weekly goal">
+                  <span class="material-symbols-outlined text-lg">save</span>
+                </button>
+              </div>
             </div>
           </div>
           <div class="progress-bar mt-3">

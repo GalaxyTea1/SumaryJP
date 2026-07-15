@@ -23,6 +23,7 @@ export interface Vocabulary {
   status?: 'not-learned' | 'learning' | 'mastered';
   srs_level?: number;
   next_review?: string | null;
+  is_difficult?: boolean;
 }
 
 // --- Grammar ---
@@ -32,6 +33,9 @@ export interface Grammar {
   meaning: string;
   explanation?: string;
   example?: string;
+  example_ja?: string;
+  example_vi?: string;
+  note?: string;
   level?: string;
   lesson?: string;
   textbook?: string;
@@ -61,8 +65,21 @@ export interface LearningHistory {
 
 export interface WeeklyGoal {
   goalCount: number;
+  goalTarget?: number;
   weekStart?: string;
   weekEnd?: string;
+}
+
+export interface SrsProgress {
+  id: number;
+  userId: number;
+  itemType: 'vocab' | 'kanji' | 'grammar';
+  itemId: number;
+  repetitions: number;
+  interval: number;
+  easeFactor: number;
+  nextReview: string;
+  lastReview: string | null;
 }
 
 // --- Test ---
@@ -80,9 +97,16 @@ export interface TestResult {
   id?: number;
   score: number;
   total: number;
-  level?: string;
+  level?: string | null;
   completed_at?: string;
   time_taken?: number;
+  test_type?: string;
+  lesson?: number | null;
+  total_questions?: number;
+  correct_answers?: number;
+  correct?: number;
+  mode?: string;
+  details?: unknown;
 }
 
 // --- Gamification ---
@@ -109,6 +133,8 @@ export interface GamificationStats {
   vocabReviewed: number;
   kanjiReviewed: number;
   srsSessions: number;
+  kanaMastered?: number;
+  kanaQuizCorrect?: number;
 }
 
 export interface GamificationData {
@@ -118,6 +144,15 @@ export interface GamificationData {
   streak: number;
   lastActiveDate: string | null;
   stats: GamificationStats;
+}
+
+export interface KanaProgressItem {
+  id?: number;
+  user_id?: number;
+  kana_type: 'hiragana' | 'katakana';
+  character: string;
+  status: 'new' | 'learning' | 'mastered';
+  updated_at?: string;
 }
 
 // --- API Generic ---

@@ -7,7 +7,7 @@ import type {
   Vocabulary, Grammar, Kanji,
   LearningHistory, WeeklyGoal,
   User, TestResult,
-  GrammarFilters, KanjiFilters,
+  GrammarFilters, KanjiFilters, GamificationData, KanaProgressItem, SrsProgress,
 } from '@/types';
 
 const isLocalhost =
@@ -110,11 +110,26 @@ export const api = {
     });
   },
 
-  async updateVocabulary(vocab: Vocabulary): Promise<Vocabulary> {
+  async updateVocabulary(vocab: Partial<Vocabulary> & { id: number }): Promise<Vocabulary> {
     return request(`${BASE_URL}/vocab/${encodeURIComponent(vocab.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(vocab),
+    });
+  },
+
+  async updateVocabularyProgress(id: number, progress: {
+    status?: 'not-learned' | 'learning' | 'mastered';
+    review_count?: number;
+    interval?: number;
+    ease_factor?: number;
+    next_review?: string | null;
+    is_difficult?: boolean;
+  }): Promise<Vocabulary> {
+    return request(`${BASE_URL}/vocab/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(progress),
     });
   },
 
@@ -129,6 +144,14 @@ export const api = {
 
   async getWeeklyGoal(): Promise<WeeklyGoal> {
     return request(`${BASE_URL}/history/weekly-goal`);
+  },
+
+  async updateWeeklyGoal(goalTarget: number): Promise<WeeklyGoal> {
+    return request(`${BASE_URL}/history/weekly-goal`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goalTarget }),
+    });
   },
 
   // === AUTH ===
@@ -250,5 +273,44 @@ export const api = {
 
   async getTestResultById(id: number): Promise<TestResult> {
     return request(`${BASE_URL}/test/${encodeURIComponent(id)}`);
+  },
+
+  // === GAMIFICATION ===
+  async getGamification(): Promise<GamificationData> {
+    return request(`${BASE_URL}/gamification/me`);
+  },
+
+  async trackGamificationEvent(eventType: string, extra: Record<string, number> = {}): Promise<GamificationData & { awardedXp: number; capped: boolean; newBadges: string[] }> {
+    return request(`${BASE_URL}/gamification/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventType, extra }),
+    });
+  },
+
+  // === KANA ===
+  async getKanaProgress(): Promise<KanaProgressItem[]> {
+    return request(`${BASE_URL}/kana/progress`);
+  },
+
+  async updateKanaProgress(kanaType: 'hiragana' | 'katakana', character: string, status: 'new' | 'learning' | 'mastered'): Promise<KanaProgressItem> {
+    return request(`${BASE_URL}/kana/progress`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kanaType, character, status }),
+    });
+  },
+
+  // === SRS ===
+  async getSrsProgress(): Promise<SrsProgress[]> {
+    return request(`${BASE_URL}/srs/progress`);
+  },
+
+  async reviewSrsItem(itemType: 'vocab' | 'kanji' | 'grammar', itemId: number, quality: number): Promise<SrsProgress> {
+    return request(`${BASE_URL}/srs/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemType, itemId, quality }),
+    });
   },
 };

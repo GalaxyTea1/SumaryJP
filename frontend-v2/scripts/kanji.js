@@ -4,6 +4,8 @@
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
     let allKanji = [];
     let filteredKanji = [];
     let activeLevel = 'all';
@@ -14,7 +16,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         allKanji = await api.getAllKanji();
     } catch (e) {
-        console.warn('Kanji: Không thể tải data.', e);
+        console.error('Kanji: Không thể tải data.', e);
+        alert('Khong the tai du lieu kanji. Vui long kiem tra ket noi va thu lai.');
+        window.location.href = 'dashboard.html';
+        return;
     }
 
     // --- DOM ---

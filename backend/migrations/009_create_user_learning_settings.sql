@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS user_learning_settings (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    weekly_goal_target INTEGER NOT NULL DEFAULT 20,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CHECK (weekly_goal_target BETWEEN 1 AND 500)
+);

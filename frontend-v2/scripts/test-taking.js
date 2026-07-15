@@ -1,9 +1,10 @@
 // ============================================
-// Test Taking Page Logic — Sumary Japanese
+// Test Taking Page Logic - Sumary Japanese
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- Parse URL params ---
+    if (!auth.requireAuth()) return;
+
     const params = new URLSearchParams(window.location.search);
     if (!params.has('count')) {
         window.location.href = 'test-center.html';
@@ -14,49 +15,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         type: params.get('type') || 'vocab',
         level: params.get('level') || 'all',
         lesson: params.get('lesson') || 'all',
-        count: parseInt(params.get('count')) || 20,
-        time: parseInt(params.get('time')) || 0,
+        count: parseInt(params.get('count'), 10) || 20,
+        time: parseInt(params.get('time'), 10) || 0,
         mode: params.get('mode') || 'practice',
     };
 
-    // --- State ---
-    let testWords = [];
+    const TYPE_LABELS = {
+        vocab: 'Tu Vung',
+        kanji: 'Kanji',
+        grammar: 'Ngu Phap',
+        mixed: 'Tong Hop',
+    };
+
+    let questions = [];
+    let optionPool = [];
     let currentIndex = 0;
     let answers = [];
     let startTime = new Date();
     let timerInterval = null;
     let selectedOption = null;
+    let finishing = false;
 
-    // --- Load questions ---
     try {
-        const allVocab = await api.getAllVocabulary();
-
-        // Filter by level/lesson
-        let filtered = allVocab.filter(v => {
-            if (config.level !== 'all' && v.level !== config.level) return false;
-            if (config.lesson !== 'all' && String(v.lesson) !== config.lesson) return false;
+        const sourceItems = await loadQuestionSource(config.type);
+        const filtered = sourceItems.filter(item => {
+            if (config.level !== 'all' && item.level !== config.level) return false;
+            if (config.lesson !== 'all' && String(item.lesson) !== config.lesson) return false;
             return true;
         });
 
-        utils.shuffleArray(filtered);
-        testWords = filtered.slice(0, config.count);
+        optionPool = [...new Set(sourceItems.map(item => item.answer).filter(Boolean))];
+        questions = utils.shuffleArray([...filtered]).slice(0, config.count);
 
-        if (testWords.length === 0) {
-            alert('Không có từ vựng nào phù hợp để tạo đề!');
+        if (questions.length === 0) {
+            alert('Khong co cau hoi phu hop de tao de.');
             window.location.href = 'test-center.html';
             return;
         }
-
-        // All meanings for wrong options
-        window._allMeanings = [...new Set(allVocab.map(v => v.meaning))];
-    } catch (e) {
-        console.error('Không thể tải dữ liệu:', e);
-        alert('Lỗi tải dữ liệu. Quay về trang chủ.');
+    } catch (error) {
+        console.error('Load test questions failed:', error);
+        alert('Khong the tai du lieu bai test. Vui long kiem tra ket noi va thu lai.');
         window.location.href = 'test-center.html';
         return;
     }
 
-    // --- DOM ---
     const titleEl = document.getElementById('test-title');
     const timerEl = document.getElementById('timer');
     const progressFill = document.querySelector('.progress-thin .fill');
@@ -68,14 +70,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const prevBtn = document.getElementById('btn-prev');
     const nextBtn = document.getElementById('btn-next');
 
-    // Set title
     if (titleEl) {
         const levelStr = config.level === 'all' ? '' : ` ${config.level}`;
-        const lessonStr = config.lesson === 'all' ? '' : ` — Bài ${config.lesson}`;
-        titleEl.textContent = `Test Từ Vựng${levelStr}${lessonStr}`;
+        const lessonStr = config.lesson === 'all' ? '' : ` - Bai ${config.lesson}`;
+        titleEl.textContent = `Test ${TYPE_LABELS[config.type] || TYPE_LABELS.vocab}${levelStr}${lessonStr}`;
     }
 
-    // --- Timer ---
     if (config.time > 0) {
         const totalSeconds = config.time * 60;
         startTime = new Date();
@@ -90,128 +90,163 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (timerEl) timerEl.textContent = utils.formatTime(remaining);
-
-            if (remaining <= 60 && timerEl) {
-                timerEl.classList.add('text-red-500');
-            }
+            if (remaining <= 60 && timerEl) timerEl.classList.add('text-red-500');
         }, 1000);
-    } else {
-        if (timerEl) timerEl.textContent = '--:--';
+    } else if (timerEl) {
+        timerEl.textContent = '--:--';
     }
 
-    // --- Render Question ---
+    async function loadQuestionSource(type) {
+        const loaders = {
+            vocab: async () => normalizeVocab(await api.getAllVocabulary()),
+            kanji: async () => normalizeKanji(await api.getAllKanji()),
+            grammar: async () => normalizeGrammar(await api.getAllGrammar()),
+            mixed: async () => {
+                const [vocab, kanji, grammar] = await Promise.all([
+                    api.getAllVocabulary(),
+                    api.getAllKanji(),
+                    api.getAllGrammar(),
+                ]);
+                return [
+                    ...normalizeVocab(vocab),
+                    ...normalizeKanji(kanji),
+                    ...normalizeGrammar(grammar),
+                ];
+            },
+        };
+
+        return (loaders[type] || loaders.vocab)();
+    }
+
+    function normalizeVocab(items) {
+        return (items || []).map(item => ({
+            id: item.id,
+            type: 'vocab',
+            level: item.level,
+            lesson: item.lesson,
+            prompt: item.japanese || '',
+            subPrompt: item.hiragana || '',
+            answer: item.meaning || '',
+            meta: item.type || '',
+            raw: item,
+        })).filter(item => item.prompt && item.answer);
+    }
+
+    function normalizeKanji(items) {
+        return (items || []).map(item => ({
+            id: item.id,
+            type: 'kanji',
+            level: item.level,
+            lesson: item.lesson,
+            prompt: item.character || '',
+            subPrompt: [item.onyomi, item.kunyomi].filter(Boolean).join(' / '),
+            answer: item.meaning || '',
+            meta: item.stroke_count ? `${item.stroke_count} net` : '',
+            raw: item,
+        })).filter(item => item.prompt && item.answer);
+    }
+
+    function normalizeGrammar(items) {
+        return (items || []).map(item => ({
+            id: item.id,
+            type: 'grammar',
+            level: item.level,
+            lesson: item.lesson,
+            prompt: item.pattern || '',
+            subPrompt: item.example_ja || '',
+            answer: item.meaning || '',
+            meta: item.example_vi || '',
+            raw: item,
+        })).filter(item => item.prompt && item.answer);
+    }
+
     function renderQuestion() {
-        const word = testWords[currentIndex];
+        const question = questions[currentIndex];
         selectedOption = null;
 
-        // Progress
-        const pct = (currentIndex / testWords.length) * 100;
+        const pct = (currentIndex / questions.length) * 100;
         if (progressFill) progressFill.style.width = `${pct}%`;
-        if (counterEl) counterEl.innerHTML = `Câu <span class="font-bold text-[#1a2332]">${currentIndex + 1}</span>/${testWords.length}`;
-        if (questionLabel) questionLabel.textContent = `Câu ${currentIndex + 1}`;
+        if (counterEl) counterEl.innerHTML = `Cau <span class="font-bold text-[#1a2332]">${currentIndex + 1}</span>/${questions.length}`;
+        if (questionLabel) questionLabel.textContent = `Cau ${currentIndex + 1}`;
 
-        // Question
         if (questionText) {
-            questionText.innerHTML = `<span class="font-['Noto_Sans_JP'] text-2xl">「${utils.escapeHtml(word.japanese)}」</span> có nghĩa là gì?`;
+            const typePrefix = config.type === 'mixed' ? `<span class="text-sm text-[#6caba0] mr-2">${TYPE_LABELS[question.type]}</span>` : '';
+            questionText.innerHTML = `${typePrefix}<span class="font-['Noto_Sans_JP'] text-2xl">${utils.escapeHtml(question.prompt)}</span> có nghĩa là gì?`;
+            if (question.subPrompt) {
+                questionText.innerHTML += `<div class="mt-2 text-sm font-normal text-[#5f6b7a]">${utils.escapeHtml(question.subPrompt)}</div>`;
+            }
         }
 
-        // Options: 1 correct + 3 wrong
-        let wrongMeanings = window._allMeanings.filter(m => m.toLowerCase() !== word.meaning.toLowerCase());
-        utils.shuffleArray(wrongMeanings);
-        const options = utils.shuffleArray([word.meaning, ...wrongMeanings.slice(0, 3)]);
+        const wrongAnswers = optionPool.filter(answer => answer.toLowerCase() !== question.answer.toLowerCase());
+        utils.shuffleArray(wrongAnswers);
+        const options = utils.shuffleArray([question.answer, ...wrongAnswers.slice(0, 3)]);
         const labels = ['A', 'B', 'C', 'D'];
 
         if (optionsContainer) {
-            optionsContainer.innerHTML = options.map((opt, i) => `
-                <div class="option-card flex items-center gap-3" data-value="${utils.escapeHtml(opt)}" data-correct="${opt === word.meaning}">
-                    <span class="w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-bold text-[#5f6b7a] flex-shrink-0 option-label">${labels[i]}</span>
-                    <span>${utils.escapeHtml(opt)}</span>
+            optionsContainer.innerHTML = options.map((option, index) => `
+                <div class="option-card flex items-center gap-3" data-value="${utils.escapeHtml(option)}" data-correct="${option === question.answer}">
+                    <span class="w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-bold text-[#5f6b7a] flex-shrink-0 option-label">${labels[index]}</span>
+                    <span>${utils.escapeHtml(option)}</span>
                 </div>
             `).join('');
 
-            // Bind click
             optionsContainer.querySelectorAll('.option-card').forEach(card => {
                 card.addEventListener('click', () => selectOptionHandler(card));
             });
         }
 
-        // Hide feedback
         if (feedbackEl) feedbackEl.classList.add('hidden');
-
-        // Prev button
-        if (prevBtn) {
-            prevBtn.style.visibility = currentIndex > 0 ? 'visible' : 'hidden';
-        }
-
-        // Next button text
+        if (prevBtn) prevBtn.style.visibility = currentIndex > 0 ? 'visible' : 'hidden';
         if (nextBtn) {
-            const span = nextBtn.querySelector('span:not(.material-symbols-outlined)') || nextBtn.childNodes[0];
-            if (currentIndex === testWords.length - 1) {
-                nextBtn.innerHTML = `Hoàn thành <span class="material-symbols-outlined text-lg">check</span>`;
-            } else {
-                nextBtn.innerHTML = `Câu tiếp theo <span class="material-symbols-outlined text-lg">arrow_forward</span>`;
-            }
+            nextBtn.innerHTML = currentIndex === questions.length - 1
+                ? `Hoàn thành <span class="material-symbols-outlined text-lg">check</span>`
+                : `Câu tiếp theo <span class="material-symbols-outlined text-lg">arrow_forward</span>`;
         }
 
-        // Check if already answered (going back)
         const existing = answers[currentIndex];
-        if (existing) {
-            const cards = optionsContainer.querySelectorAll('.option-card');
-            cards.forEach(card => {
+        if (existing && optionsContainer) {
+            optionsContainer.querySelectorAll('.option-card').forEach(card => {
                 if (card.dataset.value === existing.userAnswer) {
                     card.classList.add('selected');
                     card.querySelector('.option-label').classList.remove('border-gray-300', 'text-[#5f6b7a]');
                     card.querySelector('.option-label').classList.add('bg-[#6caba0]', 'text-white', 'border-[#6caba0]');
                 }
             });
-
-            if (config.mode === 'practice') {
-                showFeedback(existing.correct, word);
-            }
+            if (config.mode === 'practice') showFeedback(existing.correct, question);
         }
     }
 
     function selectOptionHandler(card) {
-        if (selectedOption && config.mode === 'practice' && answers[currentIndex]) return; // Already answered in practice
+        if (selectedOption && config.mode === 'practice' && answers[currentIndex]) return;
 
-        // Clear selection
-        optionsContainer.querySelectorAll('.option-card').forEach(c => {
-            c.classList.remove('selected', 'correct', 'incorrect');
-            c.querySelector('.option-label').classList.remove('bg-[#6caba0]', 'text-white', 'border-[#6caba0]');
-            c.querySelector('.option-label').classList.add('border-gray-300', 'text-[#5f6b7a]');
+        optionsContainer.querySelectorAll('.option-card').forEach(item => {
+            item.classList.remove('selected', 'correct', 'incorrect');
+            item.querySelector('.option-label').classList.remove('bg-[#6caba0]', 'text-white', 'border-[#6caba0]');
+            item.querySelector('.option-label').classList.add('border-gray-300', 'text-[#5f6b7a]');
         });
 
-        // Select this
         card.classList.add('selected');
         card.querySelector('.option-label').classList.remove('border-gray-300', 'text-[#5f6b7a]');
         card.querySelector('.option-label').classList.add('bg-[#6caba0]', 'text-white', 'border-[#6caba0]');
 
         selectedOption = card.dataset.value;
         const isCorrect = card.dataset.correct === 'true';
-
-        // Store answer
         answers[currentIndex] = {
-            word: testWords[currentIndex],
+            question: questions[currentIndex],
             userAnswer: selectedOption,
             correct: isCorrect,
         };
 
-        // Practice mode: show feedback immediately
         if (config.mode === 'practice') {
-            showFeedback(isCorrect, testWords[currentIndex]);
-
-            // Highlight correct/incorrect
-            optionsContainer.querySelectorAll('.option-card').forEach(c => {
-                if (c.dataset.correct === 'true') {
-                    c.classList.add('correct');
-                } else if (c === card && !isCorrect) {
-                    c.classList.add('incorrect');
-                }
+            showFeedback(isCorrect, questions[currentIndex]);
+            optionsContainer.querySelectorAll('.option-card').forEach(item => {
+                if (item.dataset.correct === 'true') item.classList.add('correct');
+                else if (item === card && !isCorrect) item.classList.add('incorrect');
             });
         }
     }
 
-    function showFeedback(isCorrect, word) {
+    function showFeedback(isCorrect, question) {
         if (!feedbackEl) return;
         feedbackEl.classList.remove('hidden');
 
@@ -221,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <span class="material-symbols-outlined text-[#4caf50] text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
                 <div>
                     <div class="font-semibold text-[#2e7d32]">Chính xác!</div>
-                    <div class="text-sm text-[#5f6b7a]">${utils.escapeHtml(word.japanese)} (${utils.escapeHtml(word.hiragana || '')}) nghĩa là "${utils.escapeHtml(word.meaning)}"</div>
+                    <div class="text-sm text-[#5f6b7a]">${utils.escapeHtml(question.prompt)} nghĩa là "${utils.escapeHtml(question.answer)}"</div>
                 </div>
             `;
         } else {
@@ -230,24 +265,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <span class="material-symbols-outlined text-[#ef5350] text-2xl" style="font-variation-settings: 'FILL' 1;">cancel</span>
                 <div>
                     <div class="font-semibold text-[#c62828]">Sai rồi!</div>
-                    <div class="text-sm text-[#5f6b7a]">Đáp án đúng: <span class="font-semibold text-[#4caf50]">${utils.escapeHtml(word.meaning)}</span></div>
+                    <div class="text-sm text-[#5f6b7a]">Đáp án đúng: <span class="font-semibold text-[#4caf50]">${utils.escapeHtml(question.answer)}</span></div>
                 </div>
             `;
         }
     }
 
-    // --- Navigation ---
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            // Must select to proceed
             if (!answers[currentIndex]) return;
 
             currentIndex++;
-            if (currentIndex < testWords.length) {
-                renderQuestion();
-            } else {
-                finishTest();
-            }
+            if (currentIndex < questions.length) renderQuestion();
+            else finishTest();
         });
     }
 
@@ -260,76 +290,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- Quit ---
     const quitBtn = document.getElementById('btn-quit');
     if (quitBtn) {
-        quitBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (confirm('Bạn có chắc chắn muốn thoát khi bài test chưa kết thúc?')) {
+        quitBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (confirm('Ban co chac chan muon thoat khi bai test chua ket thuc?')) {
                 clearInterval(timerInterval);
                 window.location.href = 'test-center.html';
             }
         });
     }
 
-    // --- Finish Test ---
-    function finishTest() {
+    async function finishTest() {
+        if (finishing) return;
+        finishing = true;
         clearInterval(timerInterval);
 
         const timeTaken = Math.floor((new Date() - startTime) / 1000);
-        const correctCount = answers.filter(a => a && a.correct).length;
-        const totalCount = testWords.length;
+        const correctCount = answers.filter(answer => answer && answer.correct).length;
+        const totalCount = questions.length;
         const score = Math.round((correctCount / totalCount) * 100);
 
-        // Build result
-        const result = {
-            id: Date.now(),
-            testName: `Test Từ Vựng ${config.level !== 'all' ? config.level : ''} ${config.lesson !== 'all' ? 'Bài ' + config.lesson : ''}`.trim(),
-            type: config.type,
-            level: config.level,
-            lesson: config.lesson,
-            score,
-            correct: correctCount,
-            total: totalCount,
-            timeTaken,
-            answers: answers.map(a => a ? {
-                japanese: a.word.japanese,
-                hiragana: a.word.hiragana || '',
-                meaning: a.word.meaning,
-                userAnswer: a.userAnswer,
-                correct: a.correct,
+        const resultDetails = {
+            testName: `Test ${TYPE_LABELS[config.type] || TYPE_LABELS.vocab} ${config.level !== 'all' ? config.level : ''} ${config.lesson !== 'all' ? 'Bai ' + config.lesson : ''}`.trim(),
+            answers: answers.map(answer => answer ? {
+                type: answer.question.type,
+                prompt: answer.question.prompt,
+                subPrompt: answer.question.subPrompt,
+                meaning: answer.question.answer,
+                userAnswer: answer.userAnswer,
+                correct: answer.correct,
             } : null).filter(Boolean),
-            date: new Date().toISOString(),
         };
 
-        // Save to localStorage (always — offline support)
-        utils.saveTestResult(result);
-
-        // Also submit to backend API if logged in
-        if (auth.isLoggedIn()) {
-            api.submitTestResult({
+        let savedResult;
+        try {
+            savedResult = await api.submitTestResult({
                 test_type: config.type,
                 level: config.level !== 'all' ? config.level : null,
-                lesson: config.lesson !== 'all' ? parseInt(config.lesson) : null,
+                lesson: config.lesson !== 'all' ? parseInt(config.lesson, 10) : null,
                 score,
                 total_questions: totalCount,
                 correct_answers: correctCount,
                 time_taken: timeTaken,
-                answers: result.answers,
-            }).catch(err => {
-                console.warn('Không thể gửi kết quả test lên server:', err);
+                mode: config.mode,
+                details: resultDetails,
             });
+        } catch (error) {
+            finishing = false;
+            console.error('Submit test result failed:', error);
+            alert('Khong the luu ket qua bai test. Vui long kiem tra ket noi va thu lai.');
+            return;
         }
 
-        // Track gamification
         if (typeof gamification !== 'undefined') {
-            gamification.trackEvent('test_complete', { score });
+            await gamification.trackEvent('test_complete', { score }).catch(() => null);
         }
 
-        // Redirect to results page
-        window.location.href = `test-results.html?id=${result.id}`;
+        window.location.href = `test-results.html?id=${savedResult.id}`;
     }
 
-    // --- Start ---
     renderQuestion();
 });

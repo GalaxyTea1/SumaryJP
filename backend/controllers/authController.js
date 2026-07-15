@@ -67,7 +67,7 @@ const authController = {
 
             // Generate JWT
             const token = jwt.sign({ id: user.id, username: user.username, role: user.role || 'user' }, JWT_SECRET, {
-                expiresIn: '30d' // Hạn sử dụng 30 ngày giống mock
+                expiresIn: '30d'
             });
 
             res.status(200).json({

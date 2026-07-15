@@ -29,6 +29,9 @@ test.before(async () => {
     const address = server.address();
     baseUrl = `http://127.0.0.1:${address.port}`;
 
+    await pool.query('DELETE FROM user_learning_settings');
+    await pool.query('DELETE FROM user_srs_progress');
+    await pool.query('DELETE FROM user_gamification');
     await pool.query('DELETE FROM test_results');
     await pool.query('DELETE FROM learning_history');
     await pool.query('DELETE FROM user_vocabulary_progress');
@@ -107,4 +110,55 @@ test('auth, vocabulary progress, and test history work against PostgreSQL', asyn
     assert.equal(history.response.status, 200);
     assert.equal(history.body.length, 1);
     assert.equal(history.body[0].score, 80);
+
+    const weeklyGoal = await request('/api/history/weekly-goal', { headers: authHeaders });
+    assert.equal(weeklyGoal.response.status, 200, JSON.stringify(weeklyGoal.body));
+    assert.equal(weeklyGoal.body.goalTarget, 20);
+    assert.equal(typeof weeklyGoal.body.goalCount, 'number');
+
+    const updatedWeeklyGoal = await request('/api/history/weekly-goal', {
+        method: 'PUT',
+        headers: authHeaders,
+        body: { goalTarget: 30 }
+    });
+    assert.equal(updatedWeeklyGoal.response.status, 200, JSON.stringify(updatedWeeklyGoal.body));
+    assert.equal(updatedWeeklyGoal.body.goalTarget, 30);
+
+    const gamification = await request('/api/gamification/me', { headers: authHeaders });
+    assert.equal(gamification.response.status, 200, JSON.stringify(gamification.body));
+    assert.equal(gamification.body.xp, 0);
+    assert.equal(gamification.body.dailyXpCap, 150);
+
+    const event = await request('/api/gamification/events', {
+        method: 'POST',
+        headers: authHeaders,
+        body: {
+            event_type: 'test_complete',
+            extra: { score: 100 }
+        }
+    });
+    assert.equal(event.response.status, 200, JSON.stringify(event.body));
+    assert.equal(event.body.awardedXp, 45);
+    assert.equal(event.body.stats.testsCompleted, 1);
+    assert.ok(event.body.badges.includes('first_test'));
+    assert.ok(event.body.badges.includes('first_perfect'));
+
+    const srsReview = await request('/api/srs/review', {
+        method: 'POST',
+        headers: authHeaders,
+        body: {
+            item_type: 'vocab',
+            item_id: vocabId,
+            quality: 3
+        }
+    });
+    assert.equal(srsReview.response.status, 200, JSON.stringify(srsReview.body));
+    assert.equal(srsReview.body.itemType, 'vocab');
+    assert.equal(srsReview.body.itemId, vocabId);
+    assert.equal(srsReview.body.repetitions, 1);
+
+    const srsProgress = await request('/api/srs/progress', { headers: authHeaders });
+    assert.equal(srsProgress.response.status, 200, JSON.stringify(srsProgress.body));
+    assert.equal(srsProgress.body.length, 1);
+    assert.equal(srsProgress.body[0].itemId, vocabId);
 });

@@ -1,10 +1,4 @@
-// ============================================
-// GrammarPage — SumaryJP
-// React 19: use() + useTransition cho filter
-// Card layout với pattern highlight
-// ============================================
-
-import { Suspense, use, useState, useMemo, useTransition } from 'react';
+import { Suspense, use, useState, useMemo, useTransition, useRef } from 'react';
 import { api } from '@/api';
 import { escapeHtml } from '@/lib/utils';
 import type { Grammar } from '@/types';
@@ -13,8 +7,7 @@ import type { Grammar } from '@/types';
 const ITEMS_PER_PAGE = 6;
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'] as const;
 
-// ---- Pre-fetch ----
-const grammarPromise = api.getAllGrammar().catch(() => [] as Grammar[]);
+import { useAuth } from '@/context/AuthContext';
 
 // ---- Level badge colors ----
 const LEVEL_STYLES: Record<string, { bg: string; text: string }> = {
@@ -27,6 +20,13 @@ const LEVEL_STYLES: Record<string, { bg: string; text: string }> = {
 
 function getLevelStyle(level?: string) {
   return LEVEL_STYLES[level ?? ''] ?? LEVEL_STYLES['N5'];
+}
+
+function getPaginationRange(current: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 3)         return [1, 2, 3, 4, '...', total];
+  if (current >= total - 2) return [1, '...', total - 3, total - 2, total - 1, total];
+  return [1, '...', current - 1, current, current + 1, '...', total];
 }
 
 // ---- Highlight pattern trong example_ja ----
@@ -57,7 +57,7 @@ function GrammarCard({ grammar: g }: GrammarCardProps) {
     : '<span class="text-on-surface-variant italic">Chưa có ví dụ</span>';
 
   return (
-    <div className="card p-6 hover:shadow-card-hover transition-shadow">
+    <div className="card p-6 hover:shadow-card-hover transition-shadow bg-white border border-gray-100">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -103,7 +103,6 @@ function GrammarCard({ grammar: g }: GrammarCardProps) {
         </div>
       )}
 
-      {/* Expand explanation */}
       {g.explanation && (
         <>
           <button
@@ -123,7 +122,6 @@ function GrammarCard({ grammar: g }: GrammarCardProps) {
   );
 }
 
-// ---- Skeleton Card ----
 function GrammarCardSkeleton() {
   return (
     <div className="card p-6">
@@ -141,18 +139,16 @@ function GrammarCardSkeleton() {
   );
 }
 
-// ---- Grammar Grid (data fetched via use()) ----
-function GrammarGrid() {
-  const allGrammar = use(grammarPromise) as (Grammar & {
-    example_ja?: string;
-    example_vi?: string;
-    note?: string;
-  })[];
+function GrammarGrid({ grammarPromise }: { grammarPromise: Promise<Grammar[]> }) {
+  const allGrammar = use(grammarPromise);
 
   const [activeLevel,  setActiveLevel]  = useState('all');
+  const [localSearch,  setLocalSearch]  = useState('');
   const [searchQuery,  setSearchQuery]  = useState('');
   const [currentPage,  setCurrentPage]  = useState(1);
-  const [isPending, startTransition]    = useTransition();
+  const [isPending, startTransitionHook] = useTransition();
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
     return allGrammar.filter(g => {
@@ -172,23 +168,29 @@ function GrammarGrid() {
   const pageItems  = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   function handleLevel(level: string) {
-    startTransition(() => {
+    startTransitionHook(() => {
       setActiveLevel(level);
       setCurrentPage(1);
     });
   }
 
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="space-y-5 animate-fade-in-up">
-      {/* Filters */}
-      <div className="card p-4 flex flex-wrap items-center gap-3">
-        {/* Level pills */}
-        <div className="flex gap-2 flex-wrap">
+    <div className="flex-1 min-h-0 flex flex-col space-y-4">
+      <div className="card p-4 flex flex-wrap items-center gap-3 max-sm:gap-2 flex-shrink-0 bg-white">
+        
+        <div className="flex gap-2 flex-wrap max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:scrollbar-none max-sm:pb-1 flex-shrink-0">
           {(['all', ...LEVELS] as const).map(level => (
             <button
               key={level}
               onClick={() => handleLevel(level)}
-              className={`px-3.5 py-1.5 rounded-full text-[0.8125rem] font-medium border transition-all
+              className={`px-3.5 py-1.5 rounded-full text-[0.8125rem] font-medium border transition-all flex-shrink-0
                 ${activeLevel === level
                   ? 'bg-primary text-white border-primary'
                   : 'border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary'
@@ -202,17 +204,21 @@ function GrammarGrid() {
         <div className="h-6 w-px bg-gray-200 hidden md:block" />
 
         {/* Search */}
-        <div className="flex-1 min-w-[200px] relative">
+        <div className="flex-1 min-w-[200px] relative max-sm:min-w-full">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
             search
           </span>
           <input
             type="text"
             placeholder="Tìm ngữ pháp..."
-            value={searchQuery}
+            value={localSearch}
             onChange={e => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
+              const val = e.target.value;
+              setLocalSearch(val);
+              startTransitionHook(() => {
+                setSearchQuery(val);
+                setCurrentPage(1);
+              });
             }}
             className="w-full pl-9 pr-3 py-1.5 text-sm border border-outline-variant rounded-lg
                        bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
@@ -221,48 +227,55 @@ function GrammarGrid() {
         </div>
 
         {/* Count */}
-        <span className="text-xs text-on-surface-variant ml-auto">
+        <span className="text-xs text-on-surface-variant ml-auto max-sm:w-full max-sm:text-right">
           {filtered.length} cấu trúc
         </span>
       </div>
 
-      {/* Grid */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-5 transition-opacity ${isPending ? 'opacity-60' : ''}`}>
-        {pageItems.length === 0 ? (
-          <div className="col-span-2 text-center text-on-surface-variant py-12">
-            Không tìm thấy ngữ pháp nào.
-          </div>
-        ) : (
-          pageItems.map(g => <GrammarCard key={g.id} grammar={g} />)
-        )}
+      <div
+        ref={scrollContainerRef}
+        className={`flex-grow overflow-y-auto min-h-0 scrollbar-thin transition-opacity ${isPending ? 'opacity-60' : ''}`}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+          {pageItems.length === 0 ? (
+            <div className="col-span-2 text-center text-on-surface-variant py-12 bg-white card border border-gray-100">
+              Không tìm thấy ngữ pháp nào.
+            </div>
+          ) : (
+            pageItems.map(g => <GrammarCard key={g.id} grammar={g} />)
+          )}
+        </div>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 text-sm">
+        <div className="flex justify-center flex-wrap gap-2 text-sm flex-shrink-0 py-1">
           <button
-            onClick={() => setCurrentPage(p => p - 1)}
+            onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant
                        hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
           >
             ← Trước
           </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-            <button
-              key={p}
-              onClick={() => setCurrentPage(p)}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
-                p === page
-                  ? 'bg-primary text-white'
-                  : 'border border-outline-variant text-on-surface-variant hover:bg-gray-50'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+          {getPaginationRange(page, totalPages).map((p, i) =>
+            p === '...' ? (
+              <span key={`dots-${i}`} className="px-3 py-1.5 text-on-surface-variant">...</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => handlePageChange(p)}
+                className={`px-3 py-1.5 rounded-lg transition-colors ${
+                  p === page
+                    ? 'bg-primary text-white'
+                    : 'border border-outline-variant text-on-surface-variant hover:bg-gray-50'
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
           <button
-            onClick={() => setCurrentPage(p => p + 1)}
+            onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             className="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant
                        hover:bg-gray-50 disabled:opacity-40 disabled:pointer-events-none transition-colors"
@@ -279,25 +292,30 @@ function GrammarGrid() {
 // Page Export
 // ============================================
 export function GrammarPage() {
+  const { user } = useAuth();
+  const grammarPromise = useMemo(() => {
+    return user ? api.getAllGrammar().catch(() => [] as Grammar[]) : Promise.resolve([] as Grammar[]);
+  }, [user]);
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div className="flex flex-col h-[calc(100dvh-110px)] lg:h-[calc(100vh-160px)] overflow-hidden space-y-4 pb-2">
+      {/* <div className="mb-2 flex-shrink-0">
+        <h1 className="text-2xl font-bold max-sm:text-xl text-on-surface" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Ngữ Pháp Tiếng Nhật
         </h1>
         <p className="text-sm text-on-surface-variant mt-1">
           Tổng hợp cấu trúc ngữ pháp từ N5 đến N1
         </p>
-      </div>
+      </div> */}
 
       <Suspense
         fallback={
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 flex-grow overflow-hidden">
             {Array.from({ length: 6 }).map((_, i) => <GrammarCardSkeleton key={i} />)}
           </div>
         }
       >
-        <GrammarGrid />
+        <GrammarGrid grammarPromise={grammarPromise} />
       </Suspense>
     </div>
   );

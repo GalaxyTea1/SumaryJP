@@ -95,6 +95,7 @@
     }
 
     function hideModal() {
+        if (isSubmitting) return;
         overlay.style.display = 'none';
         overlay.classList.add('hidden');
         hideMessages();
@@ -140,10 +141,33 @@
         submitText.style.display = loading ? 'none' : 'inline';
         spinner.classList.toggle('hidden', !loading);
         form.querySelectorAll('input, button[type=submit]').forEach(el => el.disabled = loading);
+        switchBtn.disabled = loading;
+        closeBtn.disabled = loading;
+    }
+
+    function showPageLoading(message = 'Vui lòng chờ một chút...') {
+        let pageLoading = document.getElementById('page-loading-overlay');
+        if (!pageLoading) {
+            pageLoading = document.createElement('div');
+            pageLoading.id = 'page-loading-overlay';
+            pageLoading.className = 'fixed inset-0 z-[200] flex items-center justify-center bg-white/85 backdrop-blur-sm';
+            pageLoading.innerHTML = `
+                <div class="flex flex-col items-center gap-3 text-center">
+                    <div class="h-10 w-10 rounded-full border-4 border-[#d9edea] border-t-[#6caba0] animate-spin"></div>
+                    <div id="page-loading-message" class="text-sm font-semibold text-[#1a2332]"></div>
+                </div>
+            `;
+            document.body.appendChild(pageLoading);
+        }
+
+        const messageEl = document.getElementById('page-loading-message');
+        if (messageEl) messageEl.textContent = message;
+        pageLoading.classList.remove('hidden');
     }
 
     // --- Events ---
     switchBtn.addEventListener('click', () => {
+        if (isSubmitting) return;
         isRegisterMode = !isRegisterMode;
         updateMode();
         hideMessages();
@@ -152,16 +176,19 @@
     closeBtn.addEventListener('click', hideModal);
 
     overlay.addEventListener('click', (e) => {
+        if (isSubmitting) return;
         if (e.target === overlay) hideModal();
     });
 
     document.addEventListener('keydown', (e) => {
+        if (isSubmitting) return;
         if (e.key === 'Escape' && overlay.style.display === 'flex') hideModal();
     });
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
+        let externalNavigation = false;
 
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
@@ -196,12 +223,19 @@
             // Cập nhật sidebar user info
             await auth.updateSidebarUser();
             updateAuthUI();
+            const successEvent = new CustomEvent('sumary:auth-success', {
+                cancelable: true,
+                detail: { mode: isRegisterMode ? 'register' : 'login' },
+            });
+            document.dispatchEvent(successEvent);
+            externalNavigation = successEvent.defaultPrevented;
+            if (externalNavigation) return;
 
             setTimeout(hideModal, 1000);
         } catch (err) {
             showError(err.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
         } finally {
-            setLoading(false);
+            if (!externalNavigation) setLoading(false);
         }
     });
 
@@ -222,9 +256,12 @@
                 logoutBtn.className = 'mt-2 w-full text-xs text-[#5f6b7a] hover:text-red-500 transition-colors text-center';
                 logoutBtn.textContent = 'Đăng xuất';
                 logoutBtn.addEventListener('click', () => {
+                    logoutBtn.disabled = true;
+                    showPageLoading('Hẹn gặp lại bạn...');
                     auth.logout();
-                    updateAuthUI();
-                    window.location.reload();
+                    setTimeout(() => {
+                        window.location.href = 'landing.html';
+                    }, 250);
                 });
                 sidebarUserDiv.appendChild(logoutBtn);
             }
@@ -257,6 +294,7 @@
         hide: hideModal,
         showLogin: () => showModal(false),
         showRegister: () => showModal(true),
+        showPageLoading,
     };
 
     // Auto-update auth UI on load

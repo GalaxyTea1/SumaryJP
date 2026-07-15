@@ -4,6 +4,8 @@
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    if (!auth.requireAuth()) return;
+
     let allGrammar = [];
     let filteredGrammar = [];
     let currentPage = 1;
@@ -18,7 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         allGrammar = await api.getAllGrammar();
         filteredGrammar = [...allGrammar];
     } catch (e) {
-        console.warn('Grammar: Không thể tải data.', e);
+        console.error('Grammar: Không thể tải data.', e);
+        alert('Khong the tai du lieu ngu phap. Vui long kiem tra ket noi va thu lai.');
+        window.location.href = 'dashboard.html';
+        return;
     }
 
     // --- DOM ---
@@ -112,10 +117,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${g.example_vi ? `<div class="example-vi mt-1">→ ${utils.escapeHtml(g.example_vi)}</div>` : ''}
                     </div>
                     ${noteHtml}
-                    ${g.explanation ? `<a href="#" class="text-sm text-[#6caba0] font-semibold hover:underline mt-2 inline-block" data-id="${g.id}">Xem chi tiết →</a>` : ''}
+                    ${g.explanation ? `
+                        <button type="button" class="grammar-detail-toggle text-sm text-[#6caba0] font-semibold hover:underline mt-2 inline-block" data-id="${g.id}">
+                            Xem chi tiết →
+                        </button>
+                        <div class="grammar-detail hidden mt-3 border-t border-gray-100 pt-3 text-sm text-[#5f6b7a] leading-relaxed" data-id="${g.id}">
+                            ${utils.escapeHtml(g.explanation)}
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }).join('');
+
+        gridEl.querySelectorAll('.grammar-detail-toggle').forEach(button => {
+            button.addEventListener('click', () => {
+                const detail = gridEl.querySelector(`.grammar-detail[data-id="${button.dataset.id}"]`);
+                if (!detail) return;
+
+                const isHidden = detail.classList.toggle('hidden');
+                button.textContent = isHidden ? 'Xem chi tiết →' : 'Thu gọn ↑';
+            });
+        });
     }
 
     function highlightPattern(text, pattern) {

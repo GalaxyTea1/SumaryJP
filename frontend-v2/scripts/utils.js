@@ -72,20 +72,32 @@ const utils = {
         };
     },
 
-    /** Store test results in localStorage */
-    saveTestResult(result) {
-        const KEY = 'sumary_test_results';
-        const results = JSON.parse(localStorage.getItem(KEY) || '[]');
-        results.unshift({ ...result, date: new Date().toISOString() });
-        // Keep only last 50
-        if (results.length > 50) results.length = 50;
-        localStorage.setItem(KEY, JSON.stringify(results));
+    /** Normalize backend test result rows for frontend-v2 displays */
+    normalizeTestResult(result) {
+        if (!result) return null;
+        const details = typeof result.details === 'string'
+            ? JSON.parse(result.details || '{}')
+            : (result.details || {});
+        const total = result.total_questions ?? result.total ?? 0;
+        const correct = result.correct_answers ?? result.correct ?? 0;
+
+        return {
+            id: result.id,
+            testName: details.testName || `${result.test_type || result.type || 'Vocabulary'} Test`,
+            type: result.test_type || result.type,
+            level: result.level,
+            lesson: result.lesson,
+            score: Number(result.score || 0),
+            correct: Number(correct),
+            total: Number(total),
+            timeTaken: result.time_taken ?? result.timeTaken ?? 0,
+            answers: details.answers || result.answers || [],
+            date: result.created_at || result.date,
+        };
     },
 
-    /** Get test results from localStorage */
-    getTestResults() {
-        const KEY = 'sumary_test_results';
-        return JSON.parse(localStorage.getItem(KEY) || '[]');
+    normalizeTestResults(results) {
+        return (results || []).map(result => this.normalizeTestResult(result)).filter(Boolean);
     },
 };
 

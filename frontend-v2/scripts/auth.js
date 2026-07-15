@@ -60,9 +60,17 @@ const auth = {
         const userLevelEl = document.getElementById('sidebar-user-level');
 
         if (!userInitialEl || !userNameEl) return;
+        this._injectKanaLink();
+        this._injectMatchingGameLink();
+
+        const logoLink = document.querySelector('aside a[href="landing.html"]') || 
+                         document.querySelector('aside a[href="dashboard.html"]') ||
+                         document.querySelector('aside .p-5 a') || 
+                         document.querySelector('aside a');
 
         const user = await this.getCurrentUser();
         if (user) {
+            if (logoLink) logoLink.href = 'dashboard.html';
             const name = user.display_name || user.username || 'User';
             userInitialEl.textContent = name.substring(0, 2).toUpperCase();
             userInitialEl.className = 'w-9 h-9 rounded-full bg-[#f0f7f6] flex items-center justify-center text-[#6caba0] font-bold text-sm';
@@ -78,6 +86,7 @@ const auth = {
                 this._injectAdminLink();
             }
         } else {
+            if (logoLink) logoLink.href = 'landing.html';
             userInitialEl.textContent = '?';
             userInitialEl.className = 'w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm';
             userNameEl.textContent = 'Khách';
@@ -85,6 +94,59 @@ const auth = {
                 userLevelEl.textContent = 'Chưa đăng nhập';
                 userLevelEl.style.display = 'block';
             }
+        }
+    },
+
+    /** Inject Kana link into sidebar (if not already present) */
+    _injectKanaLink() {
+        const nav = document.querySelector('aside nav');
+        if (!nav || nav.querySelector('a[href="kana.html"]') || nav.querySelector('.kana-sidebar-link')) return;
+
+        const link = document.createElement('a');
+        link.href = 'kana.html';
+        link.className = 'sidebar-link kana-sidebar-link';
+        link.innerHTML = '<span class="material-symbols-outlined text-xl">abc</span> Kana';
+
+        if (window.location.pathname.includes('kana.html')) {
+            link.classList.add('active');
+            nav.querySelectorAll('.sidebar-link.active').forEach(item => {
+                if (item !== link) item.classList.remove('active');
+            });
+        }
+
+        const kanjiLink = Array.from(nav.querySelectorAll('a')).find(item => item.getAttribute('href') === 'kanji.html');
+        if (kanjiLink) {
+            kanjiLink.insertAdjacentElement('afterend', link);
+        } else {
+            nav.appendChild(link);
+        }
+    },
+
+    /** Inject Matching Game link into sidebar (if not already present) */
+    _injectMatchingGameLink() {
+        const nav = document.querySelector('aside nav');
+        if (!nav || nav.querySelector('a[href="matching-game.html"]') || nav.querySelector('.matching-game-sidebar-link')) return;
+
+        const link = document.createElement('a');
+        link.href = 'matching-game.html';
+        link.className = 'sidebar-link matching-game-sidebar-link';
+        link.innerHTML = '<span class="material-symbols-outlined text-xl">extension</span> Game Ghép Thẻ';
+
+        if (window.location.pathname.includes('matching-game.html')) {
+            link.classList.add('active');
+            nav.querySelectorAll('.sidebar-link.active').forEach(item => {
+                if (item !== link) item.classList.remove('active');
+            });
+        }
+
+        const kanaLink = Array.from(nav.querySelectorAll('a')).find(item => item.getAttribute('href') === 'kana.html');
+        const kanjiLink = Array.from(nav.querySelectorAll('a')).find(item => item.getAttribute('href') === 'kanji.html');
+        if (kanaLink) {
+            kanaLink.insertAdjacentElement('afterend', link);
+        } else if (kanjiLink) {
+            kanjiLink.insertAdjacentElement('afterend', link);
+        } else {
+            nav.appendChild(link);
         }
     },
 

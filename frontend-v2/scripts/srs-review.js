@@ -1,124 +1,101 @@
 // ============================================
-// SRS Review Logic — Sumary Japanese
-// Spaced Repetition System (SM-2 simplified)
-// Dùng localStorage cho SRS state
+// SRS Review Logic - Sumary Japanese
+// Online-only spaced repetition review
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const SRS_KEY = 'sumary_srs_data';
+    if (!auth.requireAuth()) return;
 
-    // --- SRS State ---
-    let srsData = loadSrsData();
+    let srsData = {};
     let reviewQueue = [];
     let currentIndex = 0;
     let reviewedToday = 0;
     let goodCount = 0;
+    let goodVocabCount = 0;
     let forgotCount = 0;
 
-    // --- Load all items ---
     let allVocab = [];
     let allKanji = [];
     let allGrammar = [];
 
     try {
-        [allVocab, allKanji, allGrammar] = await Promise.all([
+        const [vocabData, kanjiData, grammarData, srsProgress] = await Promise.all([
             api.getAllVocabulary(),
             api.getAllKanji(),
             api.getAllGrammar(),
+            api.getSrsProgress(),
         ]);
-    } catch (e) {
-        console.warn('SRS: Không thể tải data:', e);
+        allVocab = vocabData || [];
+        allKanji = kanjiData || [];
+        allGrammar = grammarData || [];
+        srsData = buildSrsMap(srsProgress);
+    } catch (error) {
+        console.warn('SRS: could not load data:', error);
+        alert('Khong the tai du lieu SRS. Vui long kiem tra ket noi va thu lai.');
+        window.location.href = 'dashboard.html';
+        return;
     }
 
-    // --- SRS Data Management (localStorage) ---
-    function loadSrsData() {
-        return JSON.parse(localStorage.getItem(SRS_KEY) || '{}');
+    function getSrsKey(type, id) {
+        return `${type}_${id}`;
     }
 
-    function saveSrsData() {
-        localStorage.setItem(SRS_KEY, JSON.stringify(srsData));
+    function buildSrsMap(progressItems) {
+        return (progressItems || []).reduce((map, item) => {
+            map[getSrsKey(item.itemType, item.itemId)] = item;
+            return map;
+        }, {});
     }
 
     function getSrsItem(type, id) {
-        const key = `${type}_${id}`;
+        const key = getSrsKey(type, id);
         if (!srsData[key]) {
             srsData[key] = {
-                interval: 0,       // Ngày giữa 2 lần ôn
-                repetitions: 0,   // Số lần ôn đúng liên tiếp
-                easeFactor: 2.5,  // Hệ số dễ
-                nextReview: Date.now(), // Thời điểm cần ôn
+                itemType: type,
+                itemId: id,
+                interval: 0,
+                repetitions: 0,
+                easeFactor: 2.5,
+                nextReview: new Date(0).toISOString(),
                 lastReview: null,
             };
         }
         return srsData[key];
     }
 
-    // SM-2 Algorithm (simplified)
-    function updateSrs(type, id, quality) {
-        // quality: 1=Again, 2=Hard, 3=Good, 4=Easy
-        const item = getSrsItem(type, id);
-        item.lastReview = Date.now();
-
-        if (quality < 2) {
-            // Quên → reset
-            item.repetitions = 0;
-            item.interval = 0;
-            item.nextReview = Date.now() + 60 * 1000; // 1 phút
-        } else {
-            item.repetitions++;
-            if (item.repetitions === 1) {
-                item.interval = 1; // 1 ngày
-            } else if (item.repetitions === 2) {
-                item.interval = 3; // 3 ngày
-            } else {
-                item.interval = Math.round(item.interval * item.easeFactor);
-            }
-
-            // Điều chỉnh ease factor
-            item.easeFactor += (0.1 - (4 - quality) * (0.08 + (4 - quality) * 0.02));
-            if (item.easeFactor < 1.3) item.easeFactor = 1.3;
-
-            const msPerDay = 24 * 60 * 60 * 1000;
-            item.nextReview = Date.now() + item.interval * msPerDay;
-        }
-
-        saveSrsData();
+    function getReviewTime(srs) {
+        return new Date(srs.nextReview).getTime();
     }
 
-    // --- Build review queue ---
+    async function updateSrs(type, id, quality) {
+        const item = await api.reviewSrsItem(type, id, quality);
+        srsData[getSrsKey(type, id)] = item;
+        return item;
+    }
+
     function buildQueue() {
         const now = Date.now();
         const queue = [];
 
-        allVocab.forEach(v => {
-            const srs = getSrsItem('vocab', v.id);
-            if (srs.nextReview <= now) {
-                queue.push({ type: 'vocab', data: v, srs });
-            }
+        allVocab.forEach(vocab => {
+            const srs = getSrsItem('vocab', vocab.id);
+            if (getReviewTime(srs) <= now) queue.push({ type: 'vocab', data: vocab, srs });
         });
 
-        allKanji.forEach(k => {
-            const srs = getSrsItem('kanji', k.id);
-            if (srs.nextReview <= now) {
-                queue.push({ type: 'kanji', data: k, srs });
-            }
+        allKanji.forEach(kanji => {
+            const srs = getSrsItem('kanji', kanji.id);
+            if (getReviewTime(srs) <= now) queue.push({ type: 'kanji', data: kanji, srs });
         });
 
-        allGrammar.forEach(g => {
-            const srs = getSrsItem('grammar', g.id);
-            if (srs.nextReview <= now) {
-                queue.push({ type: 'grammar', data: g, srs });
-            }
+        allGrammar.forEach(grammar => {
+            const srs = getSrsItem('grammar', grammar.id);
+            if (getReviewTime(srs) <= now) queue.push({ type: 'grammar', data: grammar, srs });
         });
 
-        // Sort: shortest interval first (due soonest)
         queue.sort((a, b) => a.srs.interval - b.srs.interval);
-
         return queue;
     }
 
-    // --- DOM ---
-    const overviewEl = document.getElementById('srs-overview');
     const startSection = document.getElementById('srs-start-section');
     const reviewArea = document.getElementById('srs-review-area');
     const completeEl = document.getElementById('srs-complete');
@@ -128,20 +105,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const typeBadge = document.getElementById('srs-type-badge');
     const progressFill = document.getElementById('srs-progress-fill');
 
-    // --- Update overview ---
     function updateOverview() {
         const now = Date.now();
-        let dueCount = 0, learningCount = 0, masteredCount = 0;
+        let dueCount = 0;
+        let learningCount = 0;
+        let masteredCount = 0;
 
         const allItems = [
-            ...allVocab.map(v => ({ type: 'vocab', id: v.id })),
-            ...allKanji.map(k => ({ type: 'kanji', id: k.id })),
-            ...allGrammar.map(g => ({ type: 'grammar', id: g.id })),
+            ...allVocab.map(vocab => ({ type: 'vocab', id: vocab.id })),
+            ...allKanji.map(kanji => ({ type: 'kanji', id: kanji.id })),
+            ...allGrammar.map(grammar => ({ type: 'grammar', id: grammar.id })),
         ];
 
         allItems.forEach(({ type, id }) => {
             const srs = getSrsItem(type, id);
-            if (srs.nextReview <= now) dueCount++;
+            if (getReviewTime(srs) <= now) dueCount++;
             if (srs.repetitions > 0 && srs.interval < 7) learningCount++;
             if (srs.interval >= 7) masteredCount++;
         });
@@ -151,20 +129,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('srs-reviewed-count').textContent = reviewedToday;
         document.getElementById('srs-mastered-count').textContent = masteredCount;
         document.getElementById('srs-due-text').textContent = dueCount;
-
-        saveSrsData();
     }
 
-    // --- Start review ---
     document.getElementById('srs-start-btn').addEventListener('click', () => {
         reviewQueue = buildQueue();
         if (reviewQueue.length === 0) {
-            alert('Không có thẻ nào cần ôn hôm nay! 🎉');
+            alert('Không có thẻ nào cần ôn hôm nay!');
             return;
         }
 
         currentIndex = 0;
         goodCount = 0;
+        goodVocabCount = 0;
         forgotCount = 0;
 
         startSection.classList.add('hidden');
@@ -175,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateProgress();
     });
 
-    // --- Render card ---
     function renderCard() {
         if (currentIndex >= reviewQueue.length) {
             showComplete();
@@ -183,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         const item = reviewQueue[currentIndex];
-        const d = item.data;
+        const data = item.data;
         cardInner.classList.remove('flipped');
         ratingButtons.classList.add('hidden');
 
@@ -192,25 +167,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (item.type === 'vocab') {
             document.getElementById('srs-front-label').textContent = 'Tiếng Nhật';
-            document.getElementById('srs-front-main').textContent = d.japanese || '';
-            document.getElementById('srs-front-sub').textContent = d.hiragana || '';
+            document.getElementById('srs-front-main').textContent = data.japanese || '';
+            document.getElementById('srs-front-sub').textContent = data.hiragana || '';
             document.getElementById('srs-back-label').textContent = 'Nghĩa';
-            document.getElementById('srs-back-main').textContent = d.meaning || '';
-            document.getElementById('srs-back-sub').textContent = d.type || '';
+            document.getElementById('srs-back-main').textContent = data.meaning || '';
+            document.getElementById('srs-back-sub').textContent = data.type || '';
         } else if (item.type === 'kanji') {
             document.getElementById('srs-front-label').textContent = 'Kanji';
-            document.getElementById('srs-front-main').textContent = d.character || '';
-            document.getElementById('srs-front-sub').textContent = `${d.onyomi || ''} / ${d.kunyomi || ''}`;
+            document.getElementById('srs-front-main').textContent = data.character || '';
+            document.getElementById('srs-front-sub').textContent = `${data.onyomi || ''} / ${data.kunyomi || ''}`;
             document.getElementById('srs-back-label').textContent = 'Nghĩa';
-            document.getElementById('srs-back-main').textContent = d.meaning || '';
+            document.getElementById('srs-back-main').textContent = data.meaning || '';
             document.getElementById('srs-back-sub').textContent = '';
         } else if (item.type === 'grammar') {
             document.getElementById('srs-front-label').textContent = 'Ngữ pháp';
-            document.getElementById('srs-front-main').textContent = d.pattern || '';
-            document.getElementById('srs-front-sub').textContent = d.example_ja || '';
+            document.getElementById('srs-front-main').textContent = data.pattern || '';
+            document.getElementById('srs-front-sub').textContent = data.example_ja || '';
             document.getElementById('srs-back-label').textContent = 'Nghĩa';
-            document.getElementById('srs-back-main').textContent = d.meaning || '';
-            document.getElementById('srs-back-sub').textContent = d.example_vi || '';
+            document.getElementById('srs-back-main').textContent = data.meaning || '';
+            document.getElementById('srs-back-sub').textContent = data.example_vi || '';
         }
     }
 
@@ -220,7 +195,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         progressFill.style.width = `${pct}%`;
     }
 
-    // --- Flip ---
     function flipCard() {
         cardInner.classList.toggle('flipped');
         if (cardInner.classList.contains('flipped')) {
@@ -230,20 +204,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('srs-card').addEventListener('click', flipCard);
 
-    // --- Rating ---
     ratingButtons.querySelectorAll('.rating-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const quality = parseInt(btn.dataset.rating);
+        btn.addEventListener('click', async () => {
+            const quality = parseInt(btn.dataset.rating, 10);
             const item = reviewQueue[currentIndex];
 
-            updateSrs(item.type, item.data.id, quality);
-            reviewedToday++;
+            ratingButtons.querySelectorAll('.rating-btn').forEach(button => button.disabled = true);
+            try {
+                await updateSrs(item.type, item.data.id, quality);
+            } catch (error) {
+                console.error('SRS review save failed:', error);
+                alert('Khong the luu ket qua on tap. Vui long thu lai.');
+                ratingButtons.querySelectorAll('.rating-btn').forEach(button => button.disabled = false);
+                return;
+            }
+            ratingButtons.querySelectorAll('.rating-btn').forEach(button => button.disabled = false);
 
+            reviewedToday++;
             if (quality >= 3) {
                 goodCount++;
-                if (typeof gamification !== 'undefined') gamification.trackEvent('srs_card_good');
+                if (item.type === 'vocab') goodVocabCount++;
+                if (typeof gamification !== 'undefined') gamification.trackEvent('srs_card_good').catch(() => null);
+            } else {
+                forgotCount++;
             }
-            else forgotCount++;
 
             currentIndex++;
             updateOverview();
@@ -264,10 +248,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('srs-final-good').textContent = goodCount;
         document.getElementById('srs-final-forgot').textContent = forgotCount;
 
-        // Gamification
         if (typeof gamification !== 'undefined') {
-            gamification.trackEvent('srs_session');
-            gamification.trackEvent('vocab_review', { count: goodCount });
+            gamification.trackEvent('srs_session').catch(() => null);
+            if (goodVocabCount > 0) {
+                gamification.trackEvent('vocab_review', { count: goodVocabCount }).catch(() => null);
+            }
         }
     }
 
@@ -275,21 +260,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'dashboard.html';
     });
 
-    // --- Keyboard ---
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (event) => {
         if (reviewArea.classList.contains('hidden')) return;
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
 
-        if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
+        if (event.key === ' ' || event.key === 'Enter') {
+            event.preventDefault();
             flipCard();
-        } else if (['1', '2', '3', '4'].includes(e.key) && cardInner.classList.contains('flipped')) {
-            const btn = ratingButtons.querySelector(`[data-rating="${e.key}"]`);
+        } else if (['1', '2', '3', '4'].includes(event.key) && cardInner.classList.contains('flipped')) {
+            const btn = ratingButtons.querySelector(`[data-rating="${event.key}"]`);
             if (btn) btn.click();
         }
     });
 
-    // --- Init ---
     updateOverview();
     auth.updateSidebarUser();
 });
