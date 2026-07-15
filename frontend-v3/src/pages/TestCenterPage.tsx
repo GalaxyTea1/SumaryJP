@@ -361,11 +361,13 @@ function RecentResults() {
       try {
         if (isLoggedIn) {
           const apiHistory = await api.getTestHistory(5);
-          const normalized = (apiHistory || []).map((item: Record<string, unknown>) => normalizeRecentResult(item));
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const normalized = (apiHistory as any[] || []).map((item) => normalizeRecentResult(item));
           setResults(normalized);
         } else {
           // Guest mode: load from localStorage
-          const local = loadResults().slice(0, 5).map((item: Record<string, unknown>, idx: number) => ({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const local = (loadResults() as any[]).slice(0, 5).map((item, idx: number) => ({
             ...normalizeRecentResult(item),
             isLocal: true,
             localIndex: idx,
@@ -375,7 +377,8 @@ function RecentResults() {
       } catch (err) {
         console.error('Lỗi khi tải lịch sử kiểm tra:', err);
         // Fallback to local storage
-        const local = loadResults().slice(0, 5).map((item: Record<string, unknown>, idx: number) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const local = (loadResults() as any[]).slice(0, 5).map((item, idx: number) => ({
           ...normalizeRecentResult(item),
           isLocal: true,
           localIndex: idx,

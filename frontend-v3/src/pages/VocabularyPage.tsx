@@ -309,13 +309,6 @@ function VocabTable({ vocabPromise }: { vocabPromise: Promise<Vocabulary[]> }) {
   const page       = Math.min(currentPage, Math.max(1, totalPages));
   const pageItems  = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
-  // Stats (reserved for future UI use)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const mastered   = filtered.filter(v => v.status === 'mastered').length;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const learning   = filtered.filter(v => v.status === 'learning').length;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const notLearned = filtered.filter(v => v.status === 'not-learned').length;
 
   function handleFilter(key: string, val: string) {
     startTransition(() => {
