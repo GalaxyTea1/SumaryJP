@@ -23,6 +23,7 @@ const allowedOrigins = [
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'https://sumary-jp.vercel.app',
+    'https://learningjp-orpin.vercel.app',
     // Hỗ trợ nhiều URL phân cách bằng dấu phẩy trong FRONTEND_URL
     ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(u => u.trim()) : []),
 ].filter(Boolean);
