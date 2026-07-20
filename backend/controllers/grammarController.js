@@ -16,12 +16,30 @@ function validateBody(body) {
 const grammarController = {
     getAll: async (req, res) => {
         try {
+            const { page, limit, search } = req.query;
             const filters = {
                 level: req.query.level || null,
                 lesson: req.query.lesson || null,
                 textbook: req.query.textbook || null,
+                search,
+                page,
+                limit
             };
             const items = await Grammar.getAll(filters);
+            
+            if (page && limit) {
+                const total = await Grammar.countAll(filters);
+                return res.json({
+                    data: items,
+                    pagination: {
+                        total,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(total / limit)
+                    }
+                });
+            }
+            
             res.json(items);
         } catch (error) {
             console.error('Grammar getAll error:', error);

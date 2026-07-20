@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -25,11 +25,20 @@ export default function AdminPage() {
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<string>('all');
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 12;
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   // Form Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -79,14 +88,14 @@ export default function AdminPage() {
       setLoading(true);
       try {
         if (activeTab === 'vocab') {
-          const data = await api.getAllVocabulary();
-          if (active) setVocabList(data);
+          const { data, pagination } = await api.getPaginatedVocabulary(currentPage, itemsPerPage, debouncedSearchQuery, levelFilter);
+          if (active) { setVocabList(data); setTotalPages(pagination.totalPages || 1); }
         } else if (activeTab === 'grammar') {
-          const data = await api.getAllGrammar();
-          if (active) setGrammarList(data);
+          const { data, pagination } = await api.getPaginatedGrammar(currentPage, itemsPerPage, debouncedSearchQuery, levelFilter);
+          if (active) { setGrammarList(data); setTotalPages(pagination.totalPages || 1); }
         } else if (activeTab === 'kanji') {
-          const data = await api.getAllKanji();
-          if (active) setKanjiList(data);
+          const { data, pagination } = await api.getPaginatedKanji(currentPage, itemsPerPage, debouncedSearchQuery, levelFilter);
+          if (active) { setKanjiList(data); setTotalPages(pagination.totalPages || 1); }
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Không thể tải dữ liệu';
@@ -97,15 +106,11 @@ export default function AdminPage() {
     };
 
     fetchTabDb();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination on tab change
-    setCurrentPage(1);
-    setSearchQuery('');
-    setLevelFilter('all');
 
     return () => {
       active = false;
     };
-  }, [activeTab, user, refreshTrigger]);
+  }, [activeTab, currentPage, debouncedSearchQuery, levelFilter, refreshTrigger, user]);
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
@@ -317,60 +322,12 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
-
-  // Filtered List Memoized
-  const filteredList = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    if (activeTab === 'vocab') {
-      return vocabList.filter(item => {
-        const matchesSearch =
-          item.japanese.toLowerCase().includes(query) ||
-          item.meaning.toLowerCase().includes(query) ||
-          (item.hiragana && item.hiragana.toLowerCase().includes(query));
-        const matchesLevel = levelFilter === 'all' || item.level === levelFilter;
-        return matchesSearch && matchesLevel;
-      });
-    } else if (activeTab === 'grammar') {
-      return grammarList.filter(item => {
-        const matchesSearch =
-          item.pattern.toLowerCase().includes(query) ||
-          item.meaning.toLowerCase().includes(query);
-        const matchesLevel = levelFilter === 'all' || item.level === levelFilter;
-        return matchesSearch && matchesLevel;
-      });
-    } else {
-      return kanjiList.filter(item => {
-        const matchesSearch =
-          item.kanji.toLowerCase().includes(query) ||
-          item.meaning.toLowerCase().includes(query) ||
-          (item.onyomi && item.onyomi.toLowerCase().includes(query)) ||
-          (item.kunyomi && item.kunyomi.toLowerCase().includes(query));
-        const matchesLevel = levelFilter === 'all' || item.level === levelFilter;
-        return matchesSearch && matchesLevel;
-      });
-    }
-  }, [activeTab, vocabList, grammarList, kanjiList, searchQuery, levelFilter]);
-
-  // Paginated Data
-  const totalPages = Math.max(1, Math.ceil(filteredList.length / itemsPerPage));
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredList.slice(start, start + itemsPerPage);
-  }, [filteredList, currentPage]);
+  const paginatedData = activeTab === 'vocab' ? vocabList : activeTab === 'grammar' ? grammarList : kanjiList;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  // Auto-adjust page if current page exceeds total pages
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [filteredList.length, currentPage, totalPages]);
-
   // Access denied screen if not admin
   if (!isAdmin) {
     return (
@@ -427,7 +384,13 @@ export default function AdminPage() {
           return (
             <button
               key={t}
-              onClick={() => setActiveTab(t)}
+              onClick={() => {
+                setActiveTab(t);
+                setCurrentPage(1);
+                setSearchQuery('');
+                setDebouncedSearchQuery('');
+                setLevelFilter('all');
+              }}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === t
                   ? 'bg-white dark:bg-surface text-primary shadow-sm'
@@ -489,7 +452,7 @@ export default function AdminPage() {
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-on-surface-variant font-medium">Đang đồng bộ dữ liệu...</p>
         </div>
-      ) : filteredList.length === 0 ? (
+      ) : paginatedData.length === 0 ? (
         <div className="card p-12 text-center border border-outline/5">
           <span className="material-symbols-outlined text-5xl text-on-surface-variant">find_in_page</span>
           <h3 className="font-bold text-base text-on-surface mt-3" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

@@ -64,7 +64,23 @@ function validateUpdateBody(body) {
 const vocabController = {
     getAll: async (req, res) => {
         try {
-            const vocabularies = await Vocabulary.getAll(req.user?.id || null);
+            const { page, limit, search, level } = req.query;
+            const options = { page, limit, search, level };
+            const vocabularies = await Vocabulary.getAll(req.user?.id || null, options);
+            
+            if (page && limit) {
+                const total = await Vocabulary.countAll(options);
+                return res.json({
+                    data: vocabularies,
+                    pagination: {
+                        total,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(total / limit)
+                    }
+                });
+            }
+            
             res.json(vocabularies);
         } catch (error) {
             console.error(error);

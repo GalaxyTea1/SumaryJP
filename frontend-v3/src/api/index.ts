@@ -86,6 +86,13 @@ export const api = {
     return data;
   },
 
+  async getPaginatedVocabulary(page: number, limit: number, search?: string, level?: string): Promise<{ data: Vocabulary[], pagination: { total: number, page: number, limit: number, totalPages: number } }> {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (search) params.append('search', search);
+    if (level && level !== 'all') params.append('level', level);
+    return request(`${BASE_URL}/vocab?${params.toString()}`);
+  },
+
   async getVocabularyByLesson(level: string, lesson: string): Promise<Vocabulary[]> {
     return request(`${BASE_URL}/vocab/${encodeURIComponent(level)}/${encodeURIComponent(lesson)}`);
   },
@@ -185,6 +192,13 @@ export const api = {
     return request(`${BASE_URL}/grammar?${qs}`);
   },
 
+  async getPaginatedGrammar(page: number, limit: number, search?: string, level?: string): Promise<{ data: Grammar[], pagination: { total: number, page: number, limit: number, totalPages: number } }> {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (search) params.append('search', search);
+    if (level && level !== 'all') params.append('level', level);
+    return request(`${BASE_URL}/grammar?${params.toString()}`);
+  },
+
   async getGrammarById(id: number): Promise<Grammar> {
     return request(`${BASE_URL}/grammar/${encodeURIComponent(id)}`);
   },
@@ -224,6 +238,13 @@ export const api = {
       return data;
     }
     return request(`${BASE_URL}/kanji?${qs}`);
+  },
+
+  async getPaginatedKanji(page: number, limit: number, search?: string, level?: string): Promise<{ data: Kanji[], pagination: { total: number, page: number, limit: number, totalPages: number } }> {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (search) params.append('search', search);
+    if (level && level !== 'all') params.append('level', level);
+    return request(`${BASE_URL}/kanji?${params.toString()}`);
   },
 
   async getKanjiById(id: number): Promise<Kanji> {

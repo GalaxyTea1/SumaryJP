@@ -16,11 +16,29 @@ function validateBody(body) {
 const kanjiController = {
     getAll: async (req, res) => {
         try {
+            const { page, limit, search } = req.query;
             const filters = {
                 level: req.query.level || null,
                 lesson: req.query.lesson || null,
+                search,
+                page,
+                limit
             };
             const items = await Kanji.getAll(filters);
+            
+            if (page && limit) {
+                const total = await Kanji.countAll(filters);
+                return res.json({
+                    data: items,
+                    pagination: {
+                        total,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(total / limit)
+                    }
+                });
+            }
+            
             res.json(items);
         } catch (error) {
             console.error('Kanji getAll error:', error);

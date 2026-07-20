@@ -19,6 +19,11 @@ const Grammar = {
             conditions.push(`textbook = $${paramIndex++}`);
             values.push(filters.textbook);
         }
+        if (filters.search) {
+            conditions.push(`(pattern ILIKE $${paramIndex} OR meaning ILIKE $${paramIndex})`);
+            values.push(`%${filters.search}%`);
+            paramIndex++;
+        }
 
         if (conditions.length > 0) {
             query += ' WHERE ' + conditions.join(' AND ');
@@ -26,8 +31,47 @@ const Grammar = {
 
         query += ' ORDER BY level ASC, CAST(lesson AS INTEGER) ASC, id ASC';
 
+        if (filters.limit && filters.page) {
+            const limit = parseInt(filters.limit);
+            const offset = (parseInt(filters.page) - 1) * limit;
+            query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+            values.push(limit, offset);
+        }
+
         const result = await pool.query(query, values);
         return result.rows;
+    },
+
+    countAll: async (filters = {}) => {
+        let query = 'SELECT COUNT(*) FROM grammar';
+        const conditions = [];
+        const values = [];
+        let paramIndex = 1;
+
+        if (filters.level) {
+            conditions.push(`level = $${paramIndex++}`);
+            values.push(filters.level);
+        }
+        if (filters.lesson) {
+            conditions.push(`lesson = $${paramIndex++}`);
+            values.push(filters.lesson);
+        }
+        if (filters.textbook) {
+            conditions.push(`textbook = $${paramIndex++}`);
+            values.push(filters.textbook);
+        }
+        if (filters.search) {
+            conditions.push(`(pattern ILIKE $${paramIndex} OR meaning ILIKE $${paramIndex})`);
+            values.push(`%${filters.search}%`);
+            paramIndex++;
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        const result = await pool.query(query, values);
+        return parseInt(result.rows[0].count);
     },
 
     getById: async (id) => {

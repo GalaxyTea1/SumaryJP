@@ -10,6 +10,7 @@ const testRoutes = require('./routes/test');
 const gamificationRoutes = require('./routes/gamification');
 const srsRoutes = require('./routes/srs');
 const kanaRoutes = require('./routes/kana');
+const { swaggerUi, specs } = require('./swagger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ app.use(express.json({ limit: '10kb' }));
 
 // Routes
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/api/vocab', vocabRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/auth', authRoutes);

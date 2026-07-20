@@ -30,37 +30,89 @@ const USER_PROGRESS_COLUMNS = `
     COALESCE(p.is_difficult, false) AS is_difficult
 `;
 
-function selectVocabularyQuery({ where = '', orderBy = 'ORDER BY v.level ASC, v.id ASC', userId = null } = {}) {
+function selectVocabularyQuery({ where = '', orderBy = 'ORDER BY v.level ASC, v.id ASC', userId = null, options = {} } = {}) {
+    let conditions = [];
+    let baseValues = [];
+    let paramIndex = 1;
+
     if (userId) {
-        return {
-            text: `
-                SELECT ${BASE_COLUMNS}, ${USER_PROGRESS_COLUMNS}
-                FROM vocabulary v
-                LEFT JOIN user_vocabulary_progress p
-                    ON p.vocab_id = v.id AND p.user_id = $1
-                ${where}
-                ${orderBy}
-            `,
-            baseValues: [userId],
-        };
+        baseValues.push(userId);
+        paramIndex++;
     }
 
+    if (options.level && options.level !== 'all') {
+        conditions.push(`v.level = $${paramIndex++}`);
+        baseValues.push(options.level);
+    }
+
+    if (options.search) {
+        conditions.push(`(v.japanese ILIKE $${paramIndex} OR v.meaning ILIKE $${paramIndex} OR v.hiragana ILIKE $${paramIndex})`);
+        baseValues.push(`%${options.search}%`);
+        paramIndex++;
+    }
+
+    let dynamicWhere = where;
+    if (conditions.length > 0) {
+        dynamicWhere = (where ? where + ' AND ' : 'WHERE ') + conditions.join(' AND ');
+    }
+
+    if (userId) {
+        return {
+            text: `SELECT ${BASE_COLUMNS}, ${USER_PROGRESS_COLUMNS}
+                   FROM vocabulary v
+                   LEFT JOIN user_vocabulary_progress p ON p.vocab_id = v.id AND p.user_id = $1
+                   ${dynamicWhere} ${orderBy}`,
+            baseValues,
+        };
+    }
     return {
-        text: `
-            SELECT ${BASE_COLUMNS}, ${GUEST_PROGRESS_COLUMNS}
-            FROM vocabulary v
-            ${where}
-            ${orderBy}
-        `,
-        baseValues: [],
+        text: `SELECT ${BASE_COLUMNS}, ${GUEST_PROGRESS_COLUMNS}
+               FROM vocabulary v ${dynamicWhere} ${orderBy}`,
+        baseValues,
     };
 }
 
 const Vocabulary = {
-    getAll: async (userId = null) => {
-        const query = selectVocabularyQuery({ userId });
-        const result = await pool.query(query.text, query.baseValues);
+    getAll: async (userId = null, options = {}) => {
+        const query = selectVocabularyQuery({ userId, options });
+        
+        let sql = query.text;
+        const values = [...query.baseValues];
+        
+        if (options.limit && options.page) {
+            const limit = parseInt(options.limit);
+            const offset = (parseInt(options.page) - 1) * limit;
+            sql += ` LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+            values.push(limit, offset);
+        }
+        
+        const result = await pool.query(sql, values);
         return result.rows;
+    },
+
+    countAll: async (options = {}) => {
+        let query = 'SELECT COUNT(*) FROM vocabulary v';
+        let conditions = [];
+        let values = [];
+        let paramIndex = 1;
+
+        if (options.level && options.level !== 'all') {
+            conditions.push(`v.level = $${paramIndex++}`);
+            values.push(options.level);
+        }
+
+        if (options.search) {
+            conditions.push(`(v.japanese ILIKE $${paramIndex} OR v.meaning ILIKE $${paramIndex} OR v.hiragana ILIKE $${paramIndex})`);
+            values.push(`%${options.search}%`);
+            paramIndex++;
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        const result = await pool.query(query, values);
+        return parseInt(result.rows[0].count);
     },
 
     getById: async (id, userId = null) => {
